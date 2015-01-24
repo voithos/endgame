@@ -8,16 +8,20 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
+var connect = require('gulp-connect');
 
 
 var bundler = watchify(browserify(getMainScript(), watchify.args));
 bundler.on('update', bundle);
 
 gulp.task('js', bundle);
-gulp.task('default', ['js']);
+gulp.task('server', server);
+gulp.task('default', ['server', 'js']);
 
-function getMainScript() {
-    return require('./package.json').main;
+function server() {
+    connect.server({
+        root: './public'
+    });
 }
 
 function bundle() {
@@ -29,4 +33,8 @@ function bundle() {
             .pipe(uglify())
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('./'));
+}
+
+function getMainScript() {
+    return require('./package.json').main;
 }
