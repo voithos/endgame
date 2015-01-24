@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "description": "A WebRTC-enabled 3D chess game",
   "main": "./src/endgame.js",
-  "dependencies": {},
+  "dependencies": {
+    "promise": "~6.1.0",
+    "lodash": "~2.4.1"
+  },
   "devDependencies": {
     "browserify": "^8.1.1",
     "gulp": "^3.8.10",

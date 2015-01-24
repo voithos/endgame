@@ -4,6 +4,7 @@ var settings = require('./settings');
 
 module.exports = {
     init: function() {
-        this.ref = new Firebase(settings.usersUrl);
+        var self = this;
+        self.ref = new Firebase(settings.usersUrl);
     }
 };
