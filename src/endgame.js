@@ -19,7 +19,9 @@ var Endgame = {
         var self = this;
 
         scene.init();
-        scene.createGameGeometry();
+        scene.loadGameGeometry()
+            .then(scene.setupBoard.bind(scene));
+
         scene.beginRender();
 
         var gameId = routes.parseGameId();

@@ -6777,3 +6777,6 @@ label {
 .pager .disabled > a {
   border-color: #dddddd;
 }
+canvas {
+  position: absolute;
+}

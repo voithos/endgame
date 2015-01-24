@@ -1,6 +1,7 @@
 'use strict';
 
 var Promise = require('promise');
+var _ = require('lodash');
 
 var settings = require('./settings');
 var log = require('./log');
@@ -10,19 +11,23 @@ module.exports = {
         var self = this;
         self.scene = new THREE.Scene();
         self.camera = new THREE.PerspectiveCamera(
-            75, window.innerWidth / window.innerHeight, 0.1, 1000
+            45, window.innerWidth / window.innerHeight, 0.1, 1000
         );
 
         self.renderer = self.createRenderer();
         self.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(self.renderer.domElement);
+
+        self.addLighting();
+        self.camera.position.y = 5;
+        self.camera.position.z = 20;
     },
 
     createRenderer: function() {
         // Choose between WebGL and Canvas renderer based on availability
         var self = this;
         return self.webglAvailable() ?
-            new THREE.WebGLRenderer() :
+            new THREE.WebGLRenderer({ antialias: true }) :
             new THREE.CanvasRenderer();
     },
 
@@ -38,14 +43,43 @@ module.exports = {
         }
     },
 
-    createGameGeometry: function() {
+    addLighting: function() {
         var self = this;
-        var geometry = new THREE.BoxGeometry(1, 1, 1);
-        var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        self.cube = new THREE.Mesh(geometry, material);
-        self.scene.add(self.cube);
+        var light = new THREE.DirectionalLight();
+        light.position.set(0, 0, 1);
+        self.scene.add(light);
+    },
 
-        self.camera.position.z = 5;
+    loadGameGeometry: function() {
+        var self = this;
+        self.meshes = {};
+
+        // Load all pieces
+        return Promise.all(_.map(settings.pieces, function(piece) {
+            return new Promise(function(resolve, reject) {
+                var loader = new THREE.JSONLoader();
+                loader.load('data/' + piece + '.json', function(geometry, materials) {
+                    var object = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+
+                    self.meshes[piece] = object;
+                    log('done loading', piece);
+
+                    resolve(object);
+                });
+            });
+        }));
+    },
+
+    setupBoard: function() {
+        var self = this;
+
+        _.forEach(settings.pieces, function(piece, i) {
+            var model = new THREE.Object3D();
+            model.add(self.meshes[piece]);
+            model.position.setX(-10 + i * 4);
+
+            self.scene.add(model);
+        });
     },
 
     beginRender: function() {
@@ -66,8 +100,6 @@ module.exports = {
         self.previousTime = now;
 
         // Animations
-        self.cube.rotation.x += 0.1;
-        self.cube.rotation.y += 0.1;
 
         self.renderer.render(self.scene, self.camera);
     }

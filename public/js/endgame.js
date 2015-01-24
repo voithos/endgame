@@ -21,7 +21,9 @@ var Endgame = {
         var self = this;
 
         scene.init();
-        scene.createGameGeometry();
+        scene.loadGameGeometry()
+            .then(scene.setupBoard.bind(scene));
+
         scene.beginRender();
 
         var gameId = routes.parseGameId();
@@ -7468,6 +7470,7 @@ module.exports = {
 'use strict';
 
 var Promise = require('promise');
+var _ = require('lodash');
 
 var settings = require('./settings');
 var log = require('./log');
@@ -7477,19 +7480,23 @@ module.exports = {
         var self = this;
         self.scene = new THREE.Scene();
         self.camera = new THREE.PerspectiveCamera(
-            75, window.innerWidth / window.innerHeight, 0.1, 1000
+            45, window.innerWidth / window.innerHeight, 0.1, 1000
         );
 
         self.renderer = self.createRenderer();
         self.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(self.renderer.domElement);
+
+        self.addLighting();
+        self.camera.position.y = 5;
+        self.camera.position.z = 20;
     },
 
     createRenderer: function() {
         // Choose between WebGL and Canvas renderer based on availability
         var self = this;
         return self.webglAvailable() ?
-            new THREE.WebGLRenderer() :
+            new THREE.WebGLRenderer({ antialias: true }) :
             new THREE.CanvasRenderer();
     },
 
@@ -7505,14 +7512,43 @@ module.exports = {
         }
     },
 
-    createGameGeometry: function() {
+    addLighting: function() {
         var self = this;
-        var geometry = new THREE.BoxGeometry(1, 1, 1);
-        var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        self.cube = new THREE.Mesh(geometry, material);
-        self.scene.add(self.cube);
+        var light = new THREE.DirectionalLight();
+        light.position.set(0, 0, 1);
+        self.scene.add(light);
+    },
 
-        self.camera.position.z = 5;
+    loadGameGeometry: function() {
+        var self = this;
+        self.meshes = {};
+
+        // Load all pieces
+        return Promise.all(_.map(settings.pieces, function(piece) {
+            return new Promise(function(resolve, reject) {
+                var loader = new THREE.JSONLoader();
+                loader.load('data/' + piece + '.json', function(geometry, materials) {
+                    var object = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+
+                    self.meshes[piece] = object;
+                    log('done loading', piece);
+
+                    resolve(object);
+                });
+            });
+        }));
+    },
+
+    setupBoard: function() {
+        var self = this;
+
+        _.forEach(settings.pieces, function(piece, i) {
+            var model = new THREE.Object3D();
+            model.add(self.meshes[piece]);
+            model.position.setX(-10 + i * 4);
+
+            self.scene.add(model);
+        });
     },
 
     beginRender: function() {
@@ -7533,14 +7569,12 @@ module.exports = {
         self.previousTime = now;
 
         // Animations
-        self.cube.rotation.x += 0.1;
-        self.cube.rotation.y += 0.1;
 
         self.renderer.render(self.scene, self.camera);
     }
 };
 
-},{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/settings.js":[function(require,module,exports){
+},{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/settings.js":[function(require,module,exports){
 'use strict';
 
 var DB_BASE_URL = 'https://endgame-chess.firebaseio.com';
@@ -7550,13 +7584,16 @@ module.exports = {
     usersUrl: DB_BASE_URL + '/users',
     gamesUrl: DB_BASE_URL + '/games',
     peerJsKey: 'e47332e9vb4yrpb9',
+
     iceServers: [
         { 'url': 'stun.l.google.com:19302' },
         { 'url': 'stun1.l.google.com:19302' },
         { 'url': 'stun2.l.google.com:19302' },
         { 'url': 'stun3.l.google.com:19302' },
         { 'url': 'stun4.l.google.com:19302' }
-    ]
+    ],
+
+    pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king']
 };
 
 },{}],"/home/daisy/Projects/ss15-black-kite/src/user.js":[function(require,module,exports){

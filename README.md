@@ -1,16 +1,9 @@
 # endgame
 
-## Dependencies
-- Firebase
-- PeerJS
-- Promise
-- Lo-Dash
-- Three.js
-- Vue.js
-- Bootstrap
-- Bootswatch Simplex theme
+A WebRTC-enabled 3D chess game.
 
-## Tools
-- gulp.js
-- browserify
-- Less
+## Attribution
+
+This project wouldn't be possible without the generosity of open source
+contributors. See `ATTRIBUTION.md` for a list of the libraries, tools, and
+assets used.
