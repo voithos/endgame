@@ -6,7 +6,12 @@ var settings = require('./settings');
 module.exports = {
     init: function() {
         var self = this;
-        self.peer = new Peer({ key: settings.peerJsKey });
+        self.peer = new Peer({
+            key: settings.peerJsKey,
+            config: {
+                iceServers: settings.iceServers
+            }
+        });
 
         return new Promise(function(resolve, reject) {
             self.peer.on('open', resolve);
@@ -26,6 +31,8 @@ module.exports = {
 
     connect: function(hostId) {
         var self = this;
-        return Promise.resolve(self.peer.connect(hostId));
+        return Promise.resolve(self.peer.connect(hostId, {
+            reliable: true
+        }));
     }
 };
