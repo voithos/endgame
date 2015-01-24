@@ -1,19 +1,28 @@
 'use strict';
 
+require('./polyfills');
+
 var Promise = require('promise');
 var _ = require('lodash');
 
 var user = require('./user');
 var game = require('./game');
+var routes = require('./routes');
 var rtc = require('./rtc');
+var scene = require('./scene');
 var utils = require('./utils');
+var views = require('./views');
 var log = require('./log');
 
 var Endgame = {
     main: function() {
         var self = this;
 
-        var gameId = self.parseGameRoom();
+        scene.init();
+        scene.createGameGeometry();
+        scene.beginRender();
+
+        var gameId = routes.parseGameId();
         if (gameId) {
             self.connectToGame(gameId);
         } else {
@@ -26,7 +35,7 @@ var Endgame = {
 
         rtc.init()
             .then(game.create.bind(game))
-            .then(self.showWaitScreen.bind(self))
+            .then(views.showWaitScreen.bind(views))
             .then(rtc.listen.bind(rtc))
             .then(self.setupMedia.bind(self))
             .done();
@@ -49,16 +58,6 @@ var Endgame = {
         conn.on('data', function(data) {
             log(data);
         });
-    },
-
-    showWaitScreen: function(gameId) {
-        log('the game is', gameId);
-        return Promise.resolve();
-    },
-
-    parseGameRoom: function() {
-        return _.last(utils.pathParts(window.location.pathname)) ||
-            window.location.hash.substring(1);
     }
 };
 
