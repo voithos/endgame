@@ -1,0 +1,5 @@
+{
+    "name": "endgame",
+    "root": "./public",
+    "clean_urls": true
+}
