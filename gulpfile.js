@@ -29,9 +29,9 @@ function bundle() {
         .on('error', gutil.log.bind(gutil, 'Browserify Error'))
         .pipe(source('./public/js/endgame.js'))
         .pipe(buffer())
-        .pipe(sourcemaps.init({ loadMaps: true }))
-            .pipe(uglify())
-        .pipe(sourcemaps.write('./'))
+        // .pipe(sourcemaps.init({ loadMaps: true }))
+            // .pipe(uglify())
+        // .pipe(sourcemaps.write('../'))
         .pipe(gulp.dest('./'));
 }
 
