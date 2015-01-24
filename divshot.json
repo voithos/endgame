@@ -1,5 +1,8 @@
 {
     "name": "ss15-black-kite",
     "root": "./public",
-    "clean_urls": true
+    "clean_urls": true,
+    "routes": {
+        "/*": "index.html"
+    }
 }

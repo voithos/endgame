@@ -44,6 +44,11 @@ var Endgame = {
 
     setupMedia: function(conn) {
         log('setup the media now');
+        global.conn = conn;
+
+        conn.on('data', function(data) {
+            log(data);
+        });
     },
 
     showWaitScreen: function(gameId) {
