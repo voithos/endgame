@@ -47,7 +47,7 @@ module.exports = {
     addLighting: function() {
         var self = this;
         self.dirLight = new THREE.DirectionalLight();
-        self.dirLight.position.set(20, 80, 80);
+        self.dirLight.position.set(20, 80, 80).normalize();
         self.scene.add(self.dirLight);
 
         self.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
@@ -175,6 +175,41 @@ module.exports = {
         };
     },
 
+    addFriendScreen: function(side, video) {
+        var self = this;
+
+        if (video) {
+            self.friendVideo = video;
+            self.friendTexture = new THREE.Texture(video);
+
+            self.friendTexture.generateMipmaps = false;
+            self.friendTexture.format = THREE.RGBFormat
+        } else {
+            self.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
+        }
+
+        var material = new THREE.MeshLambertMaterial({
+            // TODO: Video texture not quite working just yet
+            // map: self.friendTexture
+        });
+
+        var materials = [material];
+        for (var i = 0; i < 5; i++) {
+            materials.push(new THREE.MeshLambertMaterial({
+                color: cfg.colors.friendScreen
+            }));
+        }
+
+        var geometry = new THREE.BoxGeometry(
+            cfg.gameOpts.friendScreenSize.x,
+            cfg.gameOpts.friendScreenSize.y,
+            cfg.gameOpts.friendScreenSize.z
+        );
+
+        var cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+        self.scene.add(cube);
+    },
+
     setPiecePosition: function(object, pos) {
         var offsetX = cfg.fileToOffset[pos[0]];
         var offsetZ = cfg.rankToOffset[pos[1]];
@@ -201,6 +236,9 @@ module.exports = {
         self.previousTime = now;
 
         // Animations
+        if (self.friendVideo && self.friendVideo.readyState === self.friendVideo.HAVE_ENOUGH_DATA) {
+            self.friendTexture.needsUpdate = true;
+        }
 
         self.renderer.render(self.scene, self.camera);
     }

@@ -45,7 +45,10 @@ module.exports = {
         { 'url': 'stun:stun4.l.google.com:19302' }
     ],
 
-    localMediaWidth: 240,
+    localMediaWidth: 320,
+    mediaWidth: 320,
+    mediaHeight: 240,
+    mediaMinFrameRate: 10,
 
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],
@@ -80,7 +83,9 @@ module.exports = {
         tileSize: 4.7,
         pieceYOffset: 2,
 
-        cameraStartPos: { x: 30, y: 15, z: 30 }
+        cameraStartPos: { x: 30, y: 15, z: 30 },
+
+        friendScreenSize: { x: 30, y: 30, z: 5 }
     },
 
     colors: {
@@ -97,6 +102,8 @@ module.exports = {
                 emissive: 0x000000,
                 specular: 0x111111
             }
-        }
+        },
+
+        friendScreen: 0xdadada
     }
 };

@@ -41,26 +41,32 @@ var endgame = {
 
     setupGame: function() {
         var self = this;
+        self.side = 'white';
 
         rtc.init()
             .then(game.create.bind(game))
             .then(views.showWaitScreen.bind(views))
             .then(rtc.listen.bind(rtc))
             .then(self.setupMedia.bind(self))
+            .then(self.performMediaCalls.bind(self))
+            .then(self.displayRemoteMedia.bind(self))
             .done();
     },
 
     connectToGame: function(gameId) {
         var self = this;
+        self.side = 'black';
 
         rtc.init()
             .then(game.join.bind(game, gameId))
             .then(rtc.connect.bind(rtc))
             .then(self.setupMedia.bind(self))
+            .then(self.performMediaCalls.bind(self))
+            .then(self.displayRemoteMedia.bind(self))
             .done();
     },
 
-    setupMedia: function(conn) {
+    setupMedia: function() {
         log('setting up the media');
 
         var self = this;
@@ -86,7 +92,7 @@ var endgame = {
 
                     // Request local media
                     media.init()
-                        .then(function(localMediaStream) {
+                        .then(function() {
                             self.localHasMedia = true;
                             log('local media granted');
 
@@ -107,6 +113,45 @@ var endgame = {
                         })
                 ]);
             });
+    },
+
+    performMediaCalls: function() {
+        log('performing remote media calls');
+
+        var self = this;
+
+        if (!self.localHasMedia && !self.remoteHasMedia) {
+            // No media to exchange
+            return Promise.resolve();
+        }
+
+        // Because caller must provide mediaStream, we need to figure out if
+        // we're the caller or not. If the host has a mediaStream, it will
+        // always be the caller; otherwise, the friend will be.
+        var isCaller = (self.isHost && self.localHasMedia) ||
+            (!self.isHost && !self.remoteHasMedia && self.localHasMedia);
+
+        return rtc.performMediaCall(
+            isCaller,
+            self.localHasMedia && media.localMediaStream
+        );
+    },
+
+    displayRemoteMedia: function(call) {
+        var self = this;
+
+        return new Promise(function(resolve, reject) {
+            if (self.remoteHasMedia) {
+                call.on('stream', function(remoteMediaStream) {
+                    var video = media.configureRemoteStream(remoteMediaStream);
+                    scene.addFriendScreen(self.side, video);
+                    resolve();
+                });
+            } else {
+                scene.addFriendScreen(self.side, video);
+                resolve();
+            }
+        });
     }
 };
 

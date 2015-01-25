@@ -43,26 +43,32 @@ var endgame = {
 
     setupGame: function() {
         var self = this;
+        self.side = 'white';
 
         rtc.init()
             .then(game.create.bind(game))
             .then(views.showWaitScreen.bind(views))
             .then(rtc.listen.bind(rtc))
             .then(self.setupMedia.bind(self))
+            .then(self.performMediaCalls.bind(self))
+            .then(self.displayRemoteMedia.bind(self))
             .done();
     },
 
     connectToGame: function(gameId) {
         var self = this;
+        self.side = 'black';
 
         rtc.init()
             .then(game.join.bind(game, gameId))
             .then(rtc.connect.bind(rtc))
             .then(self.setupMedia.bind(self))
+            .then(self.performMediaCalls.bind(self))
+            .then(self.displayRemoteMedia.bind(self))
             .done();
     },
 
-    setupMedia: function(conn) {
+    setupMedia: function() {
         log('setting up the media');
 
         var self = this;
@@ -88,7 +94,7 @@ var endgame = {
 
                     // Request local media
                     media.init()
-                        .then(function(localMediaStream) {
+                        .then(function() {
                             self.localHasMedia = true;
                             log('local media granted');
 
@@ -109,6 +115,45 @@ var endgame = {
                         })
                 ]);
             });
+    },
+
+    performMediaCalls: function() {
+        log('performing remote media calls');
+
+        var self = this;
+
+        if (!self.localHasMedia && !self.remoteHasMedia) {
+            // No media to exchange
+            return Promise.resolve();
+        }
+
+        // Because caller must provide mediaStream, we need to figure out if
+        // we're the caller or not. If the host has a mediaStream, it will
+        // always be the caller; otherwise, the friend will be.
+        var isCaller = (self.isHost && self.localHasMedia) ||
+            (!self.isHost && !self.remoteHasMedia && self.localHasMedia);
+
+        return rtc.performMediaCall(
+            isCaller,
+            self.localHasMedia && media.localMediaStream
+        );
+    },
+
+    displayRemoteMedia: function(call) {
+        var self = this;
+
+        return new Promise(function(resolve, reject) {
+            if (self.remoteHasMedia) {
+                call.on('stream', function(remoteMediaStream) {
+                    var video = media.configureRemoteStream(remoteMediaStream);
+                    scene.addFriendScreen(self.side, video);
+                    resolve();
+                });
+            } else {
+                scene.addFriendScreen(self.side, video);
+                resolve();
+            }
+        });
     }
 };
 
@@ -7434,7 +7479,10 @@ module.exports = {
         { 'url': 'stun:stun4.l.google.com:19302' }
     ],
 
-    localMediaWidth: 240,
+    localMediaWidth: 320,
+    mediaWidth: 320,
+    mediaHeight: 240,
+    mediaMinFrameRate: 10,
 
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],
@@ -7469,7 +7517,9 @@ module.exports = {
         tileSize: 4.7,
         pieceYOffset: 2,
 
-        cameraStartPos: { x: 30, y: 15, z: 30 }
+        cameraStartPos: { x: 30, y: 15, z: 30 },
+
+        friendScreenSize: { x: 30, y: 30, z: 5 }
     },
 
     colors: {
@@ -7486,7 +7536,9 @@ module.exports = {
                 emissive: 0x000000,
                 specular: 0x111111
             }
-        }
+        },
+
+        friendScreen: 0xdadada
     }
 };
 
@@ -7537,6 +7589,7 @@ module.exports = function() {
 
 var Promise = require('promise');
 var cfg = require('./config');
+var log = require('./log');
 
 module.exports = {
     init: function() {
@@ -7548,7 +7601,14 @@ module.exports = {
             }
 
             navigator.getUserMedia({
-                video: true, audio: true
+                video: {
+                    mandatory: {
+                        maxWidth: cfg.mediaWidth,
+                        maxHeight: cfg.mediaHeight,
+                        minFrameRate: cfg.mediaMinFrameRate
+                    }
+                },
+                audio: true
             }, function(localMediaStream) {
                 // Acquired
                 self.localMediaStream = localMediaStream;
@@ -7564,28 +7624,44 @@ module.exports = {
         var self = this;
 
         var video = $('#localvideo').get(0);
-
-        // Handle older Firefox oddities
-        if (navigator.mozGetUserMedia) {
-            video.mozSrcObject = self.localMediaStream;
-        } else {
-            video.src = window.URL.createObjectURL(self.localMediaStream);
-        }
+        self.playStream(self.localMediaStream, video);
 
         var started = false;
         video.addEventListener('canplay', function(ev) {
-            if (!started) {
+            if (!started && (video.videoHeight || video.videoWidth)) {
                 started = true;
+
                 video.width = cfg.localMediaWidth;
                 video.height = video.videoHeight / (video.videoWidth / cfg.localMediaWidth);
 
                 $('#localvideopanel').show('slow');
             }
         }, false);
+    },
+
+    configureRemoteStream: function(remoteMediaStream) {
+        var self = this;
+        self.remoteMediaStream = remoteMediaStream;
+
+        var video = document.createElement('video');
+        self.playStream(remoteMediaStream, video);
+
+        return video;
+    },
+
+    playStream: function(mediaStream, video) {
+        video.autoplay = true;
+
+        // Handle older Firefox oddities
+        if (navigator.mozGetUserMedia) {
+            video.mozSrcObject = mediaStream;
+        } else {
+            video.src = window.URL.createObjectURL(mediaStream);
+        }
     }
 };
 
-},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/polyfills.js":[function(require,module,exports){
+},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/polyfills.js":[function(require,module,exports){
 /**
  * requestAnimationFrame
  */
@@ -7686,6 +7762,7 @@ module.exports = {
         return new Promise(function(resolve, reject) {
             self.peer.on('connection', function(conn) {
                 self.conn = conn;
+                self.remoteId = conn.peer;
                 self.setupDataBus(conn);
                 resolve(conn);
             });
@@ -7698,6 +7775,7 @@ module.exports = {
             reliable: true
         });
         self.conn = conn;
+        self.remoteId = conn.peer;
         self.setupDataBus(conn);
         return Promise.resolve(conn);
     },
@@ -7747,6 +7825,26 @@ module.exports = {
             // If the channel isn't open yet, queue the data
             self.queuedData.push(data);
         }
+    },
+
+    performMediaCall: function(isCaller, localMediaStream) {
+        var self = this;
+
+        return new Promise(function(resolve, reject) {
+            if (isCaller) {
+                self.call = self.peer.call(self.remoteId, localMediaStream);
+                resolve(self.call);
+            } else {
+                self.peer.on('call', function(call) {
+                    self.call = call;
+
+                    if (localMediaStream) {
+                        call.answer(localMediaStream);
+                    }
+                    resolve(self.call);
+                });
+            }
+        });
     }
 };
 
@@ -7800,7 +7898,7 @@ module.exports = {
     addLighting: function() {
         var self = this;
         self.dirLight = new THREE.DirectionalLight();
-        self.dirLight.position.set(20, 80, 80);
+        self.dirLight.position.set(20, 80, 80).normalize();
         self.scene.add(self.dirLight);
 
         self.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
@@ -7928,6 +8026,41 @@ module.exports = {
         };
     },
 
+    addFriendScreen: function(side, video) {
+        var self = this;
+
+        if (video) {
+            self.friendVideo = video;
+            self.friendTexture = new THREE.Texture(video);
+
+            self.friendTexture.generateMipmaps = false;
+            self.friendTexture.format = THREE.RGBFormat
+        } else {
+            self.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
+        }
+
+        var material = new THREE.MeshLambertMaterial({
+            // TODO: Video texture not quite working just yet
+            // map: self.friendTexture
+        });
+
+        var materials = [material];
+        for (var i = 0; i < 5; i++) {
+            materials.push(new THREE.MeshLambertMaterial({
+                color: cfg.colors.friendScreen
+            }));
+        }
+
+        var geometry = new THREE.BoxGeometry(
+            cfg.gameOpts.friendScreenSize.x,
+            cfg.gameOpts.friendScreenSize.y,
+            cfg.gameOpts.friendScreenSize.z
+        );
+
+        var cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+        self.scene.add(cube);
+    },
+
     setPiecePosition: function(object, pos) {
         var offsetX = cfg.fileToOffset[pos[0]];
         var offsetZ = cfg.rankToOffset[pos[1]];
@@ -7954,6 +8087,9 @@ module.exports = {
         self.previousTime = now;
 
         // Animations
+        if (self.friendVideo && self.friendVideo.readyState === self.friendVideo.HAVE_ENOUGH_DATA) {
+            self.friendTexture.needsUpdate = true;
+        }
 
         self.renderer.render(self.scene, self.camera);
     }

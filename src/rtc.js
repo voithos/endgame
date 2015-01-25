@@ -25,6 +25,7 @@ module.exports = {
         return new Promise(function(resolve, reject) {
             self.peer.on('connection', function(conn) {
                 self.conn = conn;
+                self.remoteId = conn.peer;
                 self.setupDataBus(conn);
                 resolve(conn);
             });
@@ -37,6 +38,7 @@ module.exports = {
             reliable: true
         });
         self.conn = conn;
+        self.remoteId = conn.peer;
         self.setupDataBus(conn);
         return Promise.resolve(conn);
     },
@@ -86,5 +88,25 @@ module.exports = {
             // If the channel isn't open yet, queue the data
             self.queuedData.push(data);
         }
+    },
+
+    performMediaCall: function(isCaller, localMediaStream) {
+        var self = this;
+
+        return new Promise(function(resolve, reject) {
+            if (isCaller) {
+                self.call = self.peer.call(self.remoteId, localMediaStream);
+                resolve(self.call);
+            } else {
+                self.peer.on('call', function(call) {
+                    self.call = call;
+
+                    if (localMediaStream) {
+                        call.answer(localMediaStream);
+                    }
+                    resolve(self.call);
+                });
+            }
+        });
     }
 };

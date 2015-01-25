@@ -28,3 +28,8 @@ open source libraries and assets. Here's the list of them:
 - Chess board (`public/data/board.json`): author `pennomi` from
   http://opengameart.org/content/chess-board. Texture by `Tiziana` from
   http://opengameart.org/node/6988
+
+## Research
+
+- Lots of articles on MDN
+- http://learningthreejs.com/blog/2012/02/07/live-video-in-webgl/
