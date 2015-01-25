@@ -7352,6 +7352,7 @@ var utils = require('./utils');
 var DB_BASE_URL = 'https://endgame-chess.firebaseio.com';
 
 var BOARD_SIZE = 8;
+var SIDES = ['white', 'black'];
 var RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
 var FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 var LAYOUT = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
@@ -7393,6 +7394,7 @@ module.exports = {
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],
 
+    sides: SIDES,
     ranks: RANKS,
     files: FILES,
 
@@ -7423,6 +7425,23 @@ module.exports = {
         pieceYOffset: 2,
 
         cameraStartPos: { x: 30, y: 15, z: 30 }
+    },
+
+    colors: {
+        pieces: {
+            white: {
+                color: 0xcacaca,
+                ambient: 0xffffff,
+                emissive: 0x000000,
+                specular: 0xaaaaaa
+            },
+            black: {
+                color: 0x353535,
+                ambient: 0x000000,
+                emissive: 0x000000,
+                specular: 0x111111
+            }
+        }
     }
 };
 
@@ -7617,16 +7636,34 @@ module.exports = {
         self.meshes = {};
 
         // Load all pieces
-        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function(assets) {
+        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function(asset) {
             return new Promise(function(resolve, reject) {
                 var loader = new THREE.JSONLoader();
-                loader.load('data/' + assets + '.json', function(geometry, materials) {
-                    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+                loader.load('data/' + asset + '.json', function(geometry, materials) {
+                    var material = materials[0];
 
-                    self.meshes[assets] = mesh;
-                    log('done loading', assets);
+                    if (_.contains(cfg.assets, asset)) {
+                        self.meshes[asset] = new THREE.Mesh(geometry, material);
+                    } else {
+                        // Duplicate black/white if pieces
+                        _.forEach(cfg.sides, function(side) {
+                            var meshMaterial = material.clone();
+                            meshMaterial.color.setHex(cfg.colors.pieces[side].color);
+                            meshMaterial.ambient.setHex(cfg.colors.pieces[side].ambient);
+                            meshMaterial.emissive.setHex(cfg.colors.pieces[side].emissive);
+                            meshMaterial.specular.setHex(cfg.colors.pieces[side].specular);
 
-                    resolve(mesh);
+                            var mesh = new THREE.Mesh(geometry, meshMaterial);
+
+                            if (!self.meshes[side]) {
+                                self.meshes[side] = {};
+                            }
+                            self.meshes[side][asset] = mesh;
+                        });
+                    }
+
+                    log('done loading', asset);
+                    resolve();
                 });
             });
         }));
@@ -7661,7 +7698,7 @@ module.exports = {
 
         var self = this;
         var object = new THREE.Object3D();
-        object.add(self.meshes[type].clone());
+        object.add(self.meshes[side][type].clone());
         object.position.setY(cfg.gameOpts.pieceYOffset);
 
         self.setPiecePosition(object, pos);

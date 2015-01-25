@@ -6,6 +6,7 @@ var utils = require('./utils');
 var DB_BASE_URL = 'https://endgame-chess.firebaseio.com';
 
 var BOARD_SIZE = 8;
+var SIDES = ['white', 'black'];
 var RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
 var FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 var LAYOUT = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
@@ -47,6 +48,7 @@ module.exports = {
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],
 
+    sides: SIDES,
     ranks: RANKS,
     files: FILES,
 
@@ -77,5 +79,22 @@ module.exports = {
         pieceYOffset: 2,
 
         cameraStartPos: { x: 30, y: 15, z: 30 }
+    },
+
+    colors: {
+        pieces: {
+            white: {
+                color: 0xcacaca,
+                ambient: 0xffffff,
+                emissive: 0x000000,
+                specular: 0xaaaaaa
+            },
+            black: {
+                color: 0x353535,
+                ambient: 0x000000,
+                emissive: 0x000000,
+                specular: 0x111111
+            }
+        }
     }
 };

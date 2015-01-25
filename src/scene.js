@@ -62,16 +62,34 @@ module.exports = {
         self.meshes = {};
 
         // Load all pieces
-        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function(assets) {
+        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function(asset) {
             return new Promise(function(resolve, reject) {
                 var loader = new THREE.JSONLoader();
-                loader.load('data/' + assets + '.json', function(geometry, materials) {
-                    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+                loader.load('data/' + asset + '.json', function(geometry, materials) {
+                    var material = materials[0];
 
-                    self.meshes[assets] = mesh;
-                    log('done loading', assets);
+                    if (_.contains(cfg.assets, asset)) {
+                        self.meshes[asset] = new THREE.Mesh(geometry, material);
+                    } else {
+                        // Duplicate black/white if pieces
+                        _.forEach(cfg.sides, function(side) {
+                            var meshMaterial = material.clone();
+                            meshMaterial.color.setHex(cfg.colors.pieces[side].color);
+                            meshMaterial.ambient.setHex(cfg.colors.pieces[side].ambient);
+                            meshMaterial.emissive.setHex(cfg.colors.pieces[side].emissive);
+                            meshMaterial.specular.setHex(cfg.colors.pieces[side].specular);
 
-                    resolve(mesh);
+                            var mesh = new THREE.Mesh(geometry, meshMaterial);
+
+                            if (!self.meshes[side]) {
+                                self.meshes[side] = {};
+                            }
+                            self.meshes[side][asset] = mesh;
+                        });
+                    }
+
+                    log('done loading', asset);
+                    resolve();
                 });
             });
         }));
@@ -106,7 +124,7 @@ module.exports = {
 
         var self = this;
         var object = new THREE.Object3D();
-        object.add(self.meshes[type].clone());
+        object.add(self.meshes[side][type].clone());
         object.position.setY(cfg.gameOpts.pieceYOffset);
 
         self.setPiecePosition(object, pos);
