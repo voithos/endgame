@@ -46,10 +46,12 @@ module.exports = {
 
     addLighting: function() {
         var self = this;
-        var light = new THREE.DirectionalLight();
-        light.position.set(20, 80, 80);
+        self.dirLight = new THREE.DirectionalLight();
+        self.dirLight.position.set(20, 80, 80);
+        self.scene.add(self.dirLight);
 
-        self.scene.add(light);
+        self.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
+        self.scene.add(self.hemiLight);
     },
 
     setInitialCameraPos: function() {
@@ -106,9 +108,28 @@ module.exports = {
     setupBoard: function() {
         var self = this;
 
-        self.pieces = {};
+        self.addSkybox();
+        self.addBoard();
+        self.addPieces();
+    },
 
-        // Add board
+    addSkybox: function() {
+        var self = this;
+
+        var material = new THREE.MeshLambertMaterial({
+            color: 0xdadada,
+            depthWrite: false,
+            side: THREE.BackSide
+        });
+
+        var mesh = new THREE.Mesh(new THREE.BoxGeometry(150, 100, 200), material);
+        mesh.position.set(0, 50, 0);
+        // self.scene.add(mesh);
+    },
+
+    addBoard: function() {
+        var self = this;
+
         self.board = new THREE.Object3D();
         self.board.add(self.meshes.board);
         self.board.scale.set(
@@ -118,8 +139,12 @@ module.exports = {
         );
 
         self.scene.add(self.board);
+    },
 
-        // Add pieces for both sides
+    addPieces: function() {
+        var self = this;
+        self.pieces = {};
+
         _.forEach(cfg.startPosition, function(pieces, side) {
             _.forEach(pieces, function(piece, i) {
                 self.addPiece(piece.pos, piece.type, side);
