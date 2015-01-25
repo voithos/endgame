@@ -18,5 +18,21 @@
         <script src="js/endgame.js" defer></script>
     </head>
     <body>
+        <div id="waitscreen" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">
+                            <span class="label label-default">endgame</span> - A WebRTC-enabled 3D chess game
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>A game room has been created for you! Send this link to a friend to have them join:</p>
+                        <p><code>{{link}}</code></p>
+                        <p>The game will automatically continue when they do.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
