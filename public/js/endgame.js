@@ -92,6 +92,8 @@ var endgame = {
                             self.localHasMedia = true;
                             log('local media granted');
 
+                            media.playLocalStream();
+
                             rtc.sendData({
                                 event: 'mediarequestcomplete',
                                 hasMedia: true
@@ -7432,6 +7434,8 @@ module.exports = {
         { 'url': 'stun:stun4.l.google.com:19302' }
     ],
 
+    localMediaWidth: 240,
+
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],
 
@@ -7554,6 +7558,30 @@ module.exports = {
                 reject();
             });
         });
+    },
+
+    playLocalStream: function() {
+        var self = this;
+
+        var video = $('#localvideo').get(0);
+
+        // Handle older Firefox oddities
+        if (navigator.mozGetUserMedia) {
+            video.mozSrcObject = self.localMediaStream;
+        } else {
+            video.src = window.URL.createObjectURL(self.localMediaStream);
+        }
+
+        var started = false;
+        video.addEventListener('canplay', function(ev) {
+            if (!started) {
+                started = true;
+                video.width = cfg.localMediaWidth;
+                video.height = video.videoHeight / (video.videoWidth / cfg.localMediaWidth);
+
+                $('#localvideopanel').show(400);
+            }
+        }, false);
     }
 };
 
@@ -7596,6 +7624,13 @@ module.exports = {
         navigator.msGetUserMedia;
 })();
 
+/**
+ * window.URL
+ */
+(function() {
+    window.URL = window.URL || window.webkitURL;
+})();
+
 },{}],"/home/daisy/Projects/ss15-black-kite/src/routes.js":[function(require,module,exports){
 'use strict';
 
@@ -7608,6 +7643,16 @@ module.exports = {
     parseGameId: function() {
         return _.last(utils.pathParts(window.location.pathname)) ||
             window.location.hash.substring(1);
+    },
+
+    genGameUrl: function(gameId) {
+        var url = window.location.protocol + '//' + window.location.hostname +
+            (window.location.port ? ':' + window.location.port : '');
+
+        var hash = (window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1') ? '#' : '';
+
+        return url + '/' + hash + gameId;
     }
 };
 
@@ -7947,20 +7992,18 @@ module.exports = {
 'use strict';
 
 var Promise = require('promise');
+
+var routes = require('./routes');
 var log = require('./log');
 
 module.exports = {
     showWaitScreen: function(gameId) {
         var self = this;
 
-        var url = window.location.protocol + '//' + window.location.hostname +
-            (window.location.port ? ':' + window.location.port : '');
-        var gameUrl = url + '/' + gameId;
-
         self.waitScreen = new Vue({
             el: '#waitscreen',
             data: {
-                link: gameUrl
+                link: routes.genGameUrl(gameId)
             }
         });
 
@@ -7985,4 +8028,4 @@ module.exports = {
     }
 };
 
-},{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}]},{},["./src/endgame.js"]);
+},{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./routes":"/home/daisy/Projects/ss15-black-kite/src/routes.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}]},{},["./src/endgame.js"]);

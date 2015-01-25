@@ -90,6 +90,8 @@ var endgame = {
                             self.localHasMedia = true;
                             log('local media granted');
 
+                            media.playLocalStream();
+
                             rtc.sendData({
                                 event: 'mediarequestcomplete',
                                 hasMedia: true

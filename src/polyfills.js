@@ -35,3 +35,10 @@
         navigator.mozGetUserMedia ||
         navigator.msGetUserMedia;
 })();
+
+/**
+ * window.URL
+ */
+(function() {
+    window.URL = window.URL || window.webkitURL;
+})();

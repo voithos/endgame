@@ -45,6 +45,8 @@ module.exports = {
         { 'url': 'stun:stun4.l.google.com:19302' }
     ],
 
+    localMediaWidth: 240,
+
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],
 

@@ -23,5 +23,29 @@ module.exports = {
                 reject();
             });
         });
+    },
+
+    playLocalStream: function() {
+        var self = this;
+
+        var video = $('#localvideo').get(0);
+
+        // Handle older Firefox oddities
+        if (navigator.mozGetUserMedia) {
+            video.mozSrcObject = self.localMediaStream;
+        } else {
+            video.src = window.URL.createObjectURL(self.localMediaStream);
+        }
+
+        var started = false;
+        video.addEventListener('canplay', function(ev) {
+            if (!started) {
+                started = true;
+                video.width = cfg.localMediaWidth;
+                video.height = video.videoHeight / (video.videoWidth / cfg.localMediaWidth);
+
+                $('#localvideopanel').show(400);
+            }
+        }, false);
     }
 };

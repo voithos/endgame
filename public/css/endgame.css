@@ -6780,3 +6780,17 @@ label {
 canvas {
   position: absolute;
 }
+.local-video-panel {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin: 5px;
+  z-index: 5;
+}
+.local-video-panel > div {
+  padding: 5px;
+}
+.local-video-panel video {
+  border-radius: 5px;
+}

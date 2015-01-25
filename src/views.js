@@ -1,20 +1,18 @@
 'use strict';
 
 var Promise = require('promise');
+
+var routes = require('./routes');
 var log = require('./log');
 
 module.exports = {
     showWaitScreen: function(gameId) {
         var self = this;
 
-        var url = window.location.protocol + '//' + window.location.hostname +
-            (window.location.port ? ':' + window.location.port : '');
-        var gameUrl = url + '/' + gameId;
-
         self.waitScreen = new Vue({
             el: '#waitscreen',
             data: {
-                link: gameUrl
+                link: routes.genGameUrl(gameId)
             }
         });
 
