@@ -5,7 +5,6 @@ var log = require('./log');
 
 module.exports = {
     showWaitScreen: function(gameId) {
-        log('the gameid is', gameId);
         var self = this;
 
         var url = window.location.protocol + '//' + window.location.hostname +
@@ -20,6 +19,18 @@ module.exports = {
         });
 
         $('#waitscreen').modal({
+            backdrop: false,
+            keyboard: false
+        });
+
+        return Promise.resolve();
+    },
+
+    showMediaScreen: function() {
+        var self = this;
+        $('#waitscreen').modal('hide');
+
+        $('#mediascreen').modal({
             backdrop: false,
             keyboard: false
         });

@@ -9,6 +9,7 @@ var _ = require('lodash');
 
 var user = require('./user');
 var game = require('./game');
+var media = require('./media');
 var routes = require('./routes');
 var rtc = require('./rtc');
 var scene = require('./scene');
@@ -32,8 +33,10 @@ var endgame = {
 
         var gameId = routes.parseGameId();
         if (gameId) {
+            self.isHost = false;
             self.connectToGame(gameId);
         } else {
+            self.isHost = true;
             self.setupGame();
         }
     },
@@ -60,12 +63,50 @@ var endgame = {
     },
 
     setupMedia: function(conn) {
-        log('setup the media now');
-        global.conn = conn;
+        log('setting up the media');
 
-        conn.on('data', function(data) {
-            log(data);
-        });
+        var self = this;
+
+        return views.showMediaScreen()
+            .then(function() {
+                // We need to wait for both the local and remote media to be resolved
+
+                return Promise.all([
+                    // Wait for notice from remote regarding media
+                    new Promise(function(resolve, reject) {
+                        rtc.addDataListener(function(data, conn) {
+                            if (data.event === 'mediarequestcomplete') {
+                                self.remoteHasMedia = data.hasMedia;
+                                log('remote media request complete:', self.remoteHasMedia);
+
+                                resolve();
+                            } else {
+                                log('ERROR: unknown event type', data.event);
+                            }
+                        }, true);
+                    }),
+
+                    // Request local media
+                    media.init()
+                        .then(function(localMediaStream) {
+                            self.localHasMedia = true;
+                            log('local media granted');
+
+                            rtc.sendData({
+                                event: 'mediarequestcomplete',
+                                hasMedia: true
+                            });
+                        }, function() {
+                            self.localHasMedia = false;
+                            log('local media denied');
+
+                            rtc.sendData({
+                                event: 'mediarequestcomplete',
+                                hasMedia: false
+                            });
+                        })
+                ]);
+            });
     }
 };
 
@@ -74,7 +115,7 @@ global.endgame = endgame;
 endgame.main();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./game":"/home/daisy/Projects/ss15-black-kite/src/game.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./polyfills":"/home/daisy/Projects/ss15-black-kite/src/polyfills.js","./routes":"/home/daisy/Projects/ss15-black-kite/src/routes.js","./rtc":"/home/daisy/Projects/ss15-black-kite/src/rtc.js","./scene":"/home/daisy/Projects/ss15-black-kite/src/scene.js","./user":"/home/daisy/Projects/ss15-black-kite/src/user.js","./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","./views":"/home/daisy/Projects/ss15-black-kite/src/views.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
+},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./game":"/home/daisy/Projects/ss15-black-kite/src/game.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./media":"/home/daisy/Projects/ss15-black-kite/src/media.js","./polyfills":"/home/daisy/Projects/ss15-black-kite/src/polyfills.js","./routes":"/home/daisy/Projects/ss15-black-kite/src/routes.js","./rtc":"/home/daisy/Projects/ss15-black-kite/src/rtc.js","./scene":"/home/daisy/Projects/ss15-black-kite/src/scene.js","./user":"/home/daisy/Projects/ss15-black-kite/src/user.js","./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","./views":"/home/daisy/Projects/ss15-black-kite/src/views.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -7384,11 +7425,11 @@ module.exports = {
     peerJsKey: 'e47332e9vb4yrpb9',
 
     iceServers: [
-        { 'url': 'stun.l.google.com:19302' },
-        { 'url': 'stun1.l.google.com:19302' },
-        { 'url': 'stun2.l.google.com:19302' },
-        { 'url': 'stun3.l.google.com:19302' },
-        { 'url': 'stun4.l.google.com:19302' }
+        { 'url': 'stun:stun.l.google.com:19302' },
+        { 'url': 'stun:stun1.l.google.com:19302' },
+        { 'url': 'stun:stun2.l.google.com:19302' },
+        { 'url': 'stun:stun3.l.google.com:19302' },
+        { 'url': 'stun:stun4.l.google.com:19302' }
     ],
 
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
@@ -7487,7 +7528,36 @@ module.exports = function() {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/home/daisy/Projects/ss15-black-kite/src/polyfills.js":[function(require,module,exports){
+},{}],"/home/daisy/Projects/ss15-black-kite/src/media.js":[function(require,module,exports){
+'use strict';
+
+var Promise = require('promise');
+var cfg = require('./config');
+
+module.exports = {
+    init: function() {
+        var self = this;
+
+        return new Promise(function(resolve, reject) {
+            if (!navigator.getUserMedia) {
+                return reject();
+            }
+
+            navigator.getUserMedia({
+                video: true, audio: true
+            }, function(localMediaStream) {
+                // Acquired
+                self.localMediaStream = localMediaStream;
+                resolve(localMediaStream);
+            }, function() {
+                // Rejected
+                reject();
+            });
+        });
+    }
+};
+
+},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/polyfills.js":[function(require,module,exports){
 /**
  * requestAnimationFrame
  */
@@ -7516,6 +7586,16 @@ module.exports = function() {
         };
 })();
 
+/**
+ * getUserMedia
+ */
+(function() {
+    navigator.getUserMedia  = navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
+        navigator.msGetUserMedia;
+})();
+
 },{}],"/home/daisy/Projects/ss15-black-kite/src/routes.js":[function(require,module,exports){
 'use strict';
 
@@ -7535,6 +7615,7 @@ module.exports = {
 'use strict';
 
 var Promise = require('promise');
+var _ = require('lodash');
 var cfg = require('./config');
 
 module.exports = {
@@ -7558,6 +7639,7 @@ module.exports = {
         return new Promise(function(resolve, reject) {
             self.peer.on('connection', function(conn) {
                 self.conn = conn;
+                self.setupDataBus(conn);
                 resolve(conn);
             });
         });
@@ -7565,13 +7647,63 @@ module.exports = {
 
     connect: function(hostId) {
         var self = this;
-        return Promise.resolve(self.peer.connect(hostId, {
+        var conn = self.peer.connect(hostId, {
             reliable: true
-        }));
+        });
+        self.conn = conn;
+        self.setupDataBus(conn);
+        return Promise.resolve(conn);
+    },
+
+    setupDataBus: function(conn) {
+        var self = this;
+
+        self.queuedData = [];
+        self.listeners = [];
+
+        conn.on('open', function() {
+            conn.on('data', function(data) {
+                var listeners = self.listeners.slice();
+
+                _.forEach(listeners, function(listener) {
+                    listener.fn.call(self, data, conn);
+
+                    if (listener.once) {
+                        var idx = self.listeners.indexOf(listener);
+                        if (idx !== -1) {
+                            self.listeners.splice(idx, 1);
+                        }
+                    }
+                });
+            });
+
+            _.forEach(self.queuedData, function(data) {
+                self.conn.send(data);
+            });
+        });
+    },
+
+    addDataListener: function(fn, once) {
+        var self = this;
+        self.listeners.push({
+            fn: fn,
+            once: once
+        });
+    },
+
+    sendData: function(data) {
+        var self = this;
+
+        if (self.conn.open) {
+            self.conn.send(data);
+        } else {
+            // If the channel isn't open yet, queue the data
+            self.queuedData.push(data);
+        }
     }
 };
 
-},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/scene.js":[function(require,module,exports){
+},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/scene.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7819,7 +7951,6 @@ var log = require('./log');
 
 module.exports = {
     showWaitScreen: function(gameId) {
-        log('the gameid is', gameId);
         var self = this;
 
         var url = window.location.protocol + '//' + window.location.hostname +
@@ -7834,6 +7965,18 @@ module.exports = {
         });
 
         $('#waitscreen').modal({
+            backdrop: false,
+            keyboard: false
+        });
+
+        return Promise.resolve();
+    },
+
+    showMediaScreen: function() {
+        var self = this;
+        $('#waitscreen').modal('hide');
+
+        $('#mediascreen').modal({
             backdrop: false,
             keyboard: false
         });

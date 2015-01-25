@@ -38,11 +38,11 @@ module.exports = {
     peerJsKey: 'e47332e9vb4yrpb9',
 
     iceServers: [
-        { 'url': 'stun.l.google.com:19302' },
-        { 'url': 'stun1.l.google.com:19302' },
-        { 'url': 'stun2.l.google.com:19302' },
-        { 'url': 'stun3.l.google.com:19302' },
-        { 'url': 'stun4.l.google.com:19302' }
+        { 'url': 'stun:stun.l.google.com:19302' },
+        { 'url': 'stun:stun1.l.google.com:19302' },
+        { 'url': 'stun:stun2.l.google.com:19302' },
+        { 'url': 'stun:stun3.l.google.com:19302' },
+        { 'url': 'stun:stun4.l.google.com:19302' }
     ],
 
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],

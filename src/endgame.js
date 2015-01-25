@@ -7,6 +7,7 @@ var _ = require('lodash');
 
 var user = require('./user');
 var game = require('./game');
+var media = require('./media');
 var routes = require('./routes');
 var rtc = require('./rtc');
 var scene = require('./scene');
@@ -30,8 +31,10 @@ var endgame = {
 
         var gameId = routes.parseGameId();
         if (gameId) {
+            self.isHost = false;
             self.connectToGame(gameId);
         } else {
+            self.isHost = true;
             self.setupGame();
         }
     },
@@ -58,12 +61,50 @@ var endgame = {
     },
 
     setupMedia: function(conn) {
-        log('setup the media now');
-        global.conn = conn;
+        log('setting up the media');
 
-        conn.on('data', function(data) {
-            log(data);
-        });
+        var self = this;
+
+        return views.showMediaScreen()
+            .then(function() {
+                // We need to wait for both the local and remote media to be resolved
+
+                return Promise.all([
+                    // Wait for notice from remote regarding media
+                    new Promise(function(resolve, reject) {
+                        rtc.addDataListener(function(data, conn) {
+                            if (data.event === 'mediarequestcomplete') {
+                                self.remoteHasMedia = data.hasMedia;
+                                log('remote media request complete:', self.remoteHasMedia);
+
+                                resolve();
+                            } else {
+                                log('ERROR: unknown event type', data.event);
+                            }
+                        }, true);
+                    }),
+
+                    // Request local media
+                    media.init()
+                        .then(function(localMediaStream) {
+                            self.localHasMedia = true;
+                            log('local media granted');
+
+                            rtc.sendData({
+                                event: 'mediarequestcomplete',
+                                hasMedia: true
+                            });
+                        }, function() {
+                            self.localHasMedia = false;
+                            log('local media denied');
+
+                            rtc.sendData({
+                                event: 'mediarequestcomplete',
+                                hasMedia: false
+                            });
+                        })
+                ]);
+            });
     }
 };
 

@@ -18,6 +18,7 @@
         <script src="js/endgame.js" defer></script>
     </head>
     <body>
+        <!-- Templated components -->
         <div id="waitscreen" class="modal fade">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -29,7 +30,23 @@
                     <div class="modal-body">
                         <p>A game room has been created for you! Send this link to a friend to have them join:</p>
                         <p><code>{{link}}</code></p>
-                        <p>The game will automatically continue when they do.</p>
+                        <p>The game will automatically continue once they join.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mediascreen" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">
+                            <span class="label label-default">endgame</span>
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Now we need to setup the media call. If you have a webcam and mic, you can click "Allow" to permit the video feed to be sent to your friend. Don't worry, if you don't have a webcam or just don't want to use it, you can still play endgame.</p>
+                        <p>The game will automatically continue when both you and your friend have allowed or denied media access.</p>
                     </div>
                 </div>
             </div>
