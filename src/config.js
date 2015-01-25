@@ -81,7 +81,8 @@ module.exports = {
         boardScale: 4.7,
         boardStartOffset: 16.5,
         tileSize: 4.7,
-        pieceYOffset: 2,
+        tileOpacity: 0.4,
+        pieceYOffset: 1.7,
 
         cameraStartPos: { x: 30, y: 15, z: 30 },
         cameraPlayPos: { x: 0, y: 22, z: 45 },
@@ -104,6 +105,13 @@ module.exports = {
                 emissive: 0x000000,
                 specular: 0x111111
             }
+        },
+
+        tiles: {
+            active: 0xffa500, // orange
+            legal: 0x7ac142,
+            prevFrom: 0x62ccff,
+            prevTo: 0xda2820
         },
 
         clear: 'lightgray',

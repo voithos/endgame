@@ -13,6 +13,7 @@ open source libraries and assets. Here's the list of them:
 - Vue.js
 - Bootstrap
 - Bootswatch Simplex theme
+- Chess.js
 
 ## Tools
 

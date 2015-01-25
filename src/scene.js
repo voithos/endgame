@@ -20,8 +20,18 @@ module.exports = {
 
         document.body.appendChild(self.renderer.domElement);
 
+        window.addEventListener('resize', self.resize.bind(self), false);
+
         self.addLighting();
         self.setInitialCameraPos();
+    },
+
+    resize: function() {
+        var self = this;
+        self.camera.aspect = window.innerWidth / window.innerHeight;
+        self.camera.updateProjectionMatrix();
+
+        self.renderer.setSize(window.innerWidth, window.innerHeight);
     },
 
     createRenderer: function() {
@@ -237,6 +247,67 @@ module.exports = {
         self.setPlayCameraPos(side);
     },
 
+    addTileControls: function() {
+        var self = this;
+        self.tiles = {};
+
+        // Create geometry and material
+        var geometry = new THREE.PlaneGeometry(
+            cfg.gameOpts.tileSize,
+            cfg.gameOpts.tileSize
+        );
+
+        var material = new THREE.MeshLambertMaterial({
+            color: cfg.colors.tiles.active,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0
+        });
+
+        // Generate mesh for each tile
+        _.forEach(cfg.files, function(file, i) {
+            _.forEach(cfg.ranks, function(rank, i) {
+                self.addTileControl(file + rank, geometry, material.clone());
+            });
+        });
+
+        // Bind to mouse events
+        self.raycaster = new THREE.Raycaster();
+        self.addMouseListener();
+    },
+
+    addTileControl: function(pos, geometry, material) {
+        var self = this;
+
+        var offsetX = cfg.fileToOffset[pos[0]];
+        var offsetZ = cfg.rankToOffset[pos[1]];
+
+        var tile = new THREE.Mesh(geometry, material);
+        tile.rotation.x = Math.PI / 2;
+        tile.position.setY(cfg.gameOpts.pieceYOffset + 0.05);
+
+        tile.position.setX(-cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize);
+        tile.position.setZ(cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize);
+
+        tile.isTile = true;
+        tile.chessPos = pos;
+        self.tiles[pos] = tile;
+
+        self.scene.add(tile);
+    },
+
+    addMouseListener: function() {
+        var self = this;
+        self.mousePos = new THREE.Vector2();
+        document.addEventListener('mousemove', self.onMouseMove.bind(self), false);
+    },
+
+    onMouseMove: function(event) {
+        var self = this;
+        self.mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
+        self.mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    },
+
     setPiecePosition: function(object, pos) {
         var offsetX = cfg.fileToOffset[pos[0]];
         var offsetZ = cfg.rankToOffset[pos[1]];
@@ -263,6 +334,41 @@ module.exports = {
         self.previousTime = now;
 
         // Animations
+        if (self.mousePos) {
+            self.raycaster.setFromCamera(self.mousePos, self.camera);
+
+            var intersects = self.raycaster.intersectObjects(self.scene.children);
+            var tile = _.first(_.filter(intersects, function(intersected) {
+                return intersected.object.isTile;
+            }));
+
+            if (tile) {
+                if (tile !== self.previousIntersect) {
+                    if (self.previousIntersect) {
+                        self.previousIntersect.material.color.setHex(self.previousIntersect.previousColor);
+                        self.previousIntersect.material.opacity = self.previousIntersect.previousOpacity;
+                        self.previousIntersect = null;
+                    }
+
+                    var intersected = tile.object;
+                    intersected.previousColor = intersected.material.color.getHex();
+                    intersected.previousOpacity = intersected.material.opacity;
+                    intersected.material.color.setHex(cfg.colors.tiles.active);
+                    intersected.material.opacity = cfg.gameOpts.tileOpacity;
+
+                    self.previousIntersect = intersected;
+                }
+            } else {
+                // No intersection
+                if (self.previousIntersect) {
+                    self.previousIntersect.material.color.setHex(self.previousIntersect.previousColor);
+                    self.previousIntersect.material.opacity = self.previousIntersect.previousOpacity;
+                    self.previousIntersect = null;
+                }
+            }
+        }
+
+        // Video texture
         if (self.friendVideo && self.friendVideo.readyState === self.friendVideo.HAVE_ENOUGH_DATA) {
             self.friendTexture.needsUpdate = true;
         }

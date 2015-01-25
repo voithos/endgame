@@ -5,7 +5,8 @@
   "main": "./src/endgame.js",
   "dependencies": {
     "promise": "~6.1.0",
-    "lodash": "~2.4.1"
+    "lodash": "~2.4.1",
+    "chess.js": "~0.1.0"
   },
   "devDependencies": {
     "browserify": "^8.1.1",

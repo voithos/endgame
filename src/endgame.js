@@ -4,6 +4,7 @@ require('./polyfills');
 
 var Promise = require('promise');
 var _ = require('lodash');
+var chess = require('chess.js');
 
 var user = require('./user');
 var game = require('./game');
@@ -159,7 +160,35 @@ var endgame = {
     beginGame: function() {
         log('commencing game');
 
-        views.showStatusScreen();
+        var self = this;
+
+        views.showStatusScreen()
+            .then(function() {
+                // Begin chess game
+                scene.addTileControls();
+
+                self.chess = new Chess();
+                self.isMyTurn = self.side === 'white';
+
+                var afterMove = function() {
+                    self.isMyTurn = !self.isMyTurn;
+                };
+
+                rtc.addDataListener(function(data, conn) {
+                    if (data.event === 'chessmove') {
+                        if (!self.isMyTurn) {
+                            if (self.chess.move(data.move)) {
+                                afterMove();
+                            } else {
+                                log('ERROR: opponent attempted invalid move', data.move.from, data.move.to);
+                            }
+                        } else {
+                            log('ERROR: opponent attempted to move on my turn');
+                        }
+                    } else {
+                    }
+                });
+            });
     }
 };
 
