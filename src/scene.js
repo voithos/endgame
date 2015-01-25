@@ -3,7 +3,7 @@
 var Promise = require('promise');
 var _ = require('lodash');
 
-var settings = require('./settings');
+var cfg = require('./config');
 var log = require('./log');
 
 module.exports = {
@@ -51,9 +51,9 @@ module.exports = {
 
     setInitialCameraPos: function() {
         var self = this;
-        self.camera.position.x = settings.gameOpts.cameraStartPos.x;
-        self.camera.position.y = settings.gameOpts.cameraStartPos.y;
-        self.camera.position.z = settings.gameOpts.cameraStartPos.z;
+        self.camera.position.x = cfg.gameOpts.cameraStartPos.x;
+        self.camera.position.y = cfg.gameOpts.cameraStartPos.y;
+        self.camera.position.z = cfg.gameOpts.cameraStartPos.z;
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
     },
 
@@ -62,7 +62,7 @@ module.exports = {
         self.meshes = {};
 
         // Load all pieces
-        return Promise.all(_.map(settings.pieces.concat(settings.assets), function(assets) {
+        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function(assets) {
             return new Promise(function(resolve, reject) {
                 var loader = new THREE.JSONLoader();
                 loader.load('data/' + assets + '.json', function(geometry, materials) {
@@ -86,15 +86,15 @@ module.exports = {
         self.board = new THREE.Object3D();
         self.board.add(self.meshes.board);
         self.board.scale.set(
-            settings.gameOpts.boardScale,
-            settings.gameOpts.boardScale,
-            settings.gameOpts.boardScale
+            cfg.gameOpts.boardScale,
+            cfg.gameOpts.boardScale,
+            cfg.gameOpts.boardScale
         );
 
         self.scene.add(self.board);
 
         // Add pieces for both sides
-        _.forEach(settings.startPosition, function(pieces, side) {
+        _.forEach(cfg.startPosition, function(pieces, side) {
             _.forEach(pieces, function(piece, i) {
                 self.addPiece(piece.pos, piece.type, side);
             });
@@ -107,7 +107,7 @@ module.exports = {
         var self = this;
         var object = new THREE.Object3D();
         object.add(self.meshes[type].clone());
-        object.position.setY(settings.gameOpts.pieceYOffset);
+        object.position.setY(cfg.gameOpts.pieceYOffset);
 
         self.setPiecePosition(object, pos);
 
@@ -125,11 +125,11 @@ module.exports = {
     },
 
     setPiecePosition: function(object, pos) {
-        var offsetX = settings.fileToOffset[pos[0]];
-        var offsetZ = settings.rankToOffset[pos[1]];
+        var offsetX = cfg.fileToOffset[pos[0]];
+        var offsetZ = cfg.rankToOffset[pos[1]];
 
-        object.position.setX(-settings.gameOpts.boardStartOffset + offsetX * settings.gameOpts.tileSize);
-        object.position.setZ(settings.gameOpts.boardStartOffset - offsetZ * settings.gameOpts.tileSize);
+        object.position.setX(-cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize);
+        object.position.setZ(cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize);
     },
 
     beginRender: function() {

@@ -1,15 +1,15 @@
 'use strict';
 
 var Promise = require('promise');
-var settings = require('./settings');
+var cfg = require('./config');
 
 module.exports = {
     init: function() {
         var self = this;
         self.peer = new Peer({
-            key: settings.peerJsKey,
+            key: cfg.peerJsKey,
             config: {
-                iceServers: settings.iceServers
+                iceServers: cfg.iceServers
             }
         });
 

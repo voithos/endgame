@@ -3,7 +3,6 @@
 var Promise = require('promise');
 var _ = require('lodash');
 
-var settings = require('./settings');
 var utils = require('./utils');
 
 module.exports = {

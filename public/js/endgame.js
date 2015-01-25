@@ -12,13 +12,14 @@ var game = require('./game');
 var routes = require('./routes');
 var rtc = require('./rtc');
 var scene = require('./scene');
-var settings = require('./settings');
+var cfg = require('./config');
 var utils = require('./utils');
 var views = require('./views');
 var log = require('./log');
 
 var endgame = {
-    settings: settings,
+    config: cfg,
+
     main: function() {
         var self = this;
 
@@ -73,7 +74,7 @@ global.endgame = endgame;
 endgame.main();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./game":"/home/daisy/Projects/ss15-black-kite/src/game.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./polyfills":"/home/daisy/Projects/ss15-black-kite/src/polyfills.js","./routes":"/home/daisy/Projects/ss15-black-kite/src/routes.js","./rtc":"/home/daisy/Projects/ss15-black-kite/src/rtc.js","./scene":"/home/daisy/Projects/ss15-black-kite/src/scene.js","./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","./user":"/home/daisy/Projects/ss15-black-kite/src/user.js","./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","./views":"/home/daisy/Projects/ss15-black-kite/src/views.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
+},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./game":"/home/daisy/Projects/ss15-black-kite/src/game.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./polyfills":"/home/daisy/Projects/ss15-black-kite/src/polyfills.js","./routes":"/home/daisy/Projects/ss15-black-kite/src/routes.js","./rtc":"/home/daisy/Projects/ss15-black-kite/src/rtc.js","./scene":"/home/daisy/Projects/ss15-black-kite/src/scene.js","./user":"/home/daisy/Projects/ss15-black-kite/src/user.js","./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","./views":"/home/daisy/Projects/ss15-black-kite/src/views.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -7342,292 +7343,7 @@ module.exports = asap;
 
 
 }).call(this,require('_process'))
-},{"_process":"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js"}],"/home/daisy/Projects/ss15-black-kite/src/game.js":[function(require,module,exports){
-'use strict';
-
-var Promise = require('promise');
-var settings = require('./settings');
-var log = require('./log');
-
-module.exports = {
-    create: function(hostId) {
-        var self = this;
-        self.ref = new Firebase(settings.gamesUrl);
-        self.gameRef = self.ref.push();
-        self.gameRef.set({ hostId: hostId });
-        return Promise.resolve(self.gameRef.key());
-    },
-
-    join: function(gameId) {
-        var self = this;
-        self.ref = new Firebase(settings.gamesUrl);
-        self.gameRef = self.ref.child(gameId);
-
-        return new Promise(function(resolve, reject) {
-            self.gameRef.once('value', function(snapshot) {
-                resolve(snapshot.val().hostId);
-            });
-        });
-    }
-};
-
-},{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/log.js":[function(require,module,exports){
-(function (global){
-'use strict';
-
-var logEnabled = true;
-
-module.exports = function() {
-    if (global.console && logEnabled) {
-        console.log.apply(console, Array.prototype.slice.call(arguments));
-    }
-};
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/home/daisy/Projects/ss15-black-kite/src/polyfills.js":[function(require,module,exports){
-/**
- * requestAnimationFrame
- */
-(function() {
-    var lastTime = 0;
-    var vendors = ['webkit', 'moz'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame =
-          window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-    }
-
-    if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-              timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
-
-    if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
-})();
-
-},{}],"/home/daisy/Projects/ss15-black-kite/src/routes.js":[function(require,module,exports){
-'use strict';
-
-var Promise = require('promise');
-var _ = require('lodash');
-
-var settings = require('./settings');
-var utils = require('./utils');
-
-module.exports = {
-    parseGameId: function() {
-        return _.last(utils.pathParts(window.location.pathname)) ||
-            window.location.hash.substring(1);
-    }
-};
-
-},{"./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/rtc.js":[function(require,module,exports){
-'use strict';
-
-var Promise = require('promise');
-var settings = require('./settings');
-
-module.exports = {
-    init: function() {
-        var self = this;
-        self.peer = new Peer({
-            key: settings.peerJsKey,
-            config: {
-                iceServers: settings.iceServers
-            }
-        });
-
-        return new Promise(function(resolve, reject) {
-            self.peer.on('open', resolve);
-        });
-    },
-
-    listen: function() {
-        var self = this;
-
-        return new Promise(function(resolve, reject) {
-            self.peer.on('connection', function(conn) {
-                self.conn = conn;
-                resolve(conn);
-            });
-        });
-    },
-
-    connect: function(hostId) {
-        var self = this;
-        return Promise.resolve(self.peer.connect(hostId, {
-            reliable: true
-        }));
-    }
-};
-
-},{"./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/scene.js":[function(require,module,exports){
-'use strict';
-
-var Promise = require('promise');
-var _ = require('lodash');
-
-var settings = require('./settings');
-var log = require('./log');
-
-module.exports = {
-    init: function() {
-        var self = this;
-        self.scene = new THREE.Scene();
-        self.camera = new THREE.PerspectiveCamera(
-            45, window.innerWidth / window.innerHeight, 0.1, 1000
-        );
-
-        self.renderer = self.createRenderer();
-        self.renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(self.renderer.domElement);
-
-        self.addLighting();
-        self.setInitialCameraPos();
-    },
-
-    createRenderer: function() {
-        // Choose between WebGL and Canvas renderer based on availability
-        var self = this;
-        return self.webglAvailable() ?
-            new THREE.WebGLRenderer({ antialias: true }) :
-            new THREE.CanvasRenderer();
-    },
-
-    webglAvailable: function() {
-        try {
-            var canvas = document.createElement('canvas');
-            return !!(window.WebGLRenderingContext && (
-                canvas.getContext('webgl') ||
-                canvas.getContext('experimental-webgl')
-            ));
-        } catch (e) {
-            return false;
-        }
-    },
-
-    addLighting: function() {
-        var self = this;
-        var light = new THREE.DirectionalLight();
-        light.position.set(20, 20, 10);
-        self.scene.add(light);
-    },
-
-    setInitialCameraPos: function() {
-        var self = this;
-        self.camera.position.x = settings.gameOpts.cameraStartPos.x;
-        self.camera.position.y = settings.gameOpts.cameraStartPos.y;
-        self.camera.position.z = settings.gameOpts.cameraStartPos.z;
-        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
-    },
-
-    loadGameGeometry: function() {
-        var self = this;
-        self.meshes = {};
-
-        // Load all pieces
-        return Promise.all(_.map(settings.pieces.concat(settings.assets), function(assets) {
-            return new Promise(function(resolve, reject) {
-                var loader = new THREE.JSONLoader();
-                loader.load('data/' + assets + '.json', function(geometry, materials) {
-                    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-
-                    self.meshes[assets] = mesh;
-                    log('done loading', assets);
-
-                    resolve(mesh);
-                });
-            });
-        }));
-    },
-
-    setupBoard: function() {
-        var self = this;
-
-        self.pieces = {};
-
-        // Add board
-        self.board = new THREE.Object3D();
-        self.board.add(self.meshes.board);
-        self.board.scale.set(
-            settings.gameOpts.boardScale,
-            settings.gameOpts.boardScale,
-            settings.gameOpts.boardScale
-        );
-
-        self.scene.add(self.board);
-
-        // Add pieces for both sides
-        _.forEach(settings.startPosition, function(pieces, side) {
-            _.forEach(pieces, function(piece, i) {
-                self.addPiece(piece.pos, piece.type, side);
-            });
-        });
-    },
-
-    addPiece: function(pos, type, side) {
-        log('creating', type, side);
-
-        var self = this;
-        var object = new THREE.Object3D();
-        object.add(self.meshes[type].clone());
-        object.position.setY(settings.gameOpts.pieceYOffset);
-
-        self.setPiecePosition(object, pos);
-
-        // Rotate white
-        if (side === 'white') {
-            object.rotation.y = Math.PI;
-        }
-
-        self.scene.add(object);
-        self.pieces[pos] = {
-            type: type,
-            side: side,
-            object: object
-        };
-    },
-
-    setPiecePosition: function(object, pos) {
-        var offsetX = settings.fileToOffset[pos[0]];
-        var offsetZ = settings.rankToOffset[pos[1]];
-
-        object.position.setX(-settings.gameOpts.boardStartOffset + offsetX * settings.gameOpts.tileSize);
-        object.position.setZ(settings.gameOpts.boardStartOffset - offsetZ * settings.gameOpts.tileSize);
-    },
-
-    beginRender: function() {
-        var self = this;
-        self.render = self.render.bind(self);
-        self.previousTime = new Date().getTime();
-        self.requestId = requestAnimationFrame(self.render);
-    },
-
-    render: function(timestamp) {
-        var self = this;
-
-        self.requestId = requestAnimationFrame(self.render);
-
-        // Compute delta time
-        var now = new Date().getTime();
-        var delta = now - self.previousTime;
-        self.previousTime = now;
-
-        // Animations
-
-        self.renderer.render(self.scene, self.camera);
-    }
-};
-
-},{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/settings.js":[function(require,module,exports){
+},{"_process":"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js"}],"/home/daisy/Projects/ss15-black-kite/src/config.js":[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -7710,19 +7426,303 @@ module.exports = {
     }
 };
 
-},{"./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js"}],"/home/daisy/Projects/ss15-black-kite/src/user.js":[function(require,module,exports){
+},{"./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js"}],"/home/daisy/Projects/ss15-black-kite/src/game.js":[function(require,module,exports){
 'use strict';
 
-var settings = require('./settings');
+var Promise = require('promise');
+var cfg = require('./config');
+var log = require('./log');
+
+module.exports = {
+    create: function(hostId) {
+        var self = this;
+        self.ref = new Firebase(cfg.gamesUrl);
+        self.gameRef = self.ref.push();
+        self.gameRef.set({ hostId: hostId });
+        return Promise.resolve(self.gameRef.key());
+    },
+
+    join: function(gameId) {
+        var self = this;
+        self.ref = new Firebase(cfg.gamesUrl);
+        self.gameRef = self.ref.child(gameId);
+
+        return new Promise(function(resolve, reject) {
+            self.gameRef.once('value', function(snapshot) {
+                resolve(snapshot.val().hostId);
+            });
+        });
+    }
+};
+
+},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/log.js":[function(require,module,exports){
+(function (global){
+'use strict';
+
+var logEnabled = true;
+
+module.exports = function() {
+    if (global.console && logEnabled) {
+        console.log.apply(console, Array.prototype.slice.call(arguments));
+    }
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],"/home/daisy/Projects/ss15-black-kite/src/polyfills.js":[function(require,module,exports){
+/**
+ * requestAnimationFrame
+ */
+(function() {
+    var lastTime = 0;
+    var vendors = ['webkit', 'moz'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame =
+          window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+})();
+
+},{}],"/home/daisy/Projects/ss15-black-kite/src/routes.js":[function(require,module,exports){
+'use strict';
+
+var Promise = require('promise');
+var _ = require('lodash');
+
+var utils = require('./utils');
+
+module.exports = {
+    parseGameId: function() {
+        return _.last(utils.pathParts(window.location.pathname)) ||
+            window.location.hash.substring(1);
+    }
+};
+
+},{"./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/rtc.js":[function(require,module,exports){
+'use strict';
+
+var Promise = require('promise');
+var cfg = require('./config');
 
 module.exports = {
     init: function() {
         var self = this;
-        self.ref = new Firebase(settings.usersUrl);
+        self.peer = new Peer({
+            key: cfg.peerJsKey,
+            config: {
+                iceServers: cfg.iceServers
+            }
+        });
+
+        return new Promise(function(resolve, reject) {
+            self.peer.on('open', resolve);
+        });
+    },
+
+    listen: function() {
+        var self = this;
+
+        return new Promise(function(resolve, reject) {
+            self.peer.on('connection', function(conn) {
+                self.conn = conn;
+                resolve(conn);
+            });
+        });
+    },
+
+    connect: function(hostId) {
+        var self = this;
+        return Promise.resolve(self.peer.connect(hostId, {
+            reliable: true
+        }));
     }
 };
 
-},{"./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js"}],"/home/daisy/Projects/ss15-black-kite/src/utils.js":[function(require,module,exports){
+},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/scene.js":[function(require,module,exports){
+'use strict';
+
+var Promise = require('promise');
+var _ = require('lodash');
+
+var cfg = require('./config');
+var log = require('./log');
+
+module.exports = {
+    init: function() {
+        var self = this;
+        self.scene = new THREE.Scene();
+        self.camera = new THREE.PerspectiveCamera(
+            45, window.innerWidth / window.innerHeight, 0.1, 1000
+        );
+
+        self.renderer = self.createRenderer();
+        self.renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(self.renderer.domElement);
+
+        self.addLighting();
+        self.setInitialCameraPos();
+    },
+
+    createRenderer: function() {
+        // Choose between WebGL and Canvas renderer based on availability
+        var self = this;
+        return self.webglAvailable() ?
+            new THREE.WebGLRenderer({ antialias: true }) :
+            new THREE.CanvasRenderer();
+    },
+
+    webglAvailable: function() {
+        try {
+            var canvas = document.createElement('canvas');
+            return !!(window.WebGLRenderingContext && (
+                canvas.getContext('webgl') ||
+                canvas.getContext('experimental-webgl')
+            ));
+        } catch (e) {
+            return false;
+        }
+    },
+
+    addLighting: function() {
+        var self = this;
+        var light = new THREE.DirectionalLight();
+        light.position.set(20, 20, 10);
+        self.scene.add(light);
+    },
+
+    setInitialCameraPos: function() {
+        var self = this;
+        self.camera.position.x = cfg.gameOpts.cameraStartPos.x;
+        self.camera.position.y = cfg.gameOpts.cameraStartPos.y;
+        self.camera.position.z = cfg.gameOpts.cameraStartPos.z;
+        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    },
+
+    loadGameGeometry: function() {
+        var self = this;
+        self.meshes = {};
+
+        // Load all pieces
+        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function(assets) {
+            return new Promise(function(resolve, reject) {
+                var loader = new THREE.JSONLoader();
+                loader.load('data/' + assets + '.json', function(geometry, materials) {
+                    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+
+                    self.meshes[assets] = mesh;
+                    log('done loading', assets);
+
+                    resolve(mesh);
+                });
+            });
+        }));
+    },
+
+    setupBoard: function() {
+        var self = this;
+
+        self.pieces = {};
+
+        // Add board
+        self.board = new THREE.Object3D();
+        self.board.add(self.meshes.board);
+        self.board.scale.set(
+            cfg.gameOpts.boardScale,
+            cfg.gameOpts.boardScale,
+            cfg.gameOpts.boardScale
+        );
+
+        self.scene.add(self.board);
+
+        // Add pieces for both sides
+        _.forEach(cfg.startPosition, function(pieces, side) {
+            _.forEach(pieces, function(piece, i) {
+                self.addPiece(piece.pos, piece.type, side);
+            });
+        });
+    },
+
+    addPiece: function(pos, type, side) {
+        log('creating', type, side);
+
+        var self = this;
+        var object = new THREE.Object3D();
+        object.add(self.meshes[type].clone());
+        object.position.setY(cfg.gameOpts.pieceYOffset);
+
+        self.setPiecePosition(object, pos);
+
+        // Rotate white
+        if (side === 'white') {
+            object.rotation.y = Math.PI;
+        }
+
+        self.scene.add(object);
+        self.pieces[pos] = {
+            type: type,
+            side: side,
+            object: object
+        };
+    },
+
+    setPiecePosition: function(object, pos) {
+        var offsetX = cfg.fileToOffset[pos[0]];
+        var offsetZ = cfg.rankToOffset[pos[1]];
+
+        object.position.setX(-cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize);
+        object.position.setZ(cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize);
+    },
+
+    beginRender: function() {
+        var self = this;
+        self.render = self.render.bind(self);
+        self.previousTime = new Date().getTime();
+        self.requestId = requestAnimationFrame(self.render);
+    },
+
+    render: function(timestamp) {
+        var self = this;
+
+        self.requestId = requestAnimationFrame(self.render);
+
+        // Compute delta time
+        var now = new Date().getTime();
+        var delta = now - self.previousTime;
+        self.previousTime = now;
+
+        // Animations
+
+        self.renderer.render(self.scene, self.camera);
+    }
+};
+
+},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/user.js":[function(require,module,exports){
+'use strict';
+
+var cfg = require('./config');
+
+module.exports = {
+    init: function() {
+        var self = this;
+        self.ref = new Firebase(cfg.usersUrl);
+    }
+};
+
+},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js"}],"/home/daisy/Projects/ss15-black-kite/src/utils.js":[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -7745,7 +7745,6 @@ module.exports = {
 'use strict';
 
 var Promise = require('promise');
-var settings = require('./settings');
 var log = require('./log');
 
 module.exports = {
@@ -7755,4 +7754,4 @@ module.exports = {
     }
 };
 
-},{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}]},{},["./src/endgame.js"]);
+},{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}]},{},["./src/endgame.js"]);

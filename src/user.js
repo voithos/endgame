@@ -1,10 +1,10 @@
 'use strict';
 
-var settings = require('./settings');
+var cfg = require('./config');
 
 module.exports = {
     init: function() {
         var self = this;
-        self.ref = new Firebase(settings.usersUrl);
+        self.ref = new Firebase(cfg.usersUrl);
     }
 };

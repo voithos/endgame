@@ -10,13 +10,14 @@ var game = require('./game');
 var routes = require('./routes');
 var rtc = require('./rtc');
 var scene = require('./scene');
-var settings = require('./settings');
+var cfg = require('./config');
 var utils = require('./utils');
 var views = require('./views');
 var log = require('./log');
 
 var endgame = {
-    settings: settings,
+    config: cfg,
+
     main: function() {
         var self = this;
 
