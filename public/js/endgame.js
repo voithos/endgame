@@ -7605,8 +7605,9 @@ module.exports = {
         },
 
         tiles: {
-            active: 0xffa500, // orange
+            active: 0xffa500,
             legal: 0x7ac142,
+            selected: 0x3a7a99,
             prevFrom: 0x62ccff,
             prevTo: 0xda2820
         },
@@ -8252,25 +8253,12 @@ module.exports = {
 
     highlightActiveTile: function() {
         var self = this;
+        self.recolorTiles();
+
         var intersected = self.intersectTile();
-
         if (intersected) {
-            if (intersected !== self.previousIntersect) {
-                if (self.previousIntersect) {
-                    self.resetTile(self.previousIntersect);
-                    self.previousIntersect = null;
-                }
-
-                var tile = intersected.object;
-                self.colorTile(tile, cfg.colors.tiles.active);
-                self.previousIntersect = tile;
-            }
-        } else {
-            // No intersection
-            if (self.previousIntersect) {
-                self.resetTile(self.previousIntersect);
-                self.previousIntersect = null;
-            }
+            var tile = intersected.object;
+            self.colorTile(tile, cfg.colors.tiles.active);
         }
     },
 
@@ -8293,9 +8281,9 @@ module.exports = {
             if (self.isSelectingPieceMovement) {
                 if (tile.isLegalMove) {
                     self.commitMove(tile);
-                    self.resetMoveSelection();
+                    self.resetTileHighlights();
                 } else {
-                    self.resetMoveSelection();
+                    self.resetTileHighlights();
                     self.highlightLegalMoves(tile);
                 }
             } else {
@@ -8306,21 +8294,18 @@ module.exports = {
 
     commitMove: function(tile) {
         var self = this;
-        self.selectionPosTo = tile.chessPos;
-
-        self.moveCallback.call(self, self.selectionPosFrom, self.selectionPosTo);
+        self.moveCallback.call(self, self.selectedPos, tile.chessPos);
 
         self.isSelectingPieceMovement = false;
-        self.selectionPosFrom = null;
-        self.selectionPosTo = null;
+        self.selectedPos = null;
     },
 
     highlightLegalMoves: function(tile) {
         var self = this;
         self.isSelectingPieceMovement = true;
-        self.selectionPosFrom = tile.chessPos;
+        self.selectedPos = tile.chessPos;
 
-        self.colorTile(tile, cfg.colors.tiles.prevFrom);
+        self.colorTile(tile, cfg.colors.tiles.selected);
 
         // Get legal moves and highlight them
         self.currentLegalMoves = self.legalCallback.call(self, tile.chessPos);
@@ -8331,27 +8316,41 @@ module.exports = {
         });
     },
 
-    resetMoveSelection: function() {
+    resetTileHighlights: function() {
         var self = this;
 
         _.forEach(self.tiles, function(tile, pos) {
-            self.resetTile(tile);
-            tile.isLegalMoves = null;
+            tile.isLegalMove = null;
+        });
+        self.recolorTiles();
+    },
+
+    recolorTiles: function() {
+        var self = this;
+
+        _.forEach(self.tiles, function(tile, pos) {
+            self.hideTile(tile);
+
+            // Recolor
+            if (tile.isLegalMove) {
+                self.colorTile(tile, cfg.colors.tiles.legal);
+            } else if (tile.chessPos == self.selectedPos) {
+                self.colorTile(tile, cfg.colors.tiles.selected);
+            } else if (tile.chessPos === self.prevPosFrom) {
+                self.colorTile(tile, cfg.colors.tiles.prevFrom);
+            } else if (tile.chessPos === self.prevPosTo) {
+                self.colorTile(tile, cfg.colors.tiles.prevTo);
+            }
         });
     },
 
     colorTile: function(tile, color) {
-        tile.previousColor = tile.material.color.getHex();
-        tile.previousOpacity = tile.material.opacity;
         tile.material.color.setHex(color);
         tile.material.opacity = cfg.gameOpts.tileOpacity;
     },
 
-    resetTile: function(tile) {
-        if (typeof tile.previousColor !== 'undefined') {
-            tile.material.color.setHex(tile.previousColor);
-            tile.material.opacity = tile.previousOpacity;
-        }
+    hideTile: function(tile) {
+        tile.material.opacity = 0;
     },
 
     performGraphicalMove: function(move) {
@@ -8363,8 +8362,12 @@ module.exports = {
             return;
         }
 
+        // Cache previous move for highlighting
+        self.prevPosFrom = move.from;
+        self.prevPosTo = move.to;
+
         // Handle moves (order matters because of interactions with
-        // `self.pieces`
+        // `self.pieces`)
 
         if (move.flags.indexOf('e') !== -1) {
             /** En passant */
@@ -8399,6 +8402,8 @@ module.exports = {
         if (move.flags.indexOf('q') !== -1) {
             /** Queenside castle */
         }
+
+        self.recolorTiles();
     },
 
     onMouseUp: function(event) {

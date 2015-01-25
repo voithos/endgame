@@ -109,8 +109,9 @@ module.exports = {
         },
 
         tiles: {
-            active: 0xffa500, // orange
+            active: 0xffa500,
             legal: 0x7ac142,
+            selected: 0x3a7a99,
             prevFrom: 0x62ccff,
             prevTo: 0xda2820
         },
