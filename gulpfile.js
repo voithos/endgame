@@ -34,6 +34,8 @@ function bundle() {
         .on('error', gutil.log.bind(gutil, 'Browserify Error'))
         .pipe(source('./public/js/endgame.js'))
         .pipe(buffer())
+        // sourcemaps reference fails because web server root is different
+        // from project root - seems to be issue with gulp-sourcemaps
         // .pipe(sourcemaps.init({ loadMaps: true }))
             // .pipe(uglify())
         // .pipe(sourcemaps.write('../'))

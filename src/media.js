@@ -44,7 +44,7 @@ module.exports = {
                 video.width = cfg.localMediaWidth;
                 video.height = video.videoHeight / (video.videoWidth / cfg.localMediaWidth);
 
-                $('#localvideopanel').show(400);
+                $('#localvideopanel').show('slow');
             }
         }, false);
     }

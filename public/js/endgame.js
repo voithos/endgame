@@ -7579,7 +7579,7 @@ module.exports = {
                 video.width = cfg.localMediaWidth;
                 video.height = video.videoHeight / (video.videoWidth / cfg.localMediaWidth);
 
-                $('#localvideopanel').show(400);
+                $('#localvideopanel').show('slow');
             }
         }, false);
     }
@@ -7649,6 +7649,8 @@ module.exports = {
         var url = window.location.protocol + '//' + window.location.hostname +
             (window.location.port ? ':' + window.location.port : '');
 
+        // When developing locally, the local web server doesn't have
+        // routing capabilities, so just use the fragment
         var hash = (window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1') ? '#' : '';
 
