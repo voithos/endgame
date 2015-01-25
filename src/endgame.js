@@ -172,7 +172,14 @@ var endgame = {
                         return self.chess.moves({ square: pos, verbose: true });
                     }, function(from, to) {
                         var move = self.chess.move({ from: from, to: to });
+
                         if (move) {
+                            // Send move to remote
+                            rtc.sendData({
+                                event: 'chessmove',
+                                move: move
+                            });
+                            afterMove(move);
                         } else {
                             log('ERROR: illegal move attempted locally - bug?');
                         }
@@ -180,20 +187,27 @@ var endgame = {
 
                     var afterMove = function(move) {
                         self.isMyTurn = !self.isMyTurn;
+                        scene.performGraphicalMove(move);
+
+                        // TODO: Check for game end
                     };
 
                     rtc.addDataListener(function(data, conn) {
                         if (data.event === 'chessmove') {
                             if (!self.isMyTurn) {
-                                if (self.chess.move(data.move)) {
-                                    afterMove(data.move);
+                                // Apply remove move
+                                var move = self.chess.move(data.move);
+
+                                if (move) {
+                                    afterMove(move);
                                 } else {
-                                    log('ERROR: opponent attempted invalid move', data.move.from, data.move.to);
+                                    log('ERROR: opponent attempted invalid move', data);
                                 }
                             } else {
                                 log('ERROR: opponent attempted to move on my turn');
                             }
                         } else {
+                            log('ERROR: unknown event type', data.event);
                         }
                     });
                 });

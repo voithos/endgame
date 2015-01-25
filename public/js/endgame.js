@@ -174,7 +174,14 @@ var endgame = {
                         return self.chess.moves({ square: pos, verbose: true });
                     }, function(from, to) {
                         var move = self.chess.move({ from: from, to: to });
+
                         if (move) {
+                            // Send move to remote
+                            rtc.sendData({
+                                event: 'chessmove',
+                                move: move
+                            });
+                            afterMove(move);
                         } else {
                             log('ERROR: illegal move attempted locally - bug?');
                         }
@@ -182,20 +189,27 @@ var endgame = {
 
                     var afterMove = function(move) {
                         self.isMyTurn = !self.isMyTurn;
+                        scene.performGraphicalMove(move);
+
+                        // TODO: Check for game end
                     };
 
                     rtc.addDataListener(function(data, conn) {
                         if (data.event === 'chessmove') {
                             if (!self.isMyTurn) {
-                                if (self.chess.move(data.move)) {
-                                    afterMove(data.move);
+                                // Apply remove move
+                                var move = self.chess.move(data.move);
+
+                                if (move) {
+                                    afterMove(move);
                                 } else {
-                                    log('ERROR: opponent attempted invalid move', data.move.from, data.move.to);
+                                    log('ERROR: opponent attempted invalid move', data);
                                 }
                             } else {
                                 log('ERROR: opponent attempted to move on my turn');
                             }
                         } else {
+                            log('ERROR: unknown event type', data.event);
                         }
                     });
                 });
@@ -7568,6 +7582,7 @@ module.exports = {
 
         cameraStartPos: { x: 30, y: 15, z: 30 },
         cameraPlayPos: { x: 0, y: 22, z: 45 },
+        cameraPlayLookAt: { x: 0, y: 5, z: 0 },
 
         friendScreenSize: { x: 30, y: 20, z: 5 },
         friendScreenPos: { x: 0, y: 10, z: -30 }
@@ -7990,7 +8005,11 @@ module.exports = {
         self.camera.position.x = cfg.gameOpts.cameraPlayPos.x;
         self.camera.position.y = cfg.gameOpts.cameraPlayPos.y;
         self.camera.position.z = (side === 'black' ? -1 : 1) * cfg.gameOpts.cameraPlayPos.z;
-        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
+        self.camera.lookAt(new THREE.Vector3(
+            cfg.gameOpts.cameraPlayLookAt.x,
+            cfg.gameOpts.cameraPlayLookAt.y,
+            cfg.gameOpts.cameraPlayLookAt.z
+        ));
     },
 
     loadGameGeometry: function() {
@@ -8075,6 +8094,7 @@ module.exports = {
     addPieces: function() {
         var self = this;
         self.pieces = {};
+        self.captured = { 'w': [], 'b': [] };
 
         _.forEach(cfg.startPosition, function(pieces, side) {
             _.forEach(pieces, function(piece, i) {
@@ -8220,7 +8240,7 @@ module.exports = {
 
     onMouseMove: function(event) {
         var self = this;
-        self.updateMousePos();
+        self.updateMousePos(event);
         self.highlightActiveTile();
     },
 
@@ -8266,23 +8286,58 @@ module.exports = {
         var intersected = self.intersectTile();
 
         if (intersected) {
+            var tile = intersected.object;
+
             // We're either in 'piece' or 'move' selection mode (the latter
             // being specific to a piece)
             if (self.isSelectingPieceMovement) {
+                if (tile.isLegalMove) {
+                    self.commitMove(tile);
+                    self.resetMoveSelection();
+                } else {
+                    self.resetMoveSelection();
+                    self.highlightLegalMoves(tile);
+                }
             } else {
-                self.isSelectingPieceMovement = true;
-                var tile = intersected.object;
-
-                self.colorTile(tile, cfg.colors.tiles.prevFrom);
-
-                // Get legal moves and highlight them
-                self.currentLegalMoves = self.legalCallback.call(self, tile.chessPos);
-                _.forEach(self.currentLegalMoves, function(move) {
-                    var tile = self.tiles[move.to];
-                    self.colorTile(tile, cfg.colors.tiles.legal);
-                });
+                self.highlightLegalMoves(tile);
             }
         }
+    },
+
+    commitMove: function(tile) {
+        var self = this;
+        self.selectionPosTo = tile.chessPos;
+
+        self.moveCallback.call(self, self.selectionPosFrom, self.selectionPosTo);
+
+        self.isSelectingPieceMovement = false;
+        self.selectionPosFrom = null;
+        self.selectionPosTo = null;
+    },
+
+    highlightLegalMoves: function(tile) {
+        var self = this;
+        self.isSelectingPieceMovement = true;
+        self.selectionPosFrom = tile.chessPos;
+
+        self.colorTile(tile, cfg.colors.tiles.prevFrom);
+
+        // Get legal moves and highlight them
+        self.currentLegalMoves = self.legalCallback.call(self, tile.chessPos);
+        _.forEach(self.currentLegalMoves, function(move) {
+            var tile = self.tiles[move.to];
+            tile.isLegalMove = true;
+            self.colorTile(tile, cfg.colors.tiles.legal);
+        });
+    },
+
+    resetMoveSelection: function() {
+        var self = this;
+
+        _.forEach(self.tiles, function(tile, pos) {
+            self.resetTile(tile);
+            tile.isLegalMoves = null;
+        });
     },
 
     colorTile: function(tile, color) {
@@ -8293,8 +8348,57 @@ module.exports = {
     },
 
     resetTile: function(tile) {
-        tile.material.color.setHex(tile.previousColor);
-        tile.material.opacity = tile.previousOpacity;
+        if (typeof tile.previousColor !== 'undefined') {
+            tile.material.color.setHex(tile.previousColor);
+            tile.material.opacity = tile.previousOpacity;
+        }
+    },
+
+    performGraphicalMove: function(move) {
+        var self = this;
+        var piece = self.pieces[move.from];
+
+        if (typeof piece === 'undefined') {
+            log('ERROR: piece not found - bug?');
+            return;
+        }
+
+        // Handle moves (order matters because of interactions with
+        // `self.pieces`
+
+        if (move.flags.indexOf('e') !== -1) {
+            /** En passant */
+        }
+        if (move.flags.indexOf('c') !== -1) {
+            /** Standard capture */
+            var capturedPiece = self.pieces[move.to];
+            delete self.pieces[move.to];
+            self.captured[move.color].push(capturedPiece);
+
+            self.hidePiece(capturedPiece.object);
+
+            // Move capturing piece
+            delete self.pieces[move.from];
+            self.pieces[move.to] = piece;
+
+            self.setPiecePosition(piece.object, move.to);
+        }
+        if (move.flags.indexOf('n') !== -1 || move.flags.indexOf('b') !== -1) {
+            /** Standard non-capture or pawn-push */
+            delete self.pieces[move.from];
+            self.pieces[move.to] = piece;
+
+            self.setPiecePosition(piece.object, move.to);
+        }
+        if (move.flags.indexOf('p') !== -1) {
+            /** Promotion */
+        }
+        if (move.flags.indexOf('k') !== -1) {
+            /** Kingside castle */
+        }
+        if (move.flags.indexOf('q') !== -1) {
+            /** Queenside castle */
+        }
     },
 
     onMouseUp: function(event) {
@@ -8317,6 +8421,10 @@ module.exports = {
 
         object.position.setX(-cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize);
         object.position.setZ(cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize);
+    },
+
+    hidePiece: function(object) {
+        object.visible = false;
     },
 
     beginRender: function() {
