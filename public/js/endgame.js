@@ -52,6 +52,7 @@ var endgame = {
             .then(self.setupMedia.bind(self))
             .then(self.performMediaCalls.bind(self))
             .then(self.displayRemoteMedia.bind(self))
+            .then(self.beginGame.bind(self))
             .done();
     },
 
@@ -65,6 +66,7 @@ var endgame = {
             .then(self.setupMedia.bind(self))
             .then(self.performMediaCalls.bind(self))
             .then(self.displayRemoteMedia.bind(self))
+            .then(self.beginGame.bind(self))
             .done();
     },
 
@@ -150,10 +152,16 @@ var endgame = {
                     resolve();
                 });
             } else {
-                scene.addFriendScreen(self.side, video);
+                scene.addFriendScreen(self.side);
                 resolve();
             }
         });
+    },
+
+    beginGame: function() {
+        log('commencing game');
+
+        views.showStatusScreen();
     }
 };
 
@@ -7479,7 +7487,7 @@ module.exports = {
         { 'url': 'stun:stun4.l.google.com:19302' }
     ],
 
-    localMediaWidth: 320,
+    localMediaWidth: 240,
     mediaWidth: 320,
     mediaHeight: 240,
     mediaMinFrameRate: 10,
@@ -7518,8 +7526,10 @@ module.exports = {
         pieceYOffset: 2,
 
         cameraStartPos: { x: 30, y: 15, z: 30 },
+        cameraPlayPos: { x: 0, y: 22, z: 45 },
 
-        friendScreenSize: { x: 30, y: 30, z: 5 }
+        friendScreenSize: { x: 30, y: 20, z: 5 },
+        friendScreenPos: { x: 0, y: 10, z: -30 }
     },
 
     colors: {
@@ -7537,6 +7547,8 @@ module.exports = {
                 specular: 0x111111
             }
         },
+
+        clear: 'lightgray',
 
         friendScreen: 0xdadada
     }
@@ -7866,7 +7878,9 @@ module.exports = {
         );
 
         self.renderer = self.createRenderer();
+        self.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
         self.renderer.setSize(window.innerWidth, window.innerHeight);
+
         document.body.appendChild(self.renderer.domElement);
 
         self.addLighting();
@@ -7897,8 +7911,8 @@ module.exports = {
 
     addLighting: function() {
         var self = this;
-        self.dirLight = new THREE.DirectionalLight();
-        self.dirLight.position.set(20, 80, 80).normalize();
+        self.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+        self.dirLight.position.set(0, 80, 0).normalize();
         self.scene.add(self.dirLight);
 
         self.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
@@ -7910,6 +7924,14 @@ module.exports = {
         self.camera.position.x = cfg.gameOpts.cameraStartPos.x;
         self.camera.position.y = cfg.gameOpts.cameraStartPos.y;
         self.camera.position.z = cfg.gameOpts.cameraStartPos.z;
+        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    },
+
+    setPlayCameraPos: function(side) {
+        var self = this;
+        self.camera.position.x = cfg.gameOpts.cameraPlayPos.x;
+        self.camera.position.y = cfg.gameOpts.cameraPlayPos.y;
+        self.camera.position.z = (side === 'black' ? -1 : 1) * cfg.gameOpts.cameraPlayPos.z;
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
     },
 
@@ -8029,27 +8051,31 @@ module.exports = {
     addFriendScreen: function(side, video) {
         var self = this;
 
+        var material;
+
         if (video) {
             self.friendVideo = video;
             self.friendTexture = new THREE.Texture(video);
 
             self.friendTexture.generateMipmaps = false;
-            self.friendTexture.format = THREE.RGBFormat
+
+            material = new THREE.MeshLambertMaterial({
+                map: self.friendTexture,
+                emissive: 0xeeeeee
+            });
         } else {
-            self.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
+            // self.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
+            material = new THREE.MeshLambertMaterial({
+                color: 0x000000
+            });
         }
 
-        var material = new THREE.MeshLambertMaterial({
-            // TODO: Video texture not quite working just yet
-            // map: self.friendTexture
+        var filler = new THREE.MeshLambertMaterial({
+            color: cfg.colors.friendScreen
         });
 
-        var materials = [material];
-        for (var i = 0; i < 5; i++) {
-            materials.push(new THREE.MeshLambertMaterial({
-                color: cfg.colors.friendScreen
-            }));
-        }
+        // Only a single face needs the video
+        var materials = [filler, filler, filler, filler, material, filler];
 
         var geometry = new THREE.BoxGeometry(
             cfg.gameOpts.friendScreenSize.x,
@@ -8058,7 +8084,20 @@ module.exports = {
         );
 
         var cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+        cube.position.set(
+            cfg.gameOpts.friendScreenPos.x,
+            cfg.gameOpts.friendScreenPos.y,
+            cfg.gameOpts.friendScreenPos.z
+        );
+
+        if (side === 'black') {
+            cube.position.setZ(-cfg.gameOpts.friendScreenPos.z);
+            cube.rotation.y = Math.PI;
+        }
+
         self.scene.add(cube);
+
+        self.setPlayCameraPos(side);
     },
 
     setPiecePosition: function(object, pos) {
@@ -8161,6 +8200,13 @@ module.exports = {
             backdrop: false,
             keyboard: false
         });
+
+        return Promise.resolve();
+    },
+
+    showStatusScreen: function() {
+        var self = this;
+        $('#mediascreen').modal('hide');
 
         return Promise.resolve();
     }

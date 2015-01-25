@@ -34,5 +34,12 @@ module.exports = {
         });
 
         return Promise.resolve();
+    },
+
+    showStatusScreen: function() {
+        var self = this;
+        $('#mediascreen').modal('hide');
+
+        return Promise.resolve();
     }
 };

@@ -45,7 +45,7 @@ module.exports = {
         { 'url': 'stun:stun4.l.google.com:19302' }
     ],
 
-    localMediaWidth: 320,
+    localMediaWidth: 240,
     mediaWidth: 320,
     mediaHeight: 240,
     mediaMinFrameRate: 10,
@@ -84,8 +84,10 @@ module.exports = {
         pieceYOffset: 2,
 
         cameraStartPos: { x: 30, y: 15, z: 30 },
+        cameraPlayPos: { x: 0, y: 22, z: 45 },
 
-        friendScreenSize: { x: 30, y: 30, z: 5 }
+        friendScreenSize: { x: 30, y: 20, z: 5 },
+        friendScreenPos: { x: 0, y: 10, z: -30 }
     },
 
     colors: {
@@ -103,6 +105,8 @@ module.exports = {
                 specular: 0x111111
             }
         },
+
+        clear: 'lightgray',
 
         friendScreen: 0xdadada
     }

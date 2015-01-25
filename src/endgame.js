@@ -50,6 +50,7 @@ var endgame = {
             .then(self.setupMedia.bind(self))
             .then(self.performMediaCalls.bind(self))
             .then(self.displayRemoteMedia.bind(self))
+            .then(self.beginGame.bind(self))
             .done();
     },
 
@@ -63,6 +64,7 @@ var endgame = {
             .then(self.setupMedia.bind(self))
             .then(self.performMediaCalls.bind(self))
             .then(self.displayRemoteMedia.bind(self))
+            .then(self.beginGame.bind(self))
             .done();
     },
 
@@ -148,10 +150,16 @@ var endgame = {
                     resolve();
                 });
             } else {
-                scene.addFriendScreen(self.side, video);
+                scene.addFriendScreen(self.side);
                 resolve();
             }
         });
+    },
+
+    beginGame: function() {
+        log('commencing game');
+
+        views.showStatusScreen();
     }
 };
 
