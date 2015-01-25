@@ -84,13 +84,13 @@ module.exports = {
     colors: {
         pieces: {
             white: {
-                color: 0xcacaca,
+                color: 0xdddddd,
                 ambient: 0xffffff,
                 emissive: 0x000000,
                 specular: 0xaaaaaa
             },
             black: {
-                color: 0x353535,
+                color: 0x222222,
                 ambient: 0x000000,
                 emissive: 0x000000,
                 specular: 0x111111

@@ -19,6 +19,7 @@ open source libraries and assets. Here's the list of them:
 - gulp.js
 - browserify
 - Less
+- Blender
 
 ## Assets
 

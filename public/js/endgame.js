@@ -7430,13 +7430,13 @@ module.exports = {
     colors: {
         pieces: {
             white: {
-                color: 0xcacaca,
+                color: 0xdddddd,
                 ambient: 0xffffff,
                 emissive: 0x000000,
                 specular: 0xaaaaaa
             },
             black: {
-                color: 0x353535,
+                color: 0x222222,
                 ambient: 0x000000,
                 emissive: 0x000000,
                 specular: 0x111111
@@ -7599,9 +7599,11 @@ module.exports = {
     createRenderer: function() {
         // Choose between WebGL and Canvas renderer based on availability
         var self = this;
-        return self.webglAvailable() ?
+        var renderer = self.webglAvailable() ?
             new THREE.WebGLRenderer({ antialias: true }) :
             new THREE.CanvasRenderer();
+
+        return renderer;
     },
 
     webglAvailable: function() {
@@ -7619,7 +7621,8 @@ module.exports = {
     addLighting: function() {
         var self = this;
         var light = new THREE.DirectionalLight();
-        light.position.set(20, 20, 10);
+        light.position.set(20, 80, 80);
+
         self.scene.add(light);
     },
 
@@ -7643,9 +7646,14 @@ module.exports = {
                     var material = materials[0];
 
                     if (_.contains(cfg.assets, asset)) {
-                        self.meshes[asset] = new THREE.Mesh(geometry, material);
+                        var mesh = new THREE.Mesh(geometry, material);
+                        self.meshes[asset] = mesh;
                     } else {
-                        // Duplicate black/white if pieces
+                        // Compute normals
+                        geometry.computeFaceNormals();
+                        geometry.computeVertexNormals();
+
+                        // Duplicate black/white
                         _.forEach(cfg.sides, function(side) {
                             var meshMaterial = material.clone();
                             meshMaterial.color.setHex(cfg.colors.pieces[side].color);
