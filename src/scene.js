@@ -247,8 +247,11 @@ module.exports = {
         self.setPlayCameraPos(side);
     },
 
-    addTileControls: function() {
+    addTileControls: function(legalCallback, moveCallback) {
         var self = this;
+        self.legalCallback = legalCallback;
+        self.moveCallback = moveCallback;
+
         self.tiles = {};
 
         // Create geometry and material
@@ -273,7 +276,7 @@ module.exports = {
 
         // Bind to mouse events
         self.raycaster = new THREE.Raycaster();
-        self.addMouseListener();
+        self.addMouseListeners();
     },
 
     addTileControl: function(pos, geometry, material) {
@@ -296,16 +299,105 @@ module.exports = {
         self.scene.add(tile);
     },
 
-    addMouseListener: function() {
+    addMouseListeners: function() {
         var self = this;
         self.mousePos = new THREE.Vector2();
         document.addEventListener('mousemove', self.onMouseMove.bind(self), false);
+        document.addEventListener('mousedown', self.onMouseDown.bind(self), false);
+        document.addEventListener('mouseup', self.onMouseUp.bind(self), false);
     },
 
     onMouseMove: function(event) {
         var self = this;
+        self.updateMousePos();
+        self.highlightActiveTile();
+    },
+
+    updateMousePos: function(event) {
+        var self = this;
         self.mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
         self.mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    },
+
+    highlightActiveTile: function() {
+        var self = this;
+        var intersected = self.intersectTile();
+
+        if (intersected) {
+            if (intersected !== self.previousIntersect) {
+                if (self.previousIntersect) {
+                    self.resetTile(self.previousIntersect);
+                    self.previousIntersect = null;
+                }
+
+                var tile = intersected.object;
+                self.colorTile(tile, cfg.colors.tiles.active);
+                self.previousIntersect = tile;
+            }
+        } else {
+            // No intersection
+            if (self.previousIntersect) {
+                self.resetTile(self.previousIntersect);
+                self.previousIntersect = null;
+            }
+        }
+    },
+
+    onMouseDown: function(event) {
+        event.preventDefault();
+
+        var self = this;
+        self.handleMoveSelection();
+    },
+
+    handleMoveSelection: function() {
+        var self = this;
+        var intersected = self.intersectTile();
+
+        if (intersected) {
+            // We're either in 'piece' or 'move' selection mode (the latter
+            // being specific to a piece)
+            if (self.isSelectingPieceMovement) {
+            } else {
+                self.isSelectingPieceMovement = true;
+                var tile = intersected.object;
+
+                self.colorTile(tile, cfg.colors.tiles.prevFrom);
+
+                // Get legal moves and highlight them
+                self.currentLegalMoves = self.legalCallback.call(self, tile.chessPos);
+                _.forEach(self.currentLegalMoves, function(move) {
+                    var tile = self.tiles[move.to];
+                    self.colorTile(tile, cfg.colors.tiles.legal);
+                });
+            }
+        }
+    },
+
+    colorTile: function(tile, color) {
+        tile.previousColor = tile.material.color.getHex();
+        tile.previousOpacity = tile.material.opacity;
+        tile.material.color.setHex(color);
+        tile.material.opacity = cfg.gameOpts.tileOpacity;
+    },
+
+    resetTile: function(tile) {
+        tile.material.color.setHex(tile.previousColor);
+        tile.material.opacity = tile.previousOpacity;
+    },
+
+    onMouseUp: function(event) {
+        event.preventDefault();
+    },
+
+    intersectTile: function() {
+        var self = this;
+        self.raycaster.setFromCamera(self.mousePos, self.camera);
+
+        var intersects = self.raycaster.intersectObjects(self.scene.children);
+        return _.first(_.filter(intersects, function(intersected) {
+            return intersected.object.isTile;
+        }));
     },
 
     setPiecePosition: function(object, pos) {
@@ -334,39 +426,6 @@ module.exports = {
         self.previousTime = now;
 
         // Animations
-        if (self.mousePos) {
-            self.raycaster.setFromCamera(self.mousePos, self.camera);
-
-            var intersects = self.raycaster.intersectObjects(self.scene.children);
-            var tile = _.first(_.filter(intersects, function(intersected) {
-                return intersected.object.isTile;
-            }));
-
-            if (tile) {
-                if (tile !== self.previousIntersect) {
-                    if (self.previousIntersect) {
-                        self.previousIntersect.material.color.setHex(self.previousIntersect.previousColor);
-                        self.previousIntersect.material.opacity = self.previousIntersect.previousOpacity;
-                        self.previousIntersect = null;
-                    }
-
-                    var intersected = tile.object;
-                    intersected.previousColor = intersected.material.color.getHex();
-                    intersected.previousOpacity = intersected.material.opacity;
-                    intersected.material.color.setHex(cfg.colors.tiles.active);
-                    intersected.material.opacity = cfg.gameOpts.tileOpacity;
-
-                    self.previousIntersect = intersected;
-                }
-            } else {
-                // No intersection
-                if (self.previousIntersect) {
-                    self.previousIntersect.material.color.setHex(self.previousIntersect.previousColor);
-                    self.previousIntersect.material.opacity = self.previousIntersect.previousOpacity;
-                    self.previousIntersect = null;
-                }
-            }
-        }
 
         // Video texture
         if (self.friendVideo && self.friendVideo.readyState === self.friendVideo.HAVE_ENOUGH_DATA) {

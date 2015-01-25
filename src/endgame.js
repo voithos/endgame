@@ -4,7 +4,6 @@ require('./polyfills');
 
 var Promise = require('promise');
 var _ = require('lodash');
-var chess = require('chess.js');
 
 var user = require('./user');
 var game = require('./game');
@@ -164,31 +163,43 @@ var endgame = {
 
         views.showStatusScreen()
             .then(function() {
-                // Begin chess game
-                scene.addTileControls();
+                return new Promise(function(resolve, reject) {
+                    // Begin chess game
+                    self.chess = new Chess();
+                    self.isMyTurn = self.side === 'white';
 
-                self.chess = new Chess();
-                self.isMyTurn = self.side === 'white';
+                    scene.addTileControls(function(pos) {
+                        return self.chess.moves({ square: pos, verbose: true });
+                    }, function(from, to) {
+                        var move = self.chess.move({ from: from, to: to });
+                        if (move) {
+                        } else {
+                            log('ERROR: illegal move attempted locally - bug?');
+                        }
+                    });
 
-                var afterMove = function() {
-                    self.isMyTurn = !self.isMyTurn;
-                };
+                    var afterMove = function(move) {
+                        self.isMyTurn = !self.isMyTurn;
+                    };
 
-                rtc.addDataListener(function(data, conn) {
-                    if (data.event === 'chessmove') {
-                        if (!self.isMyTurn) {
-                            if (self.chess.move(data.move)) {
-                                afterMove();
+                    rtc.addDataListener(function(data, conn) {
+                        if (data.event === 'chessmove') {
+                            if (!self.isMyTurn) {
+                                if (self.chess.move(data.move)) {
+                                    afterMove(data.move);
+                                } else {
+                                    log('ERROR: opponent attempted invalid move', data.move.from, data.move.to);
+                                }
                             } else {
-                                log('ERROR: opponent attempted invalid move', data.move.from, data.move.to);
+                                log('ERROR: opponent attempted to move on my turn');
                             }
                         } else {
-                            log('ERROR: opponent attempted to move on my turn');
                         }
-                    } else {
-                    }
+                    });
                 });
-            });
+            })
+            .done();
+
     }
 };
 
