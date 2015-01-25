@@ -24,3 +24,6 @@ open source libraries and assets. Here's the list of them:
 
 - Chess pieces (`public/data/[piece].json`): author `cemkalyoncu` from
   http://opengameart.org/content/chess-pieces-2
+- Chess board (`public/data/board.json`): author `pennomi` from
+  http://opengameart.org/content/chess-board. Texture by `Tiziana` from
+  http://opengameart.org/node/6988

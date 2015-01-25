@@ -10,17 +10,20 @@ var game = require('./game');
 var routes = require('./routes');
 var rtc = require('./rtc');
 var scene = require('./scene');
+var settings = require('./settings');
 var utils = require('./utils');
 var views = require('./views');
 var log = require('./log');
 
-var Endgame = {
+var endgame = {
+    settings: settings,
     main: function() {
         var self = this;
 
         scene.init();
         scene.loadGameGeometry()
-            .then(scene.setupBoard.bind(scene));
+            .then(scene.setupBoard.bind(scene))
+            .done();
 
         scene.beginRender();
 
@@ -63,6 +66,6 @@ var Endgame = {
     }
 };
 
-global.Endgame = Endgame;
+global.endgame = endgame;
 
-Endgame.main();
+endgame.main();

@@ -12,17 +12,20 @@ var game = require('./game');
 var routes = require('./routes');
 var rtc = require('./rtc');
 var scene = require('./scene');
+var settings = require('./settings');
 var utils = require('./utils');
 var views = require('./views');
 var log = require('./log');
 
-var Endgame = {
+var endgame = {
+    settings: settings,
     main: function() {
         var self = this;
 
         scene.init();
         scene.loadGameGeometry()
-            .then(scene.setupBoard.bind(scene));
+            .then(scene.setupBoard.bind(scene))
+            .done();
 
         scene.beginRender();
 
@@ -65,12 +68,12 @@ var Endgame = {
     }
 };
 
-global.Endgame = Endgame;
+global.endgame = endgame;
 
-Endgame.main();
+endgame.main();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./game":"/home/daisy/Projects/ss15-black-kite/src/game.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./polyfills":"/home/daisy/Projects/ss15-black-kite/src/polyfills.js","./routes":"/home/daisy/Projects/ss15-black-kite/src/routes.js","./rtc":"/home/daisy/Projects/ss15-black-kite/src/rtc.js","./scene":"/home/daisy/Projects/ss15-black-kite/src/scene.js","./user":"/home/daisy/Projects/ss15-black-kite/src/user.js","./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","./views":"/home/daisy/Projects/ss15-black-kite/src/views.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
+},{"./game":"/home/daisy/Projects/ss15-black-kite/src/game.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./polyfills":"/home/daisy/Projects/ss15-black-kite/src/polyfills.js","./routes":"/home/daisy/Projects/ss15-black-kite/src/routes.js","./rtc":"/home/daisy/Projects/ss15-black-kite/src/rtc.js","./scene":"/home/daisy/Projects/ss15-black-kite/src/scene.js","./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","./user":"/home/daisy/Projects/ss15-black-kite/src/user.js","./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","./views":"/home/daisy/Projects/ss15-black-kite/src/views.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -7488,8 +7491,7 @@ module.exports = {
         document.body.appendChild(self.renderer.domElement);
 
         self.addLighting();
-        self.camera.position.y = 5;
-        self.camera.position.z = 20;
+        self.setInitialCameraPos();
     },
 
     createRenderer: function() {
@@ -7515,8 +7517,16 @@ module.exports = {
     addLighting: function() {
         var self = this;
         var light = new THREE.DirectionalLight();
-        light.position.set(0, 0, 1);
+        light.position.set(20, 20, 10);
         self.scene.add(light);
+    },
+
+    setInitialCameraPos: function() {
+        var self = this;
+        self.camera.position.x = settings.gameOpts.cameraStartPos.x;
+        self.camera.position.y = settings.gameOpts.cameraStartPos.y;
+        self.camera.position.z = settings.gameOpts.cameraStartPos.z;
+        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
     },
 
     loadGameGeometry: function() {
@@ -7524,16 +7534,16 @@ module.exports = {
         self.meshes = {};
 
         // Load all pieces
-        return Promise.all(_.map(settings.pieces, function(piece) {
+        return Promise.all(_.map(settings.pieces.concat(settings.assets), function(assets) {
             return new Promise(function(resolve, reject) {
                 var loader = new THREE.JSONLoader();
-                loader.load('data/' + piece + '.json', function(geometry, materials) {
-                    var object = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+                loader.load('data/' + assets + '.json', function(geometry, materials) {
+                    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 
-                    self.meshes[piece] = object;
-                    log('done loading', piece);
+                    self.meshes[assets] = mesh;
+                    log('done loading', assets);
 
-                    resolve(object);
+                    resolve(mesh);
                 });
             });
         }));
@@ -7542,13 +7552,56 @@ module.exports = {
     setupBoard: function() {
         var self = this;
 
-        _.forEach(settings.pieces, function(piece, i) {
-            var model = new THREE.Object3D();
-            model.add(self.meshes[piece]);
-            model.position.setX(-10 + i * 4);
+        self.pieces = {};
 
-            self.scene.add(model);
+        // Add board
+        self.board = new THREE.Object3D();
+        self.board.add(self.meshes.board);
+        self.board.scale.set(
+            settings.gameOpts.boardScale,
+            settings.gameOpts.boardScale,
+            settings.gameOpts.boardScale
+        );
+
+        self.scene.add(self.board);
+
+        // Add pieces for both sides
+        _.forEach(settings.startPosition, function(pieces, side) {
+            _.forEach(pieces, function(piece, i) {
+                self.addPiece(piece.pos, piece.type, side);
+            });
         });
+    },
+
+    addPiece: function(pos, type, side) {
+        log('creating', type, side);
+
+        var self = this;
+        var object = new THREE.Object3D();
+        object.add(self.meshes[type].clone());
+        object.position.setY(settings.gameOpts.pieceYOffset);
+
+        self.setPiecePosition(object, pos);
+
+        // Rotate white
+        if (side === 'white') {
+            object.rotation.y = Math.PI;
+        }
+
+        self.scene.add(object);
+        self.pieces[pos] = {
+            type: type,
+            side: side,
+            object: object
+        };
+    },
+
+    setPiecePosition: function(object, pos) {
+        var offsetX = settings.fileToOffset[pos[0]];
+        var offsetZ = settings.rankToOffset[pos[1]];
+
+        object.position.setX(-settings.gameOpts.boardStartOffset + offsetX * settings.gameOpts.tileSize);
+        object.position.setZ(settings.gameOpts.boardStartOffset - offsetZ * settings.gameOpts.tileSize);
     },
 
     beginRender: function() {
@@ -7577,7 +7630,35 @@ module.exports = {
 },{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./settings":"/home/daisy/Projects/ss15-black-kite/src/settings.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/settings.js":[function(require,module,exports){
 'use strict';
 
+var _ = require('lodash');
+var utils = require('./utils');
+
 var DB_BASE_URL = 'https://endgame-chess.firebaseio.com';
+
+var BOARD_SIZE = 8;
+var RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
+var FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+var LAYOUT = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
+
+/* Helper functions */
+var genPiece = function(vs) {
+    var pos = vs[0];
+    var type = vs[1];
+    return {
+        pos: pos.join(''),
+        type: type
+    };
+};
+
+var genRank = function(rank, rankPieces) {
+    return _.map(
+        _.zip(
+            _.zip(FILES, utils.repeat(rank, BOARD_SIZE)),
+            rankPieces
+        ),
+        genPiece
+    );
+};
 
 module.exports = {
     dbBaseUrl: DB_BASE_URL,
@@ -7593,10 +7674,43 @@ module.exports = {
         { 'url': 'stun4.l.google.com:19302' }
     ],
 
-    pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king']
+    pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
+    assets: ['board'],
+
+    ranks: RANKS,
+    files: FILES,
+
+    startPosition: {
+        white: (
+            // Pawns
+            genRank('2', utils.repeat('pawn', BOARD_SIZE)).concat(
+                // Higher pieces
+                genRank('1', LAYOUT)
+            )
+        ),
+        black: (
+            // Pawns
+            genRank('7', utils.repeat('pawn', BOARD_SIZE)).concat(
+                // Higher pieces
+                genRank('8', LAYOUT)
+            )
+        )
+    },
+
+    rankToOffset: _.zipObject(RANKS, _.range(BOARD_SIZE)),
+    fileToOffset: _.zipObject(FILES, _.range(BOARD_SIZE)),
+
+    gameOpts: {
+        boardScale: 4.7,
+        boardStartOffset: 16.5,
+        tileSize: 4.7,
+        pieceYOffset: 2,
+
+        cameraStartPos: { x: 30, y: 15, z: 30 }
+    }
 };
 
-},{}],"/home/daisy/Projects/ss15-black-kite/src/user.js":[function(require,module,exports){
+},{"./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js"}],"/home/daisy/Projects/ss15-black-kite/src/user.js":[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -7616,6 +7730,14 @@ var _ = require('lodash');
 module.exports = {
     pathParts: function(path) {
         return _.filter(path.split('/'));
+    },
+
+    repeat: function(v, n) {
+        return _.map(Array.apply(null, new Array(n)), this.identity.bind(null, v));
+    },
+
+    identity: function(v) {
+        return v;
     }
 };
 

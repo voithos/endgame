@@ -19,8 +19,7 @@ module.exports = {
         document.body.appendChild(self.renderer.domElement);
 
         self.addLighting();
-        self.camera.position.y = 5;
-        self.camera.position.z = 20;
+        self.setInitialCameraPos();
     },
 
     createRenderer: function() {
@@ -46,8 +45,16 @@ module.exports = {
     addLighting: function() {
         var self = this;
         var light = new THREE.DirectionalLight();
-        light.position.set(0, 0, 1);
+        light.position.set(20, 20, 10);
         self.scene.add(light);
+    },
+
+    setInitialCameraPos: function() {
+        var self = this;
+        self.camera.position.x = settings.gameOpts.cameraStartPos.x;
+        self.camera.position.y = settings.gameOpts.cameraStartPos.y;
+        self.camera.position.z = settings.gameOpts.cameraStartPos.z;
+        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
     },
 
     loadGameGeometry: function() {
@@ -55,16 +62,16 @@ module.exports = {
         self.meshes = {};
 
         // Load all pieces
-        return Promise.all(_.map(settings.pieces, function(piece) {
+        return Promise.all(_.map(settings.pieces.concat(settings.assets), function(assets) {
             return new Promise(function(resolve, reject) {
                 var loader = new THREE.JSONLoader();
-                loader.load('data/' + piece + '.json', function(geometry, materials) {
-                    var object = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+                loader.load('data/' + assets + '.json', function(geometry, materials) {
+                    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 
-                    self.meshes[piece] = object;
-                    log('done loading', piece);
+                    self.meshes[assets] = mesh;
+                    log('done loading', assets);
 
-                    resolve(object);
+                    resolve(mesh);
                 });
             });
         }));
@@ -73,13 +80,56 @@ module.exports = {
     setupBoard: function() {
         var self = this;
 
-        _.forEach(settings.pieces, function(piece, i) {
-            var model = new THREE.Object3D();
-            model.add(self.meshes[piece]);
-            model.position.setX(-10 + i * 4);
+        self.pieces = {};
 
-            self.scene.add(model);
+        // Add board
+        self.board = new THREE.Object3D();
+        self.board.add(self.meshes.board);
+        self.board.scale.set(
+            settings.gameOpts.boardScale,
+            settings.gameOpts.boardScale,
+            settings.gameOpts.boardScale
+        );
+
+        self.scene.add(self.board);
+
+        // Add pieces for both sides
+        _.forEach(settings.startPosition, function(pieces, side) {
+            _.forEach(pieces, function(piece, i) {
+                self.addPiece(piece.pos, piece.type, side);
+            });
         });
+    },
+
+    addPiece: function(pos, type, side) {
+        log('creating', type, side);
+
+        var self = this;
+        var object = new THREE.Object3D();
+        object.add(self.meshes[type].clone());
+        object.position.setY(settings.gameOpts.pieceYOffset);
+
+        self.setPiecePosition(object, pos);
+
+        // Rotate white
+        if (side === 'white') {
+            object.rotation.y = Math.PI;
+        }
+
+        self.scene.add(object);
+        self.pieces[pos] = {
+            type: type,
+            side: side,
+            object: object
+        };
+    },
+
+    setPiecePosition: function(object, pos) {
+        var offsetX = settings.fileToOffset[pos[0]];
+        var offsetZ = settings.rankToOffset[pos[1]];
+
+        object.position.setX(-settings.gameOpts.boardStartOffset + offsetX * settings.gameOpts.tileSize);
+        object.position.setZ(settings.gameOpts.boardStartOffset - offsetZ * settings.gameOpts.tileSize);
     },
 
     beginRender: function() {
