@@ -1,6 +1,6 @@
 'use strict';
 
-var logEnabled = true;
+let logEnabled = true;
 
 module.exports = function() {
     if (global.console && logEnabled) {

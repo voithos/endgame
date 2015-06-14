@@ -1,14 +1,14 @@
 'use strict';
 
-var Promise = require('promise');
-var _ = require('lodash');
+let Promise = require('promise');
+let _ = require('lodash');
 
-var cfg = require('./config');
-var log = require('./log');
+let cfg = require('./config');
+let log = require('./log');
 
 module.exports = {
     init: function() {
-        var self = this;
+        let self = this;
         self.scene = new THREE.Scene();
         self.camera = new THREE.PerspectiveCamera(
             45, window.innerWidth / window.innerHeight, 0.1, 1000
@@ -27,7 +27,7 @@ module.exports = {
     },
 
     resize: function() {
-        var self = this;
+        let self = this;
         self.camera.aspect = window.innerWidth / window.innerHeight;
         self.camera.updateProjectionMatrix();
 
@@ -36,8 +36,8 @@ module.exports = {
 
     createRenderer: function() {
         // Choose between WebGL and Canvas renderer based on availability
-        var self = this;
-        var renderer = self.webglAvailable() ?
+        let self = this;
+        let renderer = self.webglAvailable() ?
             new THREE.WebGLRenderer({ antialias: true }) :
             new THREE.CanvasRenderer();
 
@@ -46,7 +46,7 @@ module.exports = {
 
     webglAvailable: function() {
         try {
-            var canvas = document.createElement('canvas');
+            let canvas = document.createElement('canvas');
             return !!(window.WebGLRenderingContext && (
                 canvas.getContext('webgl') ||
                 canvas.getContext('experimental-webgl')
@@ -57,7 +57,7 @@ module.exports = {
     },
 
     addLighting: function() {
-        var self = this;
+        let self = this;
         self.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
         self.dirLight.position.set(0, 80, 0).normalize();
         self.scene.add(self.dirLight);
@@ -67,7 +67,7 @@ module.exports = {
     },
 
     setInitialCameraPos: function() {
-        var self = this;
+        let self = this;
         self.camera.position.x = cfg.gameOpts.cameraStartPos.x;
         self.camera.position.y = cfg.gameOpts.cameraStartPos.y;
         self.camera.position.z = cfg.gameOpts.cameraStartPos.z;
@@ -75,7 +75,7 @@ module.exports = {
     },
 
     setPlayCameraPos: function(side) {
-        var self = this;
+        let self = this;
         self.camera.position.x = cfg.gameOpts.cameraPlayPos.x;
         self.camera.position.y = cfg.gameOpts.cameraPlayPos.y;
         self.camera.position.z = (side === 'black' ? -1 : 1) * cfg.gameOpts.cameraPlayPos.z;
@@ -87,18 +87,18 @@ module.exports = {
     },
 
     loadGameGeometry: function() {
-        var self = this;
+        let self = this;
         self.meshes = {};
 
         // Load all pieces
         return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function(asset) {
             return new Promise(function(resolve, reject) {
-                var loader = new THREE.JSONLoader();
+                let loader = new THREE.JSONLoader();
                 loader.load('data/' + asset + '.json', function(geometry, materials) {
-                    var material = materials[0];
+                    let material = materials[0];
 
                     if (_.contains(cfg.assets, asset)) {
-                        var mesh = new THREE.Mesh(geometry, material);
+                        let mesh = new THREE.Mesh(geometry, material);
                         self.meshes[asset] = mesh;
                     } else {
                         // Compute normals
@@ -107,13 +107,13 @@ module.exports = {
 
                         // Duplicate black/white
                         _.forEach(cfg.sides, function(side) {
-                            var meshMaterial = material.clone();
+                            let meshMaterial = material.clone();
                             meshMaterial.color.setHex(cfg.colors.pieces[side].color);
                             meshMaterial.ambient.setHex(cfg.colors.pieces[side].ambient);
                             meshMaterial.emissive.setHex(cfg.colors.pieces[side].emissive);
                             meshMaterial.specular.setHex(cfg.colors.pieces[side].specular);
 
-                            var mesh = new THREE.Mesh(geometry, meshMaterial);
+                            let mesh = new THREE.Mesh(geometry, meshMaterial);
 
                             if (!self.meshes[side]) {
                                 self.meshes[side] = {};
@@ -130,7 +130,7 @@ module.exports = {
     },
 
     setupBoard: function() {
-        var self = this;
+        let self = this;
 
         self.addSkybox();
         self.addBoard();
@@ -138,21 +138,21 @@ module.exports = {
     },
 
     addSkybox: function() {
-        var self = this;
+        let self = this;
 
-        var material = new THREE.MeshLambertMaterial({
+        let material = new THREE.MeshLambertMaterial({
             color: 0xdadada,
             depthWrite: false,
             side: THREE.BackSide
         });
 
-        var mesh = new THREE.Mesh(new THREE.BoxGeometry(150, 100, 200), material);
+        let mesh = new THREE.Mesh(new THREE.BoxGeometry(150, 100, 200), material);
         mesh.position.set(0, 50, 0);
         // self.scene.add(mesh);
     },
 
     addBoard: function() {
-        var self = this;
+        let self = this;
 
         self.board = new THREE.Object3D();
         self.board.add(self.meshes.board);
@@ -166,7 +166,7 @@ module.exports = {
     },
 
     addPieces: function() {
-        var self = this;
+        let self = this;
         self.pieces = {};
         self.captured = { 'w': [], 'b': [] };
 
@@ -180,8 +180,8 @@ module.exports = {
     addPiece: function(pos, type, side) {
         log('creating', type, side);
 
-        var self = this;
-        var object = new THREE.Object3D();
+        let self = this;
+        let object = new THREE.Object3D();
         object.add(self.meshes[side][type].clone());
         object.position.setY(cfg.gameOpts.pieceYOffset);
 
@@ -201,9 +201,9 @@ module.exports = {
     },
 
     addFriendScreen: function(side, video) {
-        var self = this;
+        let self = this;
 
-        var material;
+        let material;
 
         if (video) {
             self.friendVideo = video;
@@ -222,20 +222,20 @@ module.exports = {
             });
         }
 
-        var filler = new THREE.MeshLambertMaterial({
+        let filler = new THREE.MeshLambertMaterial({
             color: cfg.colors.friendScreen
         });
 
         // Only a single face needs the video
-        var materials = [filler, filler, filler, filler, material, filler];
+        let materials = [filler, filler, filler, filler, material, filler];
 
-        var geometry = new THREE.BoxGeometry(
+        let geometry = new THREE.BoxGeometry(
             cfg.gameOpts.friendScreenSize.x,
             cfg.gameOpts.friendScreenSize.y,
             cfg.gameOpts.friendScreenSize.z
         );
 
-        var cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+        let cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
         cube.position.set(
             cfg.gameOpts.friendScreenPos.x,
             cfg.gameOpts.friendScreenPos.y,
@@ -253,19 +253,19 @@ module.exports = {
     },
 
     addTileControls: function(legalCallback, moveCallback) {
-        var self = this;
+        let self = this;
         self.legalCallback = legalCallback;
         self.moveCallback = moveCallback;
 
         self.tiles = {};
 
         // Create geometry and material
-        var geometry = new THREE.PlaneGeometry(
+        let geometry = new THREE.PlaneGeometry(
             cfg.gameOpts.tileSize,
             cfg.gameOpts.tileSize
         );
 
-        var material = new THREE.MeshLambertMaterial({
+        let material = new THREE.MeshLambertMaterial({
             color: cfg.colors.tiles.active,
             side: THREE.DoubleSide,
             transparent: true,
@@ -285,12 +285,12 @@ module.exports = {
     },
 
     addTileControl: function(pos, geometry, material) {
-        var self = this;
+        let self = this;
 
-        var offsetX = cfg.fileToOffset[pos[0]];
-        var offsetZ = cfg.rankToOffset[pos[1]];
+        let offsetX = cfg.fileToOffset[pos[0]];
+        let offsetZ = cfg.rankToOffset[pos[1]];
 
-        var tile = new THREE.Mesh(geometry, material);
+        let tile = new THREE.Mesh(geometry, material);
         tile.rotation.x = Math.PI / 2;
         tile.position.setY(cfg.gameOpts.pieceYOffset + 0.05);
 
@@ -305,7 +305,7 @@ module.exports = {
     },
 
     addMouseListeners: function() {
-        var self = this;
+        let self = this;
         self.mousePos = new THREE.Vector2();
         document.addEventListener('mousemove', self.onMouseMove.bind(self), false);
         document.addEventListener('mousedown', self.onMouseDown.bind(self), false);
@@ -313,24 +313,24 @@ module.exports = {
     },
 
     onMouseMove: function(event) {
-        var self = this;
+        let self = this;
         self.updateMousePos(event);
         self.highlightActiveTile();
     },
 
     updateMousePos: function(event) {
-        var self = this;
+        let self = this;
         self.mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
         self.mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
     },
 
     highlightActiveTile: function() {
-        var self = this;
+        let self = this;
         self.recolorTiles();
 
-        var intersected = self.intersectTile();
+        let intersected = self.intersectTile();
         if (intersected) {
-            var tile = intersected.object;
+            let tile = intersected.object;
             self.colorTile(tile, cfg.colors.tiles.active);
         }
     },
@@ -338,16 +338,16 @@ module.exports = {
     onMouseDown: function(event) {
         event.preventDefault();
 
-        var self = this;
+        let self = this;
         self.handleMoveSelection();
     },
 
     handleMoveSelection: function() {
-        var self = this;
-        var intersected = self.intersectTile();
+        let self = this;
+        let intersected = self.intersectTile();
 
         if (intersected) {
-            var tile = intersected.object;
+            let tile = intersected.object;
 
             // We're either in 'piece' or 'move' selection mode (the latter
             // being specific to a piece)
@@ -366,7 +366,7 @@ module.exports = {
     },
 
     commitMove: function(tile) {
-        var self = this;
+        let self = this;
         self.moveCallback.call(self, self.selectedPos, tile.chessPos);
 
         self.isSelectingPieceMovement = false;
@@ -374,7 +374,7 @@ module.exports = {
     },
 
     highlightLegalMoves: function(tile) {
-        var self = this;
+        let self = this;
         self.isSelectingPieceMovement = true;
         self.selectedPos = tile.chessPos;
 
@@ -383,14 +383,14 @@ module.exports = {
         // Get legal moves and highlight them
         self.currentLegalMoves = self.legalCallback.call(self, tile.chessPos);
         _.forEach(self.currentLegalMoves, function(move) {
-            var tile = self.tiles[move.to];
+            let tile = self.tiles[move.to];
             tile.isLegalMove = true;
             self.colorTile(tile, cfg.colors.tiles.legal);
         });
     },
 
     resetTileHighlights: function() {
-        var self = this;
+        let self = this;
 
         _.forEach(self.tiles, function(tile, pos) {
             tile.isLegalMove = null;
@@ -399,7 +399,7 @@ module.exports = {
     },
 
     recolorTiles: function() {
-        var self = this;
+        let self = this;
 
         _.forEach(self.tiles, function(tile, pos) {
             self.hideTile(tile);
@@ -427,8 +427,8 @@ module.exports = {
     },
 
     performGraphicalMove: function(move) {
-        var self = this;
-        var piece = self.pieces[move.from];
+        let self = this;
+        let piece = self.pieces[move.from];
 
         if (typeof piece === 'undefined') {
             log('ERROR: piece not found - bug?');
@@ -447,7 +447,7 @@ module.exports = {
         }
         if (move.flags.indexOf('c') !== -1) {
             /** Standard capture */
-            var capturedPiece = self.pieces[move.to];
+            let capturedPiece = self.pieces[move.to];
             delete self.pieces[move.to];
             self.captured[move.color].push(capturedPiece);
 
@@ -484,18 +484,18 @@ module.exports = {
     },
 
     intersectTile: function() {
-        var self = this;
+        let self = this;
         self.raycaster.setFromCamera(self.mousePos, self.camera);
 
-        var intersects = self.raycaster.intersectObjects(self.scene.children);
+        let intersects = self.raycaster.intersectObjects(self.scene.children);
         return _.first(_.filter(intersects, function(intersected) {
             return intersected.object.isTile;
         }));
     },
 
     setPiecePosition: function(object, pos) {
-        var offsetX = cfg.fileToOffset[pos[0]];
-        var offsetZ = cfg.rankToOffset[pos[1]];
+        let offsetX = cfg.fileToOffset[pos[0]];
+        let offsetZ = cfg.rankToOffset[pos[1]];
 
         object.position.setX(-cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize);
         object.position.setZ(cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize);
@@ -506,20 +506,20 @@ module.exports = {
     },
 
     beginRender: function() {
-        var self = this;
+        let self = this;
         self.render = self.render.bind(self);
         self.previousTime = new Date().getTime();
         self.requestId = requestAnimationFrame(self.render);
     },
 
     render: function(timestamp) {
-        var self = this;
+        let self = this;
 
         self.requestId = requestAnimationFrame(self.render);
 
         // Compute delta time
-        var now = new Date().getTime();
-        var delta = now - self.previousTime;
+        let now = new Date().getTime();
+        let delta = now - self.previousTime;
         self.previousTime = now;
 
         // Animations

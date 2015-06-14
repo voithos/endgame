@@ -2,25 +2,25 @@
 
 require('./polyfills');
 
-var Promise = require('promise');
-var _ = require('lodash');
+let Promise = require('promise');
+let _ = require('lodash');
 
-var user = require('./user');
-var game = require('./game');
-var media = require('./media');
-var routes = require('./routes');
-var rtc = require('./rtc');
-var scene = require('./scene');
-var cfg = require('./config');
-var utils = require('./utils');
-var views = require('./views');
-var log = require('./log');
+let user = require('./user');
+let game = require('./game');
+let media = require('./media');
+let routes = require('./routes');
+let rtc = require('./rtc');
+let scene = require('./scene');
+let cfg = require('./config');
+let utils = require('./utils');
+let views = require('./views');
+let log = require('./log');
 
-var endgame = {
+let endgame = {
     config: cfg,
 
     main: function() {
-        var self = this;
+        let self = this;
 
         scene.init();
         scene.loadGameGeometry()
@@ -29,7 +29,7 @@ var endgame = {
 
         scene.beginRender();
 
-        var gameId = routes.parseGameId();
+        let gameId = routes.parseGameId();
         if (gameId) {
             self.isHost = false;
             self.connectToGame(gameId);
@@ -40,7 +40,7 @@ var endgame = {
     },
 
     setupGame: function() {
-        var self = this;
+        let self = this;
         self.side = 'white';
 
         rtc.init()
@@ -55,7 +55,7 @@ var endgame = {
     },
 
     connectToGame: function(gameId) {
-        var self = this;
+        let self = this;
         self.side = 'black';
 
         rtc.init()
@@ -71,7 +71,7 @@ var endgame = {
     setupMedia: function() {
         log('setting up the media');
 
-        var self = this;
+        let self = this;
 
         return views.showMediaScreen()
             .then(function() {
@@ -120,7 +120,7 @@ var endgame = {
     performMediaCalls: function() {
         log('performing remote media calls');
 
-        var self = this;
+        let self = this;
 
         if (!self.localHasMedia && !self.remoteHasMedia) {
             // No media to exchange
@@ -130,7 +130,7 @@ var endgame = {
         // Because caller must provide mediaStream, we need to figure out if
         // we're the caller or not. If the host has a mediaStream, it will
         // always be the caller; otherwise, the friend will be.
-        var isCaller = (self.isHost && self.localHasMedia) ||
+        let isCaller = (self.isHost && self.localHasMedia) ||
             (!self.isHost && !self.remoteHasMedia && self.localHasMedia);
 
         return rtc.performMediaCall(
@@ -140,12 +140,12 @@ var endgame = {
     },
 
     displayRemoteMedia: function(call) {
-        var self = this;
+        let self = this;
 
         return new Promise(function(resolve, reject) {
             if (self.remoteHasMedia) {
                 call.on('stream', function(remoteMediaStream) {
-                    var video = media.configureRemoteStream(remoteMediaStream);
+                    let video = media.configureRemoteStream(remoteMediaStream);
                     scene.addFriendScreen(self.side, video);
                     resolve();
                 });
@@ -159,7 +159,7 @@ var endgame = {
     beginGame: function() {
         log('commencing game');
 
-        var self = this;
+        let self = this;
 
         views.showStatusScreen()
             .then(function() {
@@ -171,7 +171,7 @@ var endgame = {
                     scene.addTileControls(function(pos) {
                         return self.chess.moves({ square: pos, verbose: true });
                     }, function(from, to) {
-                        var move = self.chess.move({ from: from, to: to });
+                        let move = self.chess.move({ from: from, to: to });
 
                         if (move) {
                             // Send move to remote
@@ -185,7 +185,7 @@ var endgame = {
                         }
                     });
 
-                    var afterMove = function(move) {
+                    let afterMove = function(move) {
                         self.isMyTurn = !self.isMyTurn;
                         scene.performGraphicalMove(move);
 
@@ -196,7 +196,7 @@ var endgame = {
                         if (data.event === 'chessmove') {
                             if (!self.isMyTurn) {
                                 // Apply remove move
-                                var move = self.chess.move(data.move);
+                                let move = self.chess.move(data.move);
 
                                 if (move) {
                                     afterMove(move);

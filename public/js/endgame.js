@@ -21,13 +21,11 @@ var log = require('./log');
 var endgame = {
     config: cfg,
 
-    main: function() {
+    main: function main() {
         var self = this;
 
         scene.init();
-        scene.loadGameGeometry()
-            .then(scene.setupBoard.bind(scene))
-            .done();
+        scene.loadGameGeometry().then(scene.setupBoard.bind(scene)).done();
 
         scene.beginRender();
 
@@ -41,85 +39,67 @@ var endgame = {
         }
     },
 
-    setupGame: function() {
+    setupGame: function setupGame() {
         var self = this;
         self.side = 'white';
 
-        rtc.init()
-            .then(game.create.bind(game))
-            .then(views.showWaitScreen.bind(views))
-            .then(rtc.listen.bind(rtc))
-            .then(self.setupMedia.bind(self))
-            .then(self.performMediaCalls.bind(self))
-            .then(self.displayRemoteMedia.bind(self))
-            .then(self.beginGame.bind(self))
-            .done();
+        rtc.init().then(game.create.bind(game)).then(views.showWaitScreen.bind(views)).then(rtc.listen.bind(rtc)).then(self.setupMedia.bind(self)).then(self.performMediaCalls.bind(self)).then(self.displayRemoteMedia.bind(self)).then(self.beginGame.bind(self)).done();
     },
 
-    connectToGame: function(gameId) {
+    connectToGame: function connectToGame(gameId) {
         var self = this;
         self.side = 'black';
 
-        rtc.init()
-            .then(game.join.bind(game, gameId))
-            .then(rtc.connect.bind(rtc))
-            .then(self.setupMedia.bind(self))
-            .then(self.performMediaCalls.bind(self))
-            .then(self.displayRemoteMedia.bind(self))
-            .then(self.beginGame.bind(self))
-            .done();
+        rtc.init().then(game.join.bind(game, gameId)).then(rtc.connect.bind(rtc)).then(self.setupMedia.bind(self)).then(self.performMediaCalls.bind(self)).then(self.displayRemoteMedia.bind(self)).then(self.beginGame.bind(self)).done();
     },
 
-    setupMedia: function() {
+    setupMedia: function setupMedia() {
         log('setting up the media');
 
         var self = this;
 
-        return views.showMediaScreen()
-            .then(function() {
-                // We need to wait for both the local and remote media to be resolved
+        return views.showMediaScreen().then(function () {
+            // We need to wait for both the local and remote media to be resolved
 
-                return Promise.all([
-                    // Wait for notice from remote regarding media
-                    new Promise(function(resolve, reject) {
-                        rtc.addDataListener(function(data, conn) {
-                            if (data.event === 'mediarequestcomplete') {
-                                self.remoteHasMedia = data.hasMedia;
-                                log('remote media request complete:', self.remoteHasMedia);
+            return Promise.all([
+            // Wait for notice from remote regarding media
+            new Promise(function (resolve, reject) {
+                rtc.addDataListener(function (data, conn) {
+                    if (data.event === 'mediarequestcomplete') {
+                        self.remoteHasMedia = data.hasMedia;
+                        log('remote media request complete:', self.remoteHasMedia);
 
-                                resolve();
-                            } else {
-                                log('ERROR: unknown event type', data.event);
-                            }
-                        }, true);
-                    }),
+                        resolve();
+                    } else {
+                        log('ERROR: unknown event type', data.event);
+                    }
+                }, true);
+            }),
 
-                    // Request local media
-                    media.init()
-                        .then(function() {
-                            self.localHasMedia = true;
-                            log('local media granted');
+            // Request local media
+            media.init().then(function () {
+                self.localHasMedia = true;
+                log('local media granted');
 
-                            media.playLocalStream();
+                media.playLocalStream();
 
-                            rtc.sendData({
-                                event: 'mediarequestcomplete',
-                                hasMedia: true
-                            });
-                        }, function() {
-                            self.localHasMedia = false;
-                            log('local media denied');
+                rtc.sendData({
+                    event: 'mediarequestcomplete',
+                    hasMedia: true
+                });
+            }, function () {
+                self.localHasMedia = false;
+                log('local media denied');
 
-                            rtc.sendData({
-                                event: 'mediarequestcomplete',
-                                hasMedia: false
-                            });
-                        })
-                ]);
-            });
+                rtc.sendData({
+                    event: 'mediarequestcomplete',
+                    hasMedia: false
+                });
+            })]);
+        });
     },
 
-    performMediaCalls: function() {
+    performMediaCalls: function performMediaCalls() {
         log('performing remote media calls');
 
         var self = this;
@@ -132,21 +112,17 @@ var endgame = {
         // Because caller must provide mediaStream, we need to figure out if
         // we're the caller or not. If the host has a mediaStream, it will
         // always be the caller; otherwise, the friend will be.
-        var isCaller = (self.isHost && self.localHasMedia) ||
-            (!self.isHost && !self.remoteHasMedia && self.localHasMedia);
+        var isCaller = self.isHost && self.localHasMedia || !self.isHost && !self.remoteHasMedia && self.localHasMedia;
 
-        return rtc.performMediaCall(
-            isCaller,
-            self.localHasMedia && media.localMediaStream
-        );
+        return rtc.performMediaCall(isCaller, self.localHasMedia && media.localMediaStream);
     },
 
-    displayRemoteMedia: function(call) {
+    displayRemoteMedia: function displayRemoteMedia(call) {
         var self = this;
 
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             if (self.remoteHasMedia) {
-                call.on('stream', function(remoteMediaStream) {
+                call.on('stream', function (remoteMediaStream) {
                     var video = media.configureRemoteStream(remoteMediaStream);
                     scene.addFriendScreen(self.side, video);
                     resolve();
@@ -158,64 +134,61 @@ var endgame = {
         });
     },
 
-    beginGame: function() {
+    beginGame: function beginGame() {
         log('commencing game');
 
         var self = this;
 
-        views.showStatusScreen()
-            .then(function() {
-                return new Promise(function(resolve, reject) {
-                    // Begin chess game
-                    self.chess = new Chess();
-                    self.isMyTurn = self.side === 'white';
+        views.showStatusScreen().then(function () {
+            return new Promise(function (resolve, reject) {
+                // Begin chess game
+                self.chess = new Chess();
+                self.isMyTurn = self.side === 'white';
 
-                    scene.addTileControls(function(pos) {
-                        return self.chess.moves({ square: pos, verbose: true });
-                    }, function(from, to) {
-                        var move = self.chess.move({ from: from, to: to });
+                scene.addTileControls(function (pos) {
+                    return self.chess.moves({ square: pos, verbose: true });
+                }, function (from, to) {
+                    var move = self.chess.move({ from: from, to: to });
 
-                        if (move) {
-                            // Send move to remote
-                            rtc.sendData({
-                                event: 'chessmove',
-                                move: move
-                            });
-                            afterMove(move);
-                        } else {
-                            log('ERROR: illegal move attempted locally - bug?');
-                        }
-                    });
+                    if (move) {
+                        // Send move to remote
+                        rtc.sendData({
+                            event: 'chessmove',
+                            move: move
+                        });
+                        afterMove(move);
+                    } else {
+                        log('ERROR: illegal move attempted locally - bug?');
+                    }
+                });
 
-                    var afterMove = function(move) {
-                        self.isMyTurn = !self.isMyTurn;
-                        scene.performGraphicalMove(move);
+                var afterMove = function afterMove(move) {
+                    self.isMyTurn = !self.isMyTurn;
+                    scene.performGraphicalMove(move);
 
-                        // TODO: Check for game end
-                    };
+                    // TODO: Check for game end
+                };
 
-                    rtc.addDataListener(function(data, conn) {
-                        if (data.event === 'chessmove') {
-                            if (!self.isMyTurn) {
-                                // Apply remove move
-                                var move = self.chess.move(data.move);
+                rtc.addDataListener(function (data, conn) {
+                    if (data.event === 'chessmove') {
+                        if (!self.isMyTurn) {
+                            // Apply remove move
+                            var move = self.chess.move(data.move);
 
-                                if (move) {
-                                    afterMove(move);
-                                } else {
-                                    log('ERROR: opponent attempted invalid move', data);
-                                }
+                            if (move) {
+                                afterMove(move);
                             } else {
-                                log('ERROR: opponent attempted to move on my turn');
+                                log('ERROR: opponent attempted invalid move', data);
                             }
                         } else {
-                            log('ERROR: unknown event type', data.event);
+                            log('ERROR: opponent attempted to move on my turn');
                         }
-                    });
+                    } else {
+                        log('ERROR: unknown event type', data.event);
+                    }
                 });
-            })
-            .done();
-
+            });
+        }).done();
     }
 };
 
@@ -224,7 +197,7 @@ global.endgame = endgame;
 endgame.main();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./game":"/home/daisy/Projects/ss15-black-kite/src/game.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./media":"/home/daisy/Projects/ss15-black-kite/src/media.js","./polyfills":"/home/daisy/Projects/ss15-black-kite/src/polyfills.js","./routes":"/home/daisy/Projects/ss15-black-kite/src/routes.js","./rtc":"/home/daisy/Projects/ss15-black-kite/src/rtc.js","./scene":"/home/daisy/Projects/ss15-black-kite/src/scene.js","./user":"/home/daisy/Projects/ss15-black-kite/src/user.js","./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","./views":"/home/daisy/Projects/ss15-black-kite/src/views.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","./game":"/home/zaven/Projects/Programming/Active/endgame/src/game.js","./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","./media":"/home/zaven/Projects/Programming/Active/endgame/src/media.js","./polyfills":"/home/zaven/Projects/Programming/Active/endgame/src/polyfills.js","./routes":"/home/zaven/Projects/Programming/Active/endgame/src/routes.js","./rtc":"/home/zaven/Projects/Programming/Active/endgame/src/rtc.js","./scene":"/home/zaven/Projects/Programming/Active/endgame/src/scene.js","./user":"/home/zaven/Projects/Programming/Active/endgame/src/user.js","./utils":"/home/zaven/Projects/Programming/Active/endgame/src/utils.js","./views":"/home/zaven/Projects/Programming/Active/endgame/src/views.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -261,6 +234,7 @@ process.browser = true;
 process.env = {};
 process.argv = [];
 process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
 
 function noop() {}
 
@@ -283,16 +257,16 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js":[function(require,module,exports){
+},{}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js":[function(require,module,exports){
 (function (global){
 /**
  * @license
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Lo-Dash 2.4.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern -o ./dist/lodash.js`
  * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
  * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
  * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
+ * Available under MIT license <https://lodash.com/license>
  */
 ;(function() {
 
@@ -1781,6 +1755,7 @@ process.umask = function() { return 0; };
     var setBindData = !defineProperty ? noop : function(func, value) {
       descriptor.value = value;
       defineProperty(func, '__bindData__', descriptor);
+      descriptor.value = null;
     };
 
     /**
@@ -6426,7 +6401,7 @@ process.umask = function() { return 0; };
      * debugging. See http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/#toc-sourceurl
      *
      * For more information on precompiling templates see:
-     * http://lodash.com/custom-builds
+     * https://lodash.com/custom-builds
      *
      * For more information on Chrome extension sandboxes see:
      * http://developer.chrome.com/stable/extensions/sandboxingEval.html
@@ -6995,7 +6970,7 @@ process.umask = function() { return 0; };
      * @memberOf _
      * @type string
      */
-    lodash.VERSION = '2.4.1';
+    lodash.VERSION = '2.4.2';
 
     // add "Chaining" functions to the wrapper
     lodash.prototype.chain = wrapperChain;
@@ -7072,14 +7047,14 @@ process.umask = function() { return 0; };
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js":[function(require,module,exports){
+},{}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js":[function(require,module,exports){
 'use strict';
 
 module.exports = require('./lib/core.js')
 require('./lib/done.js')
 require('./lib/es6-extensions.js')
 require('./lib/node-extensions.js')
-},{"./lib/core.js":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/core.js","./lib/done.js":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/done.js","./lib/es6-extensions.js":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/es6-extensions.js","./lib/node-extensions.js":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/node-extensions.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/core.js":[function(require,module,exports){
+},{"./lib/core.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js","./lib/done.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/done.js","./lib/es6-extensions.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/es6-extensions.js","./lib/node-extensions.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/node-extensions.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js":[function(require,module,exports){
 'use strict';
 
 var asap = require('asap')
@@ -7186,7 +7161,7 @@ function doResolve(fn, onFulfilled, onRejected) {
   }
 }
 
-},{"asap":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/node_modules/asap/asap.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/done.js":[function(require,module,exports){
+},{"asap":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/done.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js')
@@ -7201,7 +7176,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
     })
   })
 }
-},{"./core.js":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/core.js","asap":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/node_modules/asap/asap.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/es6-extensions.js":[function(require,module,exports){
+},{"./core.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js","asap":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/es6-extensions.js":[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -7311,7 +7286,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 }
 
-},{"./core.js":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/core.js","asap":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/node_modules/asap/asap.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/node-extensions.js":[function(require,module,exports){
+},{"./core.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js","asap":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/node-extensions.js":[function(require,module,exports){
 'use strict';
 
 //This file contains then/promise specific extensions that are only useful for node.js interop
@@ -7376,7 +7351,7 @@ Promise.prototype.nodeify = function (callback, ctx) {
   })
 }
 
-},{"./core.js":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/lib/core.js","asap":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/node_modules/asap/asap.js"}],"/home/daisy/Projects/ss15-black-kite/node_modules/promise/node_modules/asap/asap.js":[function(require,module,exports){
+},{"./core.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js","asap":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js":[function(require,module,exports){
 (function (process){
 
 // Use the fastest possible means to execute a task in a future turn
@@ -7493,7 +7468,7 @@ module.exports = asap;
 
 
 }).call(this,require('_process'))
-},{"_process":"/home/daisy/Projects/ss15-black-kite/node_modules/browserify/node_modules/process/browser.js"}],"/home/daisy/Projects/ss15-black-kite/src/config.js":[function(require,module,exports){
+},{"_process":"/home/zaven/Projects/Programming/Active/endgame/node_modules/browserify/node_modules/process/browser.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/config.js":[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -7508,7 +7483,7 @@ var FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 var LAYOUT = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
 
 /* Helper functions */
-var genPiece = function(vs) {
+var genPiece = function genPiece(vs) {
     var pos = vs[0];
     var type = vs[1];
     return {
@@ -7517,14 +7492,8 @@ var genPiece = function(vs) {
     };
 };
 
-var genRank = function(rank, rankPieces) {
-    return _.map(
-        _.zip(
-            _.zip(FILES, utils.repeat(rank, BOARD_SIZE)),
-            rankPieces
-        ),
-        genPiece
-    );
+var genRank = function genRank(rank, rankPieces) {
+    return _.map(_.zip(_.zip(FILES, utils.repeat(rank, BOARD_SIZE)), rankPieces), genPiece);
 };
 
 module.exports = {
@@ -7533,13 +7502,7 @@ module.exports = {
     gamesUrl: DB_BASE_URL + '/games',
     peerJsKey: 'e47332e9vb4yrpb9',
 
-    iceServers: [
-        { 'url': 'stun:stun.l.google.com:19302' },
-        { 'url': 'stun:stun1.l.google.com:19302' },
-        { 'url': 'stun:stun2.l.google.com:19302' },
-        { 'url': 'stun:stun3.l.google.com:19302' },
-        { 'url': 'stun:stun4.l.google.com:19302' }
-    ],
+    iceServers: [{ 'url': 'stun:stun.l.google.com:19302' }, { 'url': 'stun:stun1.l.google.com:19302' }, { 'url': 'stun:stun2.l.google.com:19302' }, { 'url': 'stun:stun3.l.google.com:19302' }, { 'url': 'stun:stun4.l.google.com:19302' }],
 
     localMediaWidth: 240,
     mediaWidth: 320,
@@ -7554,20 +7517,16 @@ module.exports = {
     files: FILES,
 
     startPosition: {
-        white: (
-            // Pawns
-            genRank('2', utils.repeat('pawn', BOARD_SIZE)).concat(
-                // Higher pieces
-                genRank('1', LAYOUT)
-            )
-        ),
-        black: (
-            // Pawns
-            genRank('7', utils.repeat('pawn', BOARD_SIZE)).concat(
-                // Higher pieces
-                genRank('8', LAYOUT)
-            )
-        )
+        white:
+        // Pawns
+        genRank('2', utils.repeat('pawn', BOARD_SIZE)).concat(
+        // Higher pieces
+        genRank('1', LAYOUT)),
+        black:
+        // Pawns
+        genRank('7', utils.repeat('pawn', BOARD_SIZE)).concat(
+        // Higher pieces
+        genRank('8', LAYOUT))
     },
 
     rankToOffset: _.zipObject(RANKS, _.range(BOARD_SIZE)),
@@ -7591,34 +7550,34 @@ module.exports = {
     colors: {
         pieces: {
             white: {
-                color: 0xdddddd,
-                ambient: 0xffffff,
-                emissive: 0x000000,
-                specular: 0xaaaaaa
+                color: 14540253,
+                ambient: 16777215,
+                emissive: 0,
+                specular: 11184810
             },
             black: {
-                color: 0x222222,
-                ambient: 0x000000,
-                emissive: 0x000000,
-                specular: 0x111111
+                color: 2236962,
+                ambient: 0,
+                emissive: 0,
+                specular: 1118481
             }
         },
 
         tiles: {
-            active: 0xffa500,
-            legal: 0x7ac142,
-            selected: 0x3a7a99,
-            prevFrom: 0x62ccff,
-            prevTo: 0xda2820
+            active: 16753920,
+            legal: 8044866,
+            selected: 3832473,
+            prevFrom: 6475007,
+            prevTo: 14297120
         },
 
         clear: 'lightgray',
 
-        friendScreen: 0xdadada
+        friendScreen: 14342874
     }
 };
 
-},{"./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js"}],"/home/daisy/Projects/ss15-black-kite/src/game.js":[function(require,module,exports){
+},{"./utils":"/home/zaven/Projects/Programming/Active/endgame/src/utils.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/game.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7626,7 +7585,7 @@ var cfg = require('./config');
 var log = require('./log');
 
 module.exports = {
-    create: function(hostId) {
+    create: function create(hostId) {
         var self = this;
         self.ref = new Firebase(cfg.gamesUrl);
         self.gameRef = self.ref.push();
@@ -7634,33 +7593,33 @@ module.exports = {
         return Promise.resolve(self.gameRef.key());
     },
 
-    join: function(gameId) {
+    join: function join(gameId) {
         var self = this;
         self.ref = new Firebase(cfg.gamesUrl);
         self.gameRef = self.ref.child(gameId);
 
-        return new Promise(function(resolve, reject) {
-            self.gameRef.once('value', function(snapshot) {
+        return new Promise(function (resolve, reject) {
+            self.gameRef.once('value', function (snapshot) {
                 resolve(snapshot.val().hostId);
             });
         });
     }
 };
 
-},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/log.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/log.js":[function(require,module,exports){
 (function (global){
 'use strict';
 
 var logEnabled = true;
 
-module.exports = function() {
+module.exports = function () {
     if (global.console && logEnabled) {
         console.log.apply(console, Array.prototype.slice.call(arguments));
     }
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/home/daisy/Projects/ss15-black-kite/src/media.js":[function(require,module,exports){
+},{}],"/home/zaven/Projects/Programming/Active/endgame/src/media.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7668,10 +7627,10 @@ var cfg = require('./config');
 var log = require('./log');
 
 module.exports = {
-    init: function() {
+    init: function init() {
         var self = this;
 
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             if (!navigator.getUserMedia) {
                 return reject();
             }
@@ -7685,25 +7644,25 @@ module.exports = {
                     }
                 },
                 audio: true
-            }, function(localMediaStream) {
+            }, function (localMediaStream) {
                 // Acquired
                 self.localMediaStream = localMediaStream;
                 resolve(localMediaStream);
-            }, function() {
+            }, function () {
                 // Rejected
                 reject();
             });
         });
     },
 
-    playLocalStream: function() {
+    playLocalStream: function playLocalStream() {
         var self = this;
 
         var video = $('#localvideo').get(0);
         self.playStream(self.localMediaStream, video);
 
         var started = false;
-        video.addEventListener('canplay', function(ev) {
+        video.addEventListener('canplay', function (ev) {
             if (!started && (video.videoHeight || video.videoWidth)) {
                 started = true;
 
@@ -7715,7 +7674,7 @@ module.exports = {
         }, false);
     },
 
-    configureRemoteStream: function(remoteMediaStream) {
+    configureRemoteStream: function configureRemoteStream(remoteMediaStream) {
         var self = this;
         self.remoteMediaStream = remoteMediaStream;
 
@@ -7725,7 +7684,7 @@ module.exports = {
         return video;
     },
 
-    playStream: function(mediaStream, video) {
+    playStream: function playStream(mediaStream, video) {
         video.autoplay = true;
 
         // Handle older Firefox oddities
@@ -7737,53 +7696,50 @@ module.exports = {
     }
 };
 
-},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/polyfills.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/polyfills.js":[function(require,module,exports){
 /**
  * requestAnimationFrame
  */
-(function() {
+'use strict';
+
+(function () {
     var lastTime = 0;
     var vendors = ['webkit', 'moz'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame =
-          window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
     }
 
-    if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-              timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
+    if (!window.requestAnimationFrame) window.requestAnimationFrame = function (callback, element) {
+        var currTime = new Date().getTime();
+        var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+        var id = window.setTimeout(function () {
+            callback(currTime + timeToCall);
+        }, timeToCall);
+        lastTime = currTime + timeToCall;
+        return id;
+    };
 
-    if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
+    if (!window.cancelAnimationFrame) window.cancelAnimationFrame = function (id) {
+        clearTimeout(id);
+    };
 })();
 
 /**
  * getUserMedia
  */
-(function() {
-    navigator.getUserMedia  = navigator.getUserMedia ||
-        navigator.webkitGetUserMedia ||
-        navigator.mozGetUserMedia ||
-        navigator.msGetUserMedia;
+(function () {
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 })();
 
 /**
  * window.URL
  */
-(function() {
+(function () {
     window.URL = window.URL || window.webkitURL;
 })();
 
-},{}],"/home/daisy/Projects/ss15-black-kite/src/routes.js":[function(require,module,exports){
+},{}],"/home/zaven/Projects/Programming/Active/endgame/src/routes.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7792,25 +7748,22 @@ var _ = require('lodash');
 var utils = require('./utils');
 
 module.exports = {
-    parseGameId: function() {
-        return _.last(utils.pathParts(window.location.pathname)) ||
-            window.location.hash.substring(1);
+    parseGameId: function parseGameId() {
+        return _.last(utils.pathParts(window.location.pathname)) || window.location.hash.substring(1);
     },
 
-    genGameUrl: function(gameId) {
-        var url = window.location.protocol + '//' + window.location.hostname +
-            (window.location.port ? ':' + window.location.port : '');
+    genGameUrl: function genGameUrl(gameId) {
+        var url = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
 
         // When developing locally, the local web server doesn't have
         // routing capabilities, so just use the fragment
-        var hash = (window.location.hostname === 'localhost' ||
-            window.location.hostname === '127.0.0.1') ? '#' : '';
+        var hash = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '#' : '';
 
         return url + '/' + hash + gameId;
     }
 };
 
-},{"./utils":"/home/daisy/Projects/ss15-black-kite/src/utils.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/rtc.js":[function(require,module,exports){
+},{"./utils":"/home/zaven/Projects/Programming/Active/endgame/src/utils.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/rtc.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7818,7 +7771,7 @@ var _ = require('lodash');
 var cfg = require('./config');
 
 module.exports = {
-    init: function() {
+    init: function init() {
         var self = this;
         self.peer = new Peer({
             key: cfg.peerJsKey,
@@ -7827,16 +7780,16 @@ module.exports = {
             }
         });
 
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             self.peer.on('open', resolve);
         });
     },
 
-    listen: function() {
+    listen: function listen() {
         var self = this;
 
-        return new Promise(function(resolve, reject) {
-            self.peer.on('connection', function(conn) {
+        return new Promise(function (resolve, reject) {
+            self.peer.on('connection', function (conn) {
                 self.conn = conn;
                 self.remoteId = conn.peer;
                 self.setupDataBus(conn);
@@ -7845,7 +7798,7 @@ module.exports = {
         });
     },
 
-    connect: function(hostId) {
+    connect: function connect(hostId) {
         var self = this;
         var conn = self.peer.connect(hostId, {
             reliable: true
@@ -7856,17 +7809,17 @@ module.exports = {
         return Promise.resolve(conn);
     },
 
-    setupDataBus: function(conn) {
+    setupDataBus: function setupDataBus(conn) {
         var self = this;
 
         self.queuedData = [];
         self.listeners = [];
 
-        conn.on('open', function() {
-            conn.on('data', function(data) {
+        conn.on('open', function () {
+            conn.on('data', function (data) {
                 var listeners = self.listeners.slice();
 
-                _.forEach(listeners, function(listener) {
+                _.forEach(listeners, function (listener) {
                     listener.fn.call(self, data, conn);
 
                     if (listener.once) {
@@ -7878,13 +7831,13 @@ module.exports = {
                 });
             });
 
-            _.forEach(self.queuedData, function(data) {
+            _.forEach(self.queuedData, function (data) {
                 self.conn.send(data);
             });
         });
     },
 
-    addDataListener: function(fn, once) {
+    addDataListener: function addDataListener(fn, once) {
         var self = this;
         self.listeners.push({
             fn: fn,
@@ -7892,7 +7845,7 @@ module.exports = {
         });
     },
 
-    sendData: function(data) {
+    sendData: function sendData(data) {
         var self = this;
 
         if (self.conn.open) {
@@ -7903,15 +7856,15 @@ module.exports = {
         }
     },
 
-    performMediaCall: function(isCaller, localMediaStream) {
+    performMediaCall: function performMediaCall(isCaller, localMediaStream) {
         var self = this;
 
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             if (isCaller) {
                 self.call = self.peer.call(self.remoteId, localMediaStream);
                 resolve(self.call);
             } else {
-                self.peer.on('call', function(call) {
+                self.peer.on('call', function (call) {
                     self.call = call;
 
                     if (localMediaStream) {
@@ -7924,7 +7877,7 @@ module.exports = {
     }
 };
 
-},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/scene.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/scene.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7934,15 +7887,13 @@ var cfg = require('./config');
 var log = require('./log');
 
 module.exports = {
-    init: function() {
+    init: function init() {
         var self = this;
         self.scene = new THREE.Scene();
-        self.camera = new THREE.PerspectiveCamera(
-            45, window.innerWidth / window.innerHeight, 0.1, 1000
-        );
+        self.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
         self.renderer = self.createRenderer();
-        self.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
+        self.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1);
         self.renderer.setSize(window.innerWidth, window.innerHeight);
 
         document.body.appendChild(self.renderer.domElement);
@@ -7953,7 +7904,7 @@ module.exports = {
         self.setInitialCameraPos();
     },
 
-    resize: function() {
+    resize: function resize() {
         var self = this;
         self.camera.aspect = window.innerWidth / window.innerHeight;
         self.camera.updateProjectionMatrix();
@@ -7961,39 +7912,34 @@ module.exports = {
         self.renderer.setSize(window.innerWidth, window.innerHeight);
     },
 
-    createRenderer: function() {
+    createRenderer: function createRenderer() {
         // Choose between WebGL and Canvas renderer based on availability
         var self = this;
-        var renderer = self.webglAvailable() ?
-            new THREE.WebGLRenderer({ antialias: true }) :
-            new THREE.CanvasRenderer();
+        var renderer = self.webglAvailable() ? new THREE.WebGLRenderer({ antialias: true }) : new THREE.CanvasRenderer();
 
         return renderer;
     },
 
-    webglAvailable: function() {
+    webglAvailable: function webglAvailable() {
         try {
             var canvas = document.createElement('canvas');
-            return !!(window.WebGLRenderingContext && (
-                canvas.getContext('webgl') ||
-                canvas.getContext('experimental-webgl')
-            ));
+            return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
         } catch (e) {
             return false;
         }
     },
 
-    addLighting: function() {
+    addLighting: function addLighting() {
         var self = this;
-        self.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+        self.dirLight = new THREE.DirectionalLight(16777215, 0.9);
         self.dirLight.position.set(0, 80, 0).normalize();
         self.scene.add(self.dirLight);
 
-        self.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
+        self.hemiLight = new THREE.HemisphereLight(16777215, 16777215, 0.2);
         self.scene.add(self.hemiLight);
     },
 
-    setInitialCameraPos: function() {
+    setInitialCameraPos: function setInitialCameraPos() {
         var self = this;
         self.camera.position.x = cfg.gameOpts.cameraStartPos.x;
         self.camera.position.y = cfg.gameOpts.cameraStartPos.y;
@@ -8001,27 +7947,23 @@ module.exports = {
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
     },
 
-    setPlayCameraPos: function(side) {
+    setPlayCameraPos: function setPlayCameraPos(side) {
         var self = this;
         self.camera.position.x = cfg.gameOpts.cameraPlayPos.x;
         self.camera.position.y = cfg.gameOpts.cameraPlayPos.y;
         self.camera.position.z = (side === 'black' ? -1 : 1) * cfg.gameOpts.cameraPlayPos.z;
-        self.camera.lookAt(new THREE.Vector3(
-            cfg.gameOpts.cameraPlayLookAt.x,
-            cfg.gameOpts.cameraPlayLookAt.y,
-            cfg.gameOpts.cameraPlayLookAt.z
-        ));
+        self.camera.lookAt(new THREE.Vector3(cfg.gameOpts.cameraPlayLookAt.x, cfg.gameOpts.cameraPlayLookAt.y, cfg.gameOpts.cameraPlayLookAt.z));
     },
 
-    loadGameGeometry: function() {
+    loadGameGeometry: function loadGameGeometry() {
         var self = this;
         self.meshes = {};
 
         // Load all pieces
-        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function(asset) {
-            return new Promise(function(resolve, reject) {
+        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function (asset) {
+            return new Promise(function (resolve, reject) {
                 var loader = new THREE.JSONLoader();
-                loader.load('data/' + asset + '.json', function(geometry, materials) {
+                loader.load('data/' + asset + '.json', function (geometry, materials) {
                     var material = materials[0];
 
                     if (_.contains(cfg.assets, asset)) {
@@ -8033,7 +7975,7 @@ module.exports = {
                         geometry.computeVertexNormals();
 
                         // Duplicate black/white
-                        _.forEach(cfg.sides, function(side) {
+                        _.forEach(cfg.sides, function (side) {
                             var meshMaterial = material.clone();
                             meshMaterial.color.setHex(cfg.colors.pieces[side].color);
                             meshMaterial.ambient.setHex(cfg.colors.pieces[side].ambient);
@@ -8056,7 +7998,7 @@ module.exports = {
         }));
     },
 
-    setupBoard: function() {
+    setupBoard: function setupBoard() {
         var self = this;
 
         self.addSkybox();
@@ -8064,11 +8006,11 @@ module.exports = {
         self.addPieces();
     },
 
-    addSkybox: function() {
+    addSkybox: function addSkybox() {
         var self = this;
 
         var material = new THREE.MeshLambertMaterial({
-            color: 0xdadada,
+            color: 14342874,
             depthWrite: false,
             side: THREE.BackSide
         });
@@ -8078,33 +8020,29 @@ module.exports = {
         // self.scene.add(mesh);
     },
 
-    addBoard: function() {
+    addBoard: function addBoard() {
         var self = this;
 
         self.board = new THREE.Object3D();
         self.board.add(self.meshes.board);
-        self.board.scale.set(
-            cfg.gameOpts.boardScale,
-            cfg.gameOpts.boardScale,
-            cfg.gameOpts.boardScale
-        );
+        self.board.scale.set(cfg.gameOpts.boardScale, cfg.gameOpts.boardScale, cfg.gameOpts.boardScale);
 
         self.scene.add(self.board);
     },
 
-    addPieces: function() {
+    addPieces: function addPieces() {
         var self = this;
         self.pieces = {};
         self.captured = { 'w': [], 'b': [] };
 
-        _.forEach(cfg.startPosition, function(pieces, side) {
-            _.forEach(pieces, function(piece, i) {
+        _.forEach(cfg.startPosition, function (pieces, side) {
+            _.forEach(pieces, function (piece, i) {
                 self.addPiece(piece.pos, piece.type, side);
             });
         });
     },
 
-    addPiece: function(pos, type, side) {
+    addPiece: function addPiece(pos, type, side) {
         log('creating', type, side);
 
         var self = this;
@@ -8127,10 +8065,10 @@ module.exports = {
         };
     },
 
-    addFriendScreen: function(side, video) {
+    addFriendScreen: function addFriendScreen(side, video) {
         var self = this;
 
-        var material;
+        var material = undefined;
 
         if (video) {
             self.friendVideo = video;
@@ -8140,12 +8078,12 @@ module.exports = {
 
             material = new THREE.MeshLambertMaterial({
                 map: self.friendTexture,
-                emissive: 0xeeeeee
+                emissive: 15658734
             });
         } else {
             // self.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
             material = new THREE.MeshLambertMaterial({
-                color: 0x000000
+                color: 0
             });
         }
 
@@ -8156,18 +8094,10 @@ module.exports = {
         // Only a single face needs the video
         var materials = [filler, filler, filler, filler, material, filler];
 
-        var geometry = new THREE.BoxGeometry(
-            cfg.gameOpts.friendScreenSize.x,
-            cfg.gameOpts.friendScreenSize.y,
-            cfg.gameOpts.friendScreenSize.z
-        );
+        var geometry = new THREE.BoxGeometry(cfg.gameOpts.friendScreenSize.x, cfg.gameOpts.friendScreenSize.y, cfg.gameOpts.friendScreenSize.z);
 
         var cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-        cube.position.set(
-            cfg.gameOpts.friendScreenPos.x,
-            cfg.gameOpts.friendScreenPos.y,
-            cfg.gameOpts.friendScreenPos.z
-        );
+        cube.position.set(cfg.gameOpts.friendScreenPos.x, cfg.gameOpts.friendScreenPos.y, cfg.gameOpts.friendScreenPos.z);
 
         if (side === 'black') {
             cube.position.setZ(-cfg.gameOpts.friendScreenPos.z);
@@ -8179,7 +8109,7 @@ module.exports = {
         self.setPlayCameraPos(side);
     },
 
-    addTileControls: function(legalCallback, moveCallback) {
+    addTileControls: function addTileControls(legalCallback, moveCallback) {
         var self = this;
         self.legalCallback = legalCallback;
         self.moveCallback = moveCallback;
@@ -8187,10 +8117,7 @@ module.exports = {
         self.tiles = {};
 
         // Create geometry and material
-        var geometry = new THREE.PlaneGeometry(
-            cfg.gameOpts.tileSize,
-            cfg.gameOpts.tileSize
-        );
+        var geometry = new THREE.PlaneGeometry(cfg.gameOpts.tileSize, cfg.gameOpts.tileSize);
 
         var material = new THREE.MeshLambertMaterial({
             color: cfg.colors.tiles.active,
@@ -8200,8 +8127,8 @@ module.exports = {
         });
 
         // Generate mesh for each tile
-        _.forEach(cfg.files, function(file, i) {
-            _.forEach(cfg.ranks, function(rank, i) {
+        _.forEach(cfg.files, function (file, i) {
+            _.forEach(cfg.ranks, function (rank, i) {
                 self.addTileControl(file + rank, geometry, material.clone());
             });
         });
@@ -8211,7 +8138,7 @@ module.exports = {
         self.addMouseListeners();
     },
 
-    addTileControl: function(pos, geometry, material) {
+    addTileControl: function addTileControl(pos, geometry, material) {
         var self = this;
 
         var offsetX = cfg.fileToOffset[pos[0]];
@@ -8231,7 +8158,7 @@ module.exports = {
         self.scene.add(tile);
     },
 
-    addMouseListeners: function() {
+    addMouseListeners: function addMouseListeners() {
         var self = this;
         self.mousePos = new THREE.Vector2();
         document.addEventListener('mousemove', self.onMouseMove.bind(self), false);
@@ -8239,19 +8166,19 @@ module.exports = {
         document.addEventListener('mouseup', self.onMouseUp.bind(self), false);
     },
 
-    onMouseMove: function(event) {
+    onMouseMove: function onMouseMove(event) {
         var self = this;
         self.updateMousePos(event);
         self.highlightActiveTile();
     },
 
-    updateMousePos: function(event) {
+    updateMousePos: function updateMousePos(event) {
         var self = this;
-        self.mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
+        self.mousePos.x = event.clientX / window.innerWidth * 2 - 1;
         self.mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
     },
 
-    highlightActiveTile: function() {
+    highlightActiveTile: function highlightActiveTile() {
         var self = this;
         self.recolorTiles();
 
@@ -8262,14 +8189,14 @@ module.exports = {
         }
     },
 
-    onMouseDown: function(event) {
+    onMouseDown: function onMouseDown(event) {
         event.preventDefault();
 
         var self = this;
         self.handleMoveSelection();
     },
 
-    handleMoveSelection: function() {
+    handleMoveSelection: function handleMoveSelection() {
         var self = this;
         var intersected = self.intersectTile();
 
@@ -8292,7 +8219,7 @@ module.exports = {
         }
     },
 
-    commitMove: function(tile) {
+    commitMove: function commitMove(tile) {
         var self = this;
         self.moveCallback.call(self, self.selectedPos, tile.chessPos);
 
@@ -8300,7 +8227,7 @@ module.exports = {
         self.selectedPos = null;
     },
 
-    highlightLegalMoves: function(tile) {
+    highlightLegalMoves: function highlightLegalMoves(tile) {
         var self = this;
         self.isSelectingPieceMovement = true;
         self.selectedPos = tile.chessPos;
@@ -8309,26 +8236,26 @@ module.exports = {
 
         // Get legal moves and highlight them
         self.currentLegalMoves = self.legalCallback.call(self, tile.chessPos);
-        _.forEach(self.currentLegalMoves, function(move) {
+        _.forEach(self.currentLegalMoves, function (move) {
             var tile = self.tiles[move.to];
             tile.isLegalMove = true;
             self.colorTile(tile, cfg.colors.tiles.legal);
         });
     },
 
-    resetTileHighlights: function() {
+    resetTileHighlights: function resetTileHighlights() {
         var self = this;
 
-        _.forEach(self.tiles, function(tile, pos) {
+        _.forEach(self.tiles, function (tile, pos) {
             tile.isLegalMove = null;
         });
         self.recolorTiles();
     },
 
-    recolorTiles: function() {
+    recolorTiles: function recolorTiles() {
         var self = this;
 
-        _.forEach(self.tiles, function(tile, pos) {
+        _.forEach(self.tiles, function (tile, pos) {
             self.hideTile(tile);
 
             // Recolor
@@ -8344,16 +8271,16 @@ module.exports = {
         });
     },
 
-    colorTile: function(tile, color) {
+    colorTile: function colorTile(tile, color) {
         tile.material.color.setHex(color);
         tile.material.opacity = cfg.gameOpts.tileOpacity;
     },
 
-    hideTile: function(tile) {
+    hideTile: function hideTile(tile) {
         tile.material.opacity = 0;
     },
 
-    performGraphicalMove: function(move) {
+    performGraphicalMove: function performGraphicalMove(move) {
         var self = this;
         var piece = self.pieces[move.from];
 
@@ -8369,9 +8296,7 @@ module.exports = {
         // Handle moves (order matters because of interactions with
         // `self.pieces`)
 
-        if (move.flags.indexOf('e') !== -1) {
-            /** En passant */
-        }
+        if (move.flags.indexOf('e') !== -1) {}
         if (move.flags.indexOf('c') !== -1) {
             /** Standard capture */
             var capturedPiece = self.pieces[move.to];
@@ -8393,34 +8318,28 @@ module.exports = {
 
             self.setPiecePosition(piece.object, move.to);
         }
-        if (move.flags.indexOf('p') !== -1) {
-            /** Promotion */
-        }
-        if (move.flags.indexOf('k') !== -1) {
-            /** Kingside castle */
-        }
-        if (move.flags.indexOf('q') !== -1) {
-            /** Queenside castle */
-        }
+        if (move.flags.indexOf('p') !== -1) {}
+        if (move.flags.indexOf('k') !== -1) {}
+        if (move.flags.indexOf('q') !== -1) {}
 
         self.recolorTiles();
     },
 
-    onMouseUp: function(event) {
+    onMouseUp: function onMouseUp(event) {
         event.preventDefault();
     },
 
-    intersectTile: function() {
+    intersectTile: function intersectTile() {
         var self = this;
         self.raycaster.setFromCamera(self.mousePos, self.camera);
 
         var intersects = self.raycaster.intersectObjects(self.scene.children);
-        return _.first(_.filter(intersects, function(intersected) {
+        return _.first(_.filter(intersects, function (intersected) {
             return intersected.object.isTile;
         }));
     },
 
-    setPiecePosition: function(object, pos) {
+    setPiecePosition: function setPiecePosition(object, pos) {
         var offsetX = cfg.fileToOffset[pos[0]];
         var offsetZ = cfg.rankToOffset[pos[1]];
 
@@ -8428,18 +8347,18 @@ module.exports = {
         object.position.setZ(cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize);
     },
 
-    hidePiece: function(object) {
+    hidePiece: function hidePiece(object) {
         object.visible = false;
     },
 
-    beginRender: function() {
+    beginRender: function beginRender() {
         var self = this;
         self.render = self.render.bind(self);
         self.previousTime = new Date().getTime();
         self.requestId = requestAnimationFrame(self.render);
     },
 
-    render: function(timestamp) {
+    render: function render(timestamp) {
         var self = this;
 
         self.requestId = requestAnimationFrame(self.render);
@@ -8460,38 +8379,46 @@ module.exports = {
     }
 };
 
-},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js","./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}],"/home/daisy/Projects/ss15-black-kite/src/user.js":[function(require,module,exports){
+/** En passant */
+
+/** Promotion */
+
+/** Kingside castle */
+
+/** Queenside castle */
+
+},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/user.js":[function(require,module,exports){
 'use strict';
 
 var cfg = require('./config');
 
 module.exports = {
-    init: function() {
+    init: function init() {
         var self = this;
         self.ref = new Firebase(cfg.usersUrl);
     }
 };
 
-},{"./config":"/home/daisy/Projects/ss15-black-kite/src/config.js"}],"/home/daisy/Projects/ss15-black-kite/src/utils.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/utils.js":[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
 
 module.exports = {
-    pathParts: function(path) {
+    pathParts: function pathParts(path) {
         return _.filter(path.split('/'));
     },
 
-    repeat: function(v, n) {
+    repeat: function repeat(v, n) {
         return _.map(Array.apply(null, new Array(n)), this.identity.bind(null, v));
     },
 
-    identity: function(v) {
+    identity: function identity(v) {
         return v;
     }
 };
 
-},{"lodash":"/home/daisy/Projects/ss15-black-kite/node_modules/lodash/dist/lodash.js"}],"/home/daisy/Projects/ss15-black-kite/src/views.js":[function(require,module,exports){
+},{"lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/views.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -8500,7 +8427,7 @@ var routes = require('./routes');
 var log = require('./log');
 
 module.exports = {
-    showWaitScreen: function(gameId) {
+    showWaitScreen: function showWaitScreen(gameId) {
         var self = this;
 
         self.waitScreen = new Vue({
@@ -8518,7 +8445,7 @@ module.exports = {
         return Promise.resolve();
     },
 
-    showMediaScreen: function() {
+    showMediaScreen: function showMediaScreen() {
         var self = this;
         $('#waitscreen').modal('hide');
 
@@ -8530,7 +8457,7 @@ module.exports = {
         return Promise.resolve();
     },
 
-    showStatusScreen: function() {
+    showStatusScreen: function showStatusScreen() {
         var self = this;
         $('#mediascreen').modal('hide');
 
@@ -8538,4 +8465,4 @@ module.exports = {
     }
 };
 
-},{"./log":"/home/daisy/Projects/ss15-black-kite/src/log.js","./routes":"/home/daisy/Projects/ss15-black-kite/src/routes.js","promise":"/home/daisy/Projects/ss15-black-kite/node_modules/promise/index.js"}]},{},["./src/endgame.js"]);
+},{"./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","./routes":"/home/zaven/Projects/Programming/Active/endgame/src/routes.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}]},{},["./src/endgame.js"]);

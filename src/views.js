@@ -1,13 +1,13 @@
 'use strict';
 
-var Promise = require('promise');
+let Promise = require('promise');
 
-var routes = require('./routes');
-var log = require('./log');
+let routes = require('./routes');
+let log = require('./log');
 
 module.exports = {
     showWaitScreen: function(gameId) {
-        var self = this;
+        let self = this;
 
         self.waitScreen = new Vue({
             el: '#waitscreen',
@@ -25,7 +25,7 @@ module.exports = {
     },
 
     showMediaScreen: function() {
-        var self = this;
+        let self = this;
         $('#waitscreen').modal('hide');
 
         $('#mediascreen').modal({
@@ -37,7 +37,7 @@ module.exports = {
     },
 
     showStatusScreen: function() {
-        var self = this;
+        let self = this;
         $('#mediascreen').modal('hide');
 
         return Promise.resolve();

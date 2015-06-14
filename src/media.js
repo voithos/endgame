@@ -1,12 +1,12 @@
 'use strict';
 
-var Promise = require('promise');
-var cfg = require('./config');
-var log = require('./log');
+let Promise = require('promise');
+let cfg = require('./config');
+let log = require('./log');
 
 module.exports = {
     init: function() {
-        var self = this;
+        let self = this;
 
         return new Promise(function(resolve, reject) {
             if (!navigator.getUserMedia) {
@@ -34,12 +34,12 @@ module.exports = {
     },
 
     playLocalStream: function() {
-        var self = this;
+        let self = this;
 
-        var video = $('#localvideo').get(0);
+        let video = $('#localvideo').get(0);
         self.playStream(self.localMediaStream, video);
 
-        var started = false;
+        let started = false;
         video.addEventListener('canplay', function(ev) {
             if (!started && (video.videoHeight || video.videoWidth)) {
                 started = true;
@@ -53,10 +53,10 @@ module.exports = {
     },
 
     configureRemoteStream: function(remoteMediaStream) {
-        var self = this;
+        let self = this;
         self.remoteMediaStream = remoteMediaStream;
 
-        var video = document.createElement('video');
+        let video = document.createElement('video');
         self.playStream(remoteMediaStream, video);
 
         return video;

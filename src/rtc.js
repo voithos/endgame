@@ -1,12 +1,12 @@
 'use strict';
 
-var Promise = require('promise');
-var _ = require('lodash');
-var cfg = require('./config');
+let Promise = require('promise');
+let _ = require('lodash');
+let cfg = require('./config');
 
 module.exports = {
     init: function() {
-        var self = this;
+        let self = this;
         self.peer = new Peer({
             key: cfg.peerJsKey,
             config: {
@@ -20,7 +20,7 @@ module.exports = {
     },
 
     listen: function() {
-        var self = this;
+        let self = this;
 
         return new Promise(function(resolve, reject) {
             self.peer.on('connection', function(conn) {
@@ -33,8 +33,8 @@ module.exports = {
     },
 
     connect: function(hostId) {
-        var self = this;
-        var conn = self.peer.connect(hostId, {
+        let self = this;
+        let conn = self.peer.connect(hostId, {
             reliable: true
         });
         self.conn = conn;
@@ -44,20 +44,20 @@ module.exports = {
     },
 
     setupDataBus: function(conn) {
-        var self = this;
+        let self = this;
 
         self.queuedData = [];
         self.listeners = [];
 
         conn.on('open', function() {
             conn.on('data', function(data) {
-                var listeners = self.listeners.slice();
+                let listeners = self.listeners.slice();
 
                 _.forEach(listeners, function(listener) {
                     listener.fn.call(self, data, conn);
 
                     if (listener.once) {
-                        var idx = self.listeners.indexOf(listener);
+                        let idx = self.listeners.indexOf(listener);
                         if (idx !== -1) {
                             self.listeners.splice(idx, 1);
                         }
@@ -72,7 +72,7 @@ module.exports = {
     },
 
     addDataListener: function(fn, once) {
-        var self = this;
+        let self = this;
         self.listeners.push({
             fn: fn,
             once: once
@@ -80,7 +80,7 @@ module.exports = {
     },
 
     sendData: function(data) {
-        var self = this;
+        let self = this;
 
         if (self.conn.open) {
             self.conn.send(data);
@@ -91,7 +91,7 @@ module.exports = {
     },
 
     performMediaCall: function(isCaller, localMediaStream) {
-        var self = this;
+        let self = this;
 
         return new Promise(function(resolve, reject) {
             if (isCaller) {

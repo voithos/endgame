@@ -1,9 +1,9 @@
 'use strict';
 
-var Promise = require('promise');
-var _ = require('lodash');
+let Promise = require('promise');
+let _ = require('lodash');
 
-var utils = require('./utils');
+let utils = require('./utils');
 
 module.exports = {
     parseGameId: function() {
@@ -12,12 +12,12 @@ module.exports = {
     },
 
     genGameUrl: function(gameId) {
-        var url = window.location.protocol + '//' + window.location.hostname +
+        let url = window.location.protocol + '//' + window.location.hostname +
             (window.location.port ? ':' + window.location.port : '');
 
         // When developing locally, the local web server doesn't have
         // routing capabilities, so just use the fragment
-        var hash = (window.location.hostname === 'localhost' ||
+        let hash = (window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1') ? '#' : '';
 
         return url + '/' + hash + gameId;
