@@ -5,6 +5,7 @@
 - look into security for Firebase
 - upgrade code to ES2015
 - switch to Material lite
+- start using JSHint
 
 ## Game
 - complete chess move logic
@@ -14,3 +15,4 @@
 - add background room (marble, white, etc?)
 - change board and pieces graphics
 - add computer mode
+- keep history of moves, perhaps display it somehow

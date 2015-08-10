@@ -12,12 +12,10 @@ let FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 let LAYOUT = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
 
 /* Helper functions */
-let genPiece = function(vs) {
-    let pos = vs[0];
-    let type = vs[1];
+let genPiece = function([pos, type]) {
     return {
         pos: pos.join(''),
-        type: type
+        type
     };
 };
 

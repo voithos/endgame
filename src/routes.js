@@ -1,6 +1,5 @@
 'use strict';
 
-let Promise = require('promise');
 let _ = require('lodash');
 
 let utils = require('./utils');

@@ -7471,6 +7471,8 @@ module.exports = asap;
 },{"_process":"/home/zaven/Projects/endgame/node_modules/browserify/node_modules/process/browser.js"}],"/home/zaven/Projects/endgame/src/config.js":[function(require,module,exports){
 'use strict';
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
 var _ = require('lodash');
 var utils = require('./utils');
 
@@ -7483,9 +7485,12 @@ var FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 var LAYOUT = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
 
 /* Helper functions */
-var genPiece = function genPiece(vs) {
-    var pos = vs[0];
-    var type = vs[1];
+var genPiece = function genPiece(_ref) {
+    var _ref2 = _slicedToArray(_ref, 2);
+
+    var pos = _ref2[0];
+    var type = _ref2[1];
+
     return {
         pos: pos.join(''),
         type: type
@@ -7648,10 +7653,7 @@ module.exports = {
                 // Acquired
                 self.localMediaStream = localMediaStream;
                 resolve(localMediaStream);
-            }, function () {
-                // Rejected
-                reject();
-            });
+            }, reject);
         });
     },
 
@@ -7742,7 +7744,6 @@ module.exports = {
 },{}],"/home/zaven/Projects/endgame/src/routes.js":[function(require,module,exports){
 'use strict';
 
-var Promise = require('promise');
 var _ = require('lodash');
 
 var utils = require('./utils');
@@ -7763,7 +7764,7 @@ module.exports = {
     }
 };
 
-},{"./utils":"/home/zaven/Projects/endgame/src/utils.js","lodash":"/home/zaven/Projects/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/endgame/src/rtc.js":[function(require,module,exports){
+},{"./utils":"/home/zaven/Projects/endgame/src/utils.js","lodash":"/home/zaven/Projects/endgame/node_modules/lodash/dist/lodash.js"}],"/home/zaven/Projects/endgame/src/rtc.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');

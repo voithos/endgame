@@ -26,10 +26,7 @@ module.exports = {
                 // Acquired
                 self.localMediaStream = localMediaStream;
                 resolve(localMediaStream);
-            }, function() {
-                // Rejected
-                reject();
-            });
+            }, reject);
         });
     },
 
