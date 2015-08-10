@@ -197,7 +197,7 @@ global.endgame = endgame;
 endgame.main();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","./game":"/home/zaven/Projects/Programming/Active/endgame/src/game.js","./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","./media":"/home/zaven/Projects/Programming/Active/endgame/src/media.js","./polyfills":"/home/zaven/Projects/Programming/Active/endgame/src/polyfills.js","./routes":"/home/zaven/Projects/Programming/Active/endgame/src/routes.js","./rtc":"/home/zaven/Projects/Programming/Active/endgame/src/rtc.js","./scene":"/home/zaven/Projects/Programming/Active/endgame/src/scene.js","./user":"/home/zaven/Projects/Programming/Active/endgame/src/user.js","./utils":"/home/zaven/Projects/Programming/Active/endgame/src/utils.js","./views":"/home/zaven/Projects/Programming/Active/endgame/src/views.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/endgame/src/config.js","./game":"/home/zaven/Projects/endgame/src/game.js","./log":"/home/zaven/Projects/endgame/src/log.js","./media":"/home/zaven/Projects/endgame/src/media.js","./polyfills":"/home/zaven/Projects/endgame/src/polyfills.js","./routes":"/home/zaven/Projects/endgame/src/routes.js","./rtc":"/home/zaven/Projects/endgame/src/rtc.js","./scene":"/home/zaven/Projects/endgame/src/scene.js","./user":"/home/zaven/Projects/endgame/src/user.js","./utils":"/home/zaven/Projects/endgame/src/utils.js","./views":"/home/zaven/Projects/endgame/src/views.js","lodash":"/home/zaven/Projects/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/endgame/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -257,7 +257,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js":[function(require,module,exports){
+},{}],"/home/zaven/Projects/endgame/node_modules/lodash/dist/lodash.js":[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -7047,14 +7047,14 @@ process.umask = function() { return 0; };
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js":[function(require,module,exports){
+},{}],"/home/zaven/Projects/endgame/node_modules/promise/index.js":[function(require,module,exports){
 'use strict';
 
 module.exports = require('./lib/core.js')
 require('./lib/done.js')
 require('./lib/es6-extensions.js')
 require('./lib/node-extensions.js')
-},{"./lib/core.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js","./lib/done.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/done.js","./lib/es6-extensions.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/es6-extensions.js","./lib/node-extensions.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/node-extensions.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js":[function(require,module,exports){
+},{"./lib/core.js":"/home/zaven/Projects/endgame/node_modules/promise/lib/core.js","./lib/done.js":"/home/zaven/Projects/endgame/node_modules/promise/lib/done.js","./lib/es6-extensions.js":"/home/zaven/Projects/endgame/node_modules/promise/lib/es6-extensions.js","./lib/node-extensions.js":"/home/zaven/Projects/endgame/node_modules/promise/lib/node-extensions.js"}],"/home/zaven/Projects/endgame/node_modules/promise/lib/core.js":[function(require,module,exports){
 'use strict';
 
 var asap = require('asap')
@@ -7161,7 +7161,7 @@ function doResolve(fn, onFulfilled, onRejected) {
   }
 }
 
-},{"asap":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/done.js":[function(require,module,exports){
+},{"asap":"/home/zaven/Projects/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/endgame/node_modules/promise/lib/done.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js')
@@ -7176,7 +7176,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
     })
   })
 }
-},{"./core.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js","asap":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/es6-extensions.js":[function(require,module,exports){
+},{"./core.js":"/home/zaven/Projects/endgame/node_modules/promise/lib/core.js","asap":"/home/zaven/Projects/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/endgame/node_modules/promise/lib/es6-extensions.js":[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -7286,7 +7286,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 }
 
-},{"./core.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js","asap":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/node-extensions.js":[function(require,module,exports){
+},{"./core.js":"/home/zaven/Projects/endgame/node_modules/promise/lib/core.js","asap":"/home/zaven/Projects/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/endgame/node_modules/promise/lib/node-extensions.js":[function(require,module,exports){
 'use strict';
 
 //This file contains then/promise specific extensions that are only useful for node.js interop
@@ -7351,7 +7351,7 @@ Promise.prototype.nodeify = function (callback, ctx) {
   })
 }
 
-},{"./core.js":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/lib/core.js","asap":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/node_modules/asap/asap.js":[function(require,module,exports){
+},{"./core.js":"/home/zaven/Projects/endgame/node_modules/promise/lib/core.js","asap":"/home/zaven/Projects/endgame/node_modules/promise/node_modules/asap/asap.js"}],"/home/zaven/Projects/endgame/node_modules/promise/node_modules/asap/asap.js":[function(require,module,exports){
 (function (process){
 
 // Use the fastest possible means to execute a task in a future turn
@@ -7468,7 +7468,7 @@ module.exports = asap;
 
 
 }).call(this,require('_process'))
-},{"_process":"/home/zaven/Projects/Programming/Active/endgame/node_modules/browserify/node_modules/process/browser.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/config.js":[function(require,module,exports){
+},{"_process":"/home/zaven/Projects/endgame/node_modules/browserify/node_modules/process/browser.js"}],"/home/zaven/Projects/endgame/src/config.js":[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -7550,34 +7550,34 @@ module.exports = {
     colors: {
         pieces: {
             white: {
-                color: 14540253,
-                ambient: 16777215,
-                emissive: 0,
-                specular: 11184810
+                color: 0xdddddd,
+                ambient: 0xffffff,
+                emissive: 0x000000,
+                specular: 0xaaaaaa
             },
             black: {
-                color: 2236962,
-                ambient: 0,
-                emissive: 0,
-                specular: 1118481
+                color: 0x222222,
+                ambient: 0x000000,
+                emissive: 0x000000,
+                specular: 0x111111
             }
         },
 
         tiles: {
-            active: 16753920,
-            legal: 8044866,
-            selected: 3832473,
-            prevFrom: 6475007,
-            prevTo: 14297120
+            active: 0xffa500,
+            legal: 0x7ac142,
+            selected: 0x3a7a99,
+            prevFrom: 0x62ccff,
+            prevTo: 0xda2820
         },
 
         clear: 'lightgray',
 
-        friendScreen: 14342874
+        friendScreen: 0xdadada
     }
 };
 
-},{"./utils":"/home/zaven/Projects/Programming/Active/endgame/src/utils.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/game.js":[function(require,module,exports){
+},{"./utils":"/home/zaven/Projects/endgame/src/utils.js","lodash":"/home/zaven/Projects/endgame/node_modules/lodash/dist/lodash.js"}],"/home/zaven/Projects/endgame/src/game.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7606,7 +7606,7 @@ module.exports = {
     }
 };
 
-},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/log.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/endgame/src/config.js","./log":"/home/zaven/Projects/endgame/src/log.js","promise":"/home/zaven/Projects/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/endgame/src/log.js":[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -7619,7 +7619,7 @@ module.exports = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/home/zaven/Projects/Programming/Active/endgame/src/media.js":[function(require,module,exports){
+},{}],"/home/zaven/Projects/endgame/src/media.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7696,7 +7696,7 @@ module.exports = {
     }
 };
 
-},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/polyfills.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/endgame/src/config.js","./log":"/home/zaven/Projects/endgame/src/log.js","promise":"/home/zaven/Projects/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/endgame/src/polyfills.js":[function(require,module,exports){
 /**
  * requestAnimationFrame
  */
@@ -7739,7 +7739,7 @@ module.exports = {
     window.URL = window.URL || window.webkitURL;
 })();
 
-},{}],"/home/zaven/Projects/Programming/Active/endgame/src/routes.js":[function(require,module,exports){
+},{}],"/home/zaven/Projects/endgame/src/routes.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7763,7 +7763,7 @@ module.exports = {
     }
 };
 
-},{"./utils":"/home/zaven/Projects/Programming/Active/endgame/src/utils.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/rtc.js":[function(require,module,exports){
+},{"./utils":"/home/zaven/Projects/endgame/src/utils.js","lodash":"/home/zaven/Projects/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/endgame/src/rtc.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7877,7 +7877,7 @@ module.exports = {
     }
 };
 
-},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/scene.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/endgame/src/config.js","lodash":"/home/zaven/Projects/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/endgame/src/scene.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -7931,11 +7931,11 @@ module.exports = {
 
     addLighting: function addLighting() {
         var self = this;
-        self.dirLight = new THREE.DirectionalLight(16777215, 0.9);
+        self.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
         self.dirLight.position.set(0, 80, 0).normalize();
         self.scene.add(self.dirLight);
 
-        self.hemiLight = new THREE.HemisphereLight(16777215, 16777215, 0.2);
+        self.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
         self.scene.add(self.hemiLight);
     },
 
@@ -8010,7 +8010,7 @@ module.exports = {
         var self = this;
 
         var material = new THREE.MeshLambertMaterial({
-            color: 14342874,
+            color: 0xdadada,
             depthWrite: false,
             side: THREE.BackSide
         });
@@ -8078,12 +8078,12 @@ module.exports = {
 
             material = new THREE.MeshLambertMaterial({
                 map: self.friendTexture,
-                emissive: 15658734
+                emissive: 0xeeeeee
             });
         } else {
             // self.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
             material = new THREE.MeshLambertMaterial({
-                color: 0
+                color: 0x000000
             });
         }
 
@@ -8296,7 +8296,9 @@ module.exports = {
         // Handle moves (order matters because of interactions with
         // `self.pieces`)
 
-        if (move.flags.indexOf('e') !== -1) {}
+        if (move.flags.indexOf('e') !== -1) {
+            /** En passant */
+        }
         if (move.flags.indexOf('c') !== -1) {
             /** Standard capture */
             var capturedPiece = self.pieces[move.to];
@@ -8318,9 +8320,15 @@ module.exports = {
 
             self.setPiecePosition(piece.object, move.to);
         }
-        if (move.flags.indexOf('p') !== -1) {}
-        if (move.flags.indexOf('k') !== -1) {}
-        if (move.flags.indexOf('q') !== -1) {}
+        if (move.flags.indexOf('p') !== -1) {
+            /** Promotion */
+        }
+        if (move.flags.indexOf('k') !== -1) {
+            /** Kingside castle */
+        }
+        if (move.flags.indexOf('q') !== -1) {
+            /** Queenside castle */
+        }
 
         self.recolorTiles();
     },
@@ -8379,15 +8387,7 @@ module.exports = {
     }
 };
 
-/** En passant */
-
-/** Promotion */
-
-/** Kingside castle */
-
-/** Queenside castle */
-
-},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js","./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/user.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/endgame/src/config.js","./log":"/home/zaven/Projects/endgame/src/log.js","lodash":"/home/zaven/Projects/endgame/node_modules/lodash/dist/lodash.js","promise":"/home/zaven/Projects/endgame/node_modules/promise/index.js"}],"/home/zaven/Projects/endgame/src/user.js":[function(require,module,exports){
 'use strict';
 
 var cfg = require('./config');
@@ -8399,7 +8399,7 @@ module.exports = {
     }
 };
 
-},{"./config":"/home/zaven/Projects/Programming/Active/endgame/src/config.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/utils.js":[function(require,module,exports){
+},{"./config":"/home/zaven/Projects/endgame/src/config.js"}],"/home/zaven/Projects/endgame/src/utils.js":[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -8418,7 +8418,7 @@ module.exports = {
     }
 };
 
-},{"lodash":"/home/zaven/Projects/Programming/Active/endgame/node_modules/lodash/dist/lodash.js"}],"/home/zaven/Projects/Programming/Active/endgame/src/views.js":[function(require,module,exports){
+},{"lodash":"/home/zaven/Projects/endgame/node_modules/lodash/dist/lodash.js"}],"/home/zaven/Projects/endgame/src/views.js":[function(require,module,exports){
 'use strict';
 
 var Promise = require('promise');
@@ -8465,4 +8465,4 @@ module.exports = {
     }
 };
 
-},{"./log":"/home/zaven/Projects/Programming/Active/endgame/src/log.js","./routes":"/home/zaven/Projects/Programming/Active/endgame/src/routes.js","promise":"/home/zaven/Projects/Programming/Active/endgame/node_modules/promise/index.js"}]},{},["./src/endgame.js"]);
+},{"./log":"/home/zaven/Projects/endgame/src/log.js","./routes":"/home/zaven/Projects/endgame/src/routes.js","promise":"/home/zaven/Projects/endgame/node_modules/promise/index.js"}]},{},["./src/endgame.js"]);
