@@ -1,10 +1,8 @@
-'use strict';
+import _ from 'lodash';
 
-let _ = require('lodash');
+import utils from './utils';
 
-let utils = require('./utils');
-
-module.exports = {
+export default {
     parseGameId: function() {
         return _.last(utils.pathParts(window.location.pathname)) ||
             window.location.hash.substring(1);

@@ -1,15 +1,15 @@
 'use strict';
 
-let _ = require('lodash');
-let utils = require('./utils');
+import _ from 'lodash';
+import utils from './utils';
 
-let DB_BASE_URL = 'https://endgame-chess.firebaseio.com';
+const DB_BASE_URL = 'https://endgame-chess.firebaseio.com';
 
-let BOARD_SIZE = 8;
-let SIDES = ['white', 'black'];
-let RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
-let FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-let LAYOUT = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
+const BOARD_SIZE = 8;
+const SIDES = ['white', 'black'];
+const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
+const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+const LAYOUT = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
 
 /* Helper functions */
 let genPiece = function([pos, type]) {
@@ -29,7 +29,7 @@ let genRank = function(rank, rankPieces) {
     );
 };
 
-module.exports = {
+export default {
     dbBaseUrl: DB_BASE_URL,
     usersUrl: DB_BASE_URL + '/users',
     gamesUrl: DB_BASE_URL + '/games',

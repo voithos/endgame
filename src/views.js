@@ -1,11 +1,9 @@
-'use strict';
+import Promise from 'promise';
 
-let Promise = require('promise');
+import routes from './routes';
+import log from './log';
 
-let routes = require('./routes');
-let log = require('./log');
-
-module.exports = {
+export default {
     showWaitScreen: function(gameId) {
         let self = this;
 

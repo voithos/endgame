@@ -1,10 +1,8 @@
-'use strict';
+import Promise from 'promise';
+import _ from 'lodash';
+import cfg from './config';
 
-let Promise = require('promise');
-let _ = require('lodash');
-let cfg = require('./config');
-
-module.exports = {
+export default {
     init: function() {
         let self = this;
         self.peer = new Peer({

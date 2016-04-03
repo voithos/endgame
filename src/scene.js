@@ -1,12 +1,12 @@
 'use strict';
 
-let Promise = require('promise');
-let _ = require('lodash');
+import Promise from 'promise';
+import _ from 'lodash';
 
-let cfg = require('./config');
-let log = require('./log');
+import cfg from './config';
+import log from './log';
 
-module.exports = {
+export default {
     init: function() {
         let self = this;
         self.scene = new THREE.Scene();

@@ -1,10 +1,8 @@
-'use strict';
+import Promise from 'promise';
+import cfg from './config';
+import log from './log';
 
-let Promise = require('promise');
-let cfg = require('./config');
-let log = require('./log');
-
-module.exports = {
+export default {
     create: function(hostId) {
         let self = this;
         self.ref = new Firebase(cfg.gamesUrl);

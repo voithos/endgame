@@ -1,20 +1,18 @@
-'use strict';
+import './polyfills';
 
-require('./polyfills');
+import Promise from 'promise';
+import _ from 'lodash';
 
-let Promise = require('promise');
-let _ = require('lodash');
-
-let user = require('./user');
-let game = require('./game');
-let media = require('./media');
-let routes = require('./routes');
-let rtc = require('./rtc');
-let scene = require('./scene');
-let cfg = require('./config');
-let utils = require('./utils');
-let views = require('./views');
-let log = require('./log');
+import user from './user';
+import game from './game';
+import media from './media';
+import routes from './routes';
+import rtc from './rtc';
+import scene from './scene';
+import cfg from './config';
+import utils from './utils';
+import views from './views';
+import log from './log';
 
 let endgame = {
     config: cfg,

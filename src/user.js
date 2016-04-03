@@ -1,8 +1,6 @@
-'use strict';
+import cfg from './config';
 
-let cfg = require('./config');
-
-module.exports = {
+export default {
     init: function() {
         let self = this;
         self.ref = new Firebase(cfg.usersUrl);

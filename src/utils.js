@@ -1,8 +1,6 @@
-'use strict';
+import _ from 'lodash';
 
-let _ = require('lodash');
-
-module.exports = {
+export default {
     pathParts: function(path) {
         return _.filter(path.split('/'));
     },
