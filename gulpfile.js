@@ -14,7 +14,6 @@ var watchify = require('watchify');
 var babelify = require('babelify');
 var browserSync = require('browser-sync').create();
 
-var del = require('del');
 var glob = require('glob');
 var path = require('path');
 var extend = require('extend');
@@ -26,6 +25,7 @@ var VIRT_MIN_FILE = 'endgame.min.js';
 var VIRT_TEST_FILE = 'endgame_spec.js';
 var ENTRY_FILE = './src/endgame.js';
 var BUILD_PATH = './public/js';
+var TEST_BUILD_PATH = './test';
 var BASE_DIR = './public';
 var SRC_PATTERN = './src/**/*.js';
 var TEST_PATTERN = './test/**/*_spec.js';
@@ -150,7 +150,7 @@ var buildTests = function() {
         .bundle()
         .on('error', onError)
         .pipe(source(VIRT_TEST_FILE))
-        .pipe(gulp.dest(BUILD_PATH));
+        .pipe(gulp.dest(TEST_BUILD_PATH));
 };
 
 
@@ -158,7 +158,7 @@ var buildTests = function() {
  * Run built tests with jasmine.
  */
 var test = function() {
-    return gulp.src(path.join(BUILD_PATH, VIRT_TEST_FILE))
+    return gulp.src(path.join(TEST_BUILD_PATH, VIRT_TEST_FILE))
         .pipe(jasmine());
 };
 
@@ -172,14 +172,6 @@ var watchTestSetup = function() {
     bundler.on('update', function() {
         gulp.start('test');
     });
-};
-
-
-/**
- * Clean the build directory.
- */
-var clean = function() {
-    return del(BUILD_PATH);
 };
 
 
@@ -221,7 +213,6 @@ gulp.task('watch-test-setup', watchTestSetup);
 gulp.task('watch-test', ['watch-test-setup', 'test']);
 
 // Misc
-gulp.task('clean', clean);
 gulp.task('lint', lint);
 gulp.task('lint-tests', lintTests);
 
