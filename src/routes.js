@@ -18,5 +18,10 @@ export default {
             window.location.hostname === '127.0.0.1') ? '#' : '';
 
         return url + '/' + hash + gameId;
+    },
+
+    isDebugMode() {
+        const parts = utils.queryStringParts(window.location.search);
+        return parts['debug'] === 'true';
     }
 };

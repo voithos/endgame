@@ -25,6 +25,13 @@ let endgame = {
 
         scene.beginRender();
 
+        // In case of debug mode, we short-circuit the connection logic and go
+        // straight into a local game.
+        if (routes.isDebugMode()) {
+            this.beginDebugGame();
+            return;
+        }
+
         let gameId = routes.parseGameId();
         if (gameId) {
             this.isHost = false;
@@ -147,36 +154,38 @@ let endgame = {
         log('commencing game');
 
         views.showStatusScreen()
-            .then(() => {
-                return new Promise((resolve, reject) => {
-                    // Begin chess game
-                    this.chess = new Chess();
-                    this.isMyTurn = this.side === 'white';
+            .then(() => new Promise((resolve, reject) => {
+                // Begin chess game
+                this.chess = new Chess();
+                this.isMyTurn = this.side === 'white';
 
-                    scene.addTileControls(pos => {
-                        return this.chess.moves({ square: pos, verbose: true });
-                    }, (from, to) => {
-                        let move = this.chess.move({ from: from, to: to });
+                scene.addTileControls(pos => {
+                    return this.chess.moves({ square: pos, verbose: true });
+                }, (from, to) => {
+                    let move = this.chess.move({ from: from, to: to });
 
-                        if (move) {
+                    if (move) {
+                        if (!routes.isDebugMode()) {
                             // Send move to remote
                             rtc.sendData({
                                 event: 'chessmove',
                                 move: move
                             });
-                            afterMove(move);
-                        } else {
-                            log('ERROR: illegal move attempted locally - bug?');
                         }
-                    });
+                        afterMove(move);
+                    } else {
+                        log('ERROR: illegal move attempted locally - bug?');
+                    }
+                });
 
-                    let afterMove = move => {
-                        this.isMyTurn = !this.isMyTurn;
-                        scene.performGraphicalMove(move);
+                let afterMove = move => {
+                    this.isMyTurn = !this.isMyTurn;
+                    scene.performGraphicalMove(move);
 
-                        // TODO: Check for game end
-                    };
+                    // TODO: Check for game end
+                };
 
+                if (!routes.isDebugMode()) {
                     rtc.addDataListener((data, conn) => {
                         if (data.event === 'chessmove') {
                             if (!this.isMyTurn) {
@@ -195,10 +204,16 @@ let endgame = {
                             log('ERROR: unknown event type', data.event);
                         }
                     });
-                });
-            })
+                }
+            }))
             .done();
 
+    },
+
+    beginDebugGame() {
+        this.side = 'white';
+        scene.setPlayCameraPos(this.side);
+        this.beginGame();
     }
 };
 
