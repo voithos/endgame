@@ -3,106 +3,95 @@ import _ from 'lodash';
 import cfg from './config';
 
 export default {
-    init: function() {
-        let self = this;
-        self.peer = new Peer({
+    init() {
+        this.peer = new Peer({
             key: cfg.peerJsKey,
             config: {
                 iceServers: cfg.iceServers
             }
         });
 
-        return new Promise(function(resolve, reject) {
-            self.peer.on('open', resolve);
+        return new Promise((resolve, reject) => {
+            this.peer.on('open', resolve);
         });
     },
 
-    listen: function() {
-        let self = this;
-
-        return new Promise(function(resolve, reject) {
-            self.peer.on('connection', function(conn) {
-                self.conn = conn;
-                self.remoteId = conn.peer;
-                self.setupDataBus(conn);
+    listen() {
+        return new Promise((resolve, reject) => {
+            this.peer.on('connection', conn => {
+                this.conn = conn;
+                this.remoteId = conn.peer;
+                this.setupDataBus(conn);
                 resolve(conn);
             });
         });
     },
 
-    connect: function(hostId) {
-        let self = this;
-        let conn = self.peer.connect(hostId, {
+    connect(hostId) {
+        let conn = this.peer.connect(hostId, {
             reliable: true
         });
-        self.conn = conn;
-        self.remoteId = conn.peer;
-        self.setupDataBus(conn);
+        this.conn = conn;
+        this.remoteId = conn.peer;
+        this.setupDataBus(conn);
         return Promise.resolve(conn);
     },
 
-    setupDataBus: function(conn) {
-        let self = this;
+    setupDataBus(conn) {
+        this.queuedData = [];
+        this.listeners = [];
 
-        self.queuedData = [];
-        self.listeners = [];
+        conn.on('open', () => {
+            conn.on('data', data => {
+                let listeners = this.listeners.slice();
 
-        conn.on('open', function() {
-            conn.on('data', function(data) {
-                let listeners = self.listeners.slice();
-
-                _.forEach(listeners, function(listener) {
-                    listener.fn.call(self, data, conn);
+                _.forEach(listeners, listener => {
+                    listener.fn.call(this, data, conn);
 
                     if (listener.once) {
-                        let idx = self.listeners.indexOf(listener);
+                        let idx = this.listeners.indexOf(listener);
                         if (idx !== -1) {
-                            self.listeners.splice(idx, 1);
+                            this.listeners.splice(idx, 1);
                         }
                     }
                 });
             });
 
-            _.forEach(self.queuedData, function(data) {
-                self.conn.send(data);
+            _.forEach(this.queuedData, data => {
+                this.conn.send(data);
             });
         });
     },
 
-    addDataListener: function(fn, once) {
-        let self = this;
-        self.listeners.push({
+    addDataListener(fn, once) {
+        this.listeners.push({
             fn: fn,
             once: once
         });
     },
 
-    sendData: function(data) {
-        let self = this;
-
-        if (self.conn.open) {
-            self.conn.send(data);
+    sendData(data) {
+        if (this.conn.open) {
+            this.conn.send(data);
         } else {
             // If the channel isn't open yet, queue the data
-            self.queuedData.push(data);
+            this.queuedData.push(data);
         }
     },
 
-    performMediaCall: function(isCaller, localMediaStream) {
-        let self = this;
-
-        return new Promise(function(resolve, reject) {
+    performMediaCall(isCaller, localMediaStream) {
+        return new Promise((resolve, reject) => {
             if (isCaller) {
-                self.call = self.peer.call(self.remoteId, localMediaStream);
-                resolve(self.call);
+                this.call = this.peer.call(this.remoteId, localMediaStream);
+                resolve(this.call);
             } else {
-                self.peer.on('call', function(call) {
-                    self.call = call;
+                this.peer.on('call', call => {
+                    this.call = call;
 
                     if (localMediaStream) {
                         call.answer(localMediaStream);
                     }
-                    resolve(self.call);
+                    resolve(this.call);
                 });
             }
         });

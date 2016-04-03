@@ -17,9 +17,7 @@ import log from './log';
 let endgame = {
     config: cfg,
 
-    main: function() {
-        let self = this;
-
+    main() {
         scene.init();
         scene.loadGameGeometry()
             .then(scene.setupBoard.bind(scene))
@@ -29,59 +27,54 @@ let endgame = {
 
         let gameId = routes.parseGameId();
         if (gameId) {
-            self.isHost = false;
-            self.connectToGame(gameId);
+            this.isHost = false;
+            this.connectToGame(gameId);
         } else {
-            self.isHost = true;
-            self.setupGame();
+            this.isHost = true;
+            this.setupGame();
         }
     },
 
-    setupGame: function() {
-        let self = this;
-        self.side = 'white';
+    setupGame() {
+        this.side = 'white';
 
         rtc.init()
             .then(game.create.bind(game))
             .then(views.showWaitScreen.bind(views))
             .then(rtc.listen.bind(rtc))
-            .then(self.setupMedia.bind(self))
-            .then(self.performMediaCalls.bind(self))
-            .then(self.displayRemoteMedia.bind(self))
-            .then(self.beginGame.bind(self))
+            .then(this.setupMedia.bind(this))
+            .then(this.performMediaCalls.bind(this))
+            .then(this.displayRemoteMedia.bind(this))
+            .then(this.beginGame.bind(this))
             .done();
     },
 
-    connectToGame: function(gameId) {
-        let self = this;
-        self.side = 'black';
+    connectToGame(gameId) {
+        this.side = 'black';
 
         rtc.init()
             .then(game.join.bind(game, gameId))
             .then(rtc.connect.bind(rtc))
-            .then(self.setupMedia.bind(self))
-            .then(self.performMediaCalls.bind(self))
-            .then(self.displayRemoteMedia.bind(self))
-            .then(self.beginGame.bind(self))
+            .then(this.setupMedia.bind(this))
+            .then(this.performMediaCalls.bind(this))
+            .then(this.displayRemoteMedia.bind(this))
+            .then(this.beginGame.bind(this))
             .done();
     },
 
-    setupMedia: function() {
+    setupMedia() {
         log('setting up the media');
 
-        let self = this;
-
         return views.showMediaScreen()
-            .then(function() {
+            .then(() => {
                 // We need to wait for both the local and remote media to be resolved
-
                 return Promise.all([
                     // Wait for notice from remote regarding media
-                    new Promise(function(resolve, reject) {
-                        rtc.addDataListener(function(data, conn) {
+                    new Promise((resolve, reject) => {
+                        rtc.addDataListener((data, conn) => {
                             if (data.event === 'mediarequestcomplete') {
-                                self.remoteHasMedia = data.hasMedia;
-                                log('remote media request complete:', self.remoteHasMedia);
+                                this.remoteHasMedia = data.hasMedia;
+                                log('remote media request complete:', this.remoteHasMedia);
 
                                 resolve();
                             } else {
@@ -92,8 +85,8 @@ let endgame = {
 
                     // Request local media
                     media.init()
-                        .then(function() {
-                            self.localHasMedia = true;
+                        .then(() => {
+                            this.localHasMedia = true;
                             log('local media granted');
 
                             media.playLocalStream();
@@ -102,8 +95,8 @@ let endgame = {
                                 event: 'mediarequestcomplete',
                                 hasMedia: true
                             });
-                        }, function() {
-                            self.localHasMedia = false;
+                        }, () => {
+                            this.localHasMedia = false;
                             log('local media denied');
 
                             rtc.sendData({
@@ -115,12 +108,10 @@ let endgame = {
             });
     },
 
-    performMediaCalls: function() {
+    performMediaCalls() {
         log('performing remote media calls');
 
-        let self = this;
-
-        if (!self.localHasMedia && !self.remoteHasMedia) {
+        if (!this.localHasMedia && !this.remoteHasMedia) {
             // No media to exchange
             return Promise.resolve();
         }
@@ -128,48 +119,44 @@ let endgame = {
         // Because caller must provide mediaStream, we need to figure out if
         // we're the caller or not. If the host has a mediaStream, it will
         // always be the caller; otherwise, the friend will be.
-        let isCaller = (self.isHost && self.localHasMedia) ||
-            (!self.isHost && !self.remoteHasMedia && self.localHasMedia);
+        let isCaller = (this.isHost && this.localHasMedia) ||
+            (!this.isHost && !this.remoteHasMedia && this.localHasMedia);
 
         return rtc.performMediaCall(
             isCaller,
-            self.localHasMedia && media.localMediaStream
+            this.localHasMedia && media.localMediaStream
         );
     },
 
-    displayRemoteMedia: function(call) {
-        let self = this;
-
-        return new Promise(function(resolve, reject) {
-            if (self.remoteHasMedia) {
-                call.on('stream', function(remoteMediaStream) {
+    displayRemoteMedia(call) {
+        return new Promise((resolve, reject) => {
+            if (this.remoteHasMedia) {
+                call.on('stream', (remoteMediaStream) => {
                     let video = media.configureRemoteStream(remoteMediaStream);
-                    scene.addFriendScreen(self.side, video);
+                    scene.addFriendScreen(this.side, video);
                     resolve();
                 });
             } else {
-                scene.addFriendScreen(self.side);
+                scene.addFriendScreen(this.side);
                 resolve();
             }
         });
     },
 
-    beginGame: function() {
+    beginGame() {
         log('commencing game');
 
-        let self = this;
-
         views.showStatusScreen()
-            .then(function() {
-                return new Promise(function(resolve, reject) {
+            .then(() => {
+                return new Promise((resolve, reject) => {
                     // Begin chess game
-                    self.chess = new Chess();
-                    self.isMyTurn = self.side === 'white';
+                    this.chess = new Chess();
+                    this.isMyTurn = this.side === 'white';
 
-                    scene.addTileControls(function(pos) {
-                        return self.chess.moves({ square: pos, verbose: true });
-                    }, function(from, to) {
-                        let move = self.chess.move({ from: from, to: to });
+                    scene.addTileControls(pos => {
+                        return this.chess.moves({ square: pos, verbose: true });
+                    }, (from, to) => {
+                        let move = this.chess.move({ from: from, to: to });
 
                         if (move) {
                             // Send move to remote
@@ -183,18 +170,18 @@ let endgame = {
                         }
                     });
 
-                    let afterMove = function(move) {
-                        self.isMyTurn = !self.isMyTurn;
+                    let afterMove = move => {
+                        this.isMyTurn = !this.isMyTurn;
                         scene.performGraphicalMove(move);
 
                         // TODO: Check for game end
                     };
 
-                    rtc.addDataListener(function(data, conn) {
+                    rtc.addDataListener((data, conn) => {
                         if (data.event === 'chessmove') {
-                            if (!self.isMyTurn) {
+                            if (!this.isMyTurn) {
                                 // Apply remove move
-                                let move = self.chess.move(data.move);
+                                let move = this.chess.move(data.move);
 
                                 if (move) {
                                     afterMove(move);

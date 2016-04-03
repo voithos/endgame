@@ -1,15 +1,15 @@
 import _ from 'lodash';
 
 export default {
-    pathParts: function(path) {
+    pathParts(path) {
         return _.filter(path.split('/'));
     },
 
-    repeat: function(v, n) {
+    repeat(v, n) {
         return _.map(Array.apply(null, new Array(n)), this.identity.bind(null, v));
     },
 
-    identity: function(v) {
+    identity(v) {
         return v;
     }
 };

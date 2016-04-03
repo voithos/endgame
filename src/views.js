@@ -4,10 +4,8 @@ import routes from './routes';
 import log from './log';
 
 export default {
-    showWaitScreen: function(gameId) {
-        let self = this;
-
-        self.waitScreen = new Vue({
+    showWaitScreen(gameId) {
+        this.waitScreen = new Vue({
             el: '#waitscreen',
             data: {
                 link: routes.genGameUrl(gameId)
@@ -22,8 +20,7 @@ export default {
         return Promise.resolve();
     },
 
-    showMediaScreen: function() {
-        let self = this;
+    showMediaScreen() {
         $('#waitscreen').modal('hide');
 
         $('#mediascreen').modal({
@@ -34,8 +31,7 @@ export default {
         return Promise.resolve();
     },
 
-    showStatusScreen: function() {
-        let self = this;
+    showStatusScreen() {
         $('#mediascreen').modal('hide');
 
         return Promise.resolve();

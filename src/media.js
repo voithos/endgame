@@ -3,10 +3,8 @@ import cfg from './config';
 import log from './log';
 
 export default {
-    init: function() {
-        let self = this;
-
-        return new Promise(function(resolve, reject) {
+    init() {
+        return new Promise((resolve, reject) => {
             if (!navigator.getUserMedia) {
                 return reject();
             }
@@ -20,22 +18,20 @@ export default {
                     }
                 },
                 audio: true
-            }, function(localMediaStream) {
+            }, (localMediaStream) => {
                 // Acquired
-                self.localMediaStream = localMediaStream;
+                this.localMediaStream = localMediaStream;
                 resolve(localMediaStream);
             }, reject);
         });
     },
 
-    playLocalStream: function() {
-        let self = this;
-
+    playLocalStream() {
         let video = $('#localvideo').get(0);
-        self.playStream(self.localMediaStream, video);
+        this.playStream(this.localMediaStream, video);
 
         let started = false;
-        video.addEventListener('canplay', function(ev) {
+        video.addEventListener('canplay', ev => {
             if (!started && (video.videoHeight || video.videoWidth)) {
                 started = true;
 
@@ -47,17 +43,16 @@ export default {
         }, false);
     },
 
-    configureRemoteStream: function(remoteMediaStream) {
-        let self = this;
-        self.remoteMediaStream = remoteMediaStream;
+    configureRemoteStream(remoteMediaStream) {
+        this.remoteMediaStream = remoteMediaStream;
 
         let video = document.createElement('video');
-        self.playStream(remoteMediaStream, video);
+        this.playStream(remoteMediaStream, video);
 
         return video;
     },
 
-    playStream: function(mediaStream, video) {
+    playStream(mediaStream, video) {
         video.autoplay = true;
 
         // Handle older Firefox oddities

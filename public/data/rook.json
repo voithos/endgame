@@ -10,7 +10,6 @@
         "opacity": -0.18,
         "colorEmissive": [0.0,0.0,0.0],
         "colorDiffuse": [0.6400000190734865,0.5788977709248329,0.5368913730515743],
-        "colorAmbient": [0.6400000190734865,0.5788977709248329,0.5368913730515743],
         "shading": "phong",
         "specularCoef": 176,
         "DbgName": "White marble",

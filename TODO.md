@@ -1,11 +1,9 @@
 # todo
 
 ## Code
-- remove dependencies on CDNs
 - look into security for Firebase
 - upgrade code to ES2015
 - switch to Material lite
-- upgrade libraries
 
 ## Game
 - add debug mode

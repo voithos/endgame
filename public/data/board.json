@@ -10,7 +10,6 @@
         "opacity": -0.18,
         "colorEmissive": [0.0,0.0,0.0],
         "colorDiffuse": [0.8400000190734865,0.7788977709248329,0.7368913730515743],
-        "colorAmbient": [0.8400000190734865,0.7788977709248329,0.7368913730515743],
         "mapDiffuse": "grid.png",
         "shading": "phong",
         "specularCoef": 176,

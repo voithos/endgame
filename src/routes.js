@@ -3,12 +3,12 @@ import _ from 'lodash';
 import utils from './utils';
 
 export default {
-    parseGameId: function() {
+    parseGameId() {
         return _.last(utils.pathParts(window.location.pathname)) ||
             window.location.hash.substring(1);
     },
 
-    genGameUrl: function(gameId) {
+    genGameUrl(gameId) {
         let url = window.location.protocol + '//' + window.location.hostname +
             (window.location.port ? ':' + window.location.port : '');
 

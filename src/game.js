@@ -4,20 +4,18 @@ import log from './log';
 
 export default {
     create: function(hostId) {
-        let self = this;
-        self.ref = new Firebase(cfg.gamesUrl);
-        self.gameRef = self.ref.push();
-        self.gameRef.set({ hostId: hostId });
-        return Promise.resolve(self.gameRef.key());
+        this.ref = new Firebase(cfg.gamesUrl);
+        this.gameRef = this.ref.push();
+        this.gameRef.set({ hostId: hostId });
+        return Promise.resolve(this.gameRef.key());
     },
 
     join: function(gameId) {
-        let self = this;
-        self.ref = new Firebase(cfg.gamesUrl);
-        self.gameRef = self.ref.child(gameId);
+        this.ref = new Firebase(cfg.gamesUrl);
+        this.gameRef = this.ref.child(gameId);
 
-        return new Promise(function(resolve, reject) {
-            self.gameRef.once('value', function(snapshot) {
+        return new Promise((resolve, reject) => {
+            this.gameRef.once('value', function(snapshot) {
                 resolve(snapshot.val().hostId);
             });
         });

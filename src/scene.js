@@ -7,44 +7,41 @@ import cfg from './config';
 import log from './log';
 
 export default {
-    init: function() {
-        let self = this;
-        self.scene = new THREE.Scene();
-        self.camera = new THREE.PerspectiveCamera(
+    init() {
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(
             45, window.innerWidth / window.innerHeight, 0.1, 1000
         );
 
-        self.renderer = self.createRenderer();
-        self.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
-        self.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer = this.createRenderer();
+        this.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-        document.body.appendChild(self.renderer.domElement);
+        document.body.appendChild(this.renderer.domElement);
 
-        window.addEventListener('resize', self.resize.bind(self), false);
+        window.addEventListener('resize', this.resize.bind(this), false);
 
-        self.addLighting();
-        self.setInitialCameraPos();
+        this.addLighting();
+        this.setInitialCameraPos();
     },
 
-    resize: function() {
-        let self = this;
-        self.camera.aspect = window.innerWidth / window.innerHeight;
-        self.camera.updateProjectionMatrix();
+    resize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
 
-        self.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
     },
 
-    createRenderer: function() {
+    createRenderer() {
         // Choose between WebGL and Canvas renderer based on availability
-        let self = this;
-        let renderer = self.webglAvailable() ?
+        let renderer = this.webglAvailable() ?
             new THREE.WebGLRenderer({ antialias: true }) :
             new THREE.CanvasRenderer();
 
         return renderer;
     },
 
-    webglAvailable: function() {
+    webglAvailable() {
         try {
             let canvas = document.createElement('canvas');
             return !!(window.WebGLRenderingContext && (
@@ -56,90 +53,81 @@ export default {
         }
     },
 
-    addLighting: function() {
-        let self = this;
-        self.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-        self.dirLight.position.set(0, 80, 0).normalize();
-        self.scene.add(self.dirLight);
+    addLighting() {
+        this.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+        this.dirLight.position.set(0, 80, 0).normalize();
+        this.scene.add(this.dirLight);
 
-        self.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
-        self.scene.add(self.hemiLight);
+        this.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
+        this.scene.add(this.hemiLight);
     },
 
-    setInitialCameraPos: function() {
-        let self = this;
-        self.camera.position.x = cfg.gameOpts.cameraStartPos.x;
-        self.camera.position.y = cfg.gameOpts.cameraStartPos.y;
-        self.camera.position.z = cfg.gameOpts.cameraStartPos.z;
-        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    setInitialCameraPos() {
+        this.camera.position.x = cfg.gameOpts.cameraStartPos.x;
+        this.camera.position.y = cfg.gameOpts.cameraStartPos.y;
+        this.camera.position.z = cfg.gameOpts.cameraStartPos.z;
+        this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     },
 
-    setPlayCameraPos: function(side) {
-        let self = this;
-        self.camera.position.x = cfg.gameOpts.cameraPlayPos.x;
-        self.camera.position.y = cfg.gameOpts.cameraPlayPos.y;
-        self.camera.position.z = (side === 'black' ? -1 : 1) * cfg.gameOpts.cameraPlayPos.z;
-        self.camera.lookAt(new THREE.Vector3(
+    setPlayCameraPos(side) {
+        this.camera.position.x = cfg.gameOpts.cameraPlayPos.x;
+        this.camera.position.y = cfg.gameOpts.cameraPlayPos.y;
+        this.camera.position.z = (side === 'black' ? -1 : 1) * cfg.gameOpts.cameraPlayPos.z;
+        this.camera.lookAt(new THREE.Vector3(
             cfg.gameOpts.cameraPlayLookAt.x,
             cfg.gameOpts.cameraPlayLookAt.y,
             cfg.gameOpts.cameraPlayLookAt.z
         ));
     },
 
-    loadGameGeometry: function() {
-        let self = this;
-        self.meshes = {};
+    loadGameGeometry() {
+        this.meshes = {};
 
         // Load all pieces
-        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), function(asset) {
-            return new Promise(function(resolve, reject) {
+        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), asset =>
+             new Promise((resolve, reject) => {
                 let loader = new THREE.JSONLoader();
-                loader.load('data/' + asset + '.json', function(geometry, materials) {
+                loader.load('data/' + asset + '.json', (geometry, materials) => {
                     let material = materials[0];
 
                     if (_.contains(cfg.assets, asset)) {
                         let mesh = new THREE.Mesh(geometry, material);
-                        self.meshes[asset] = mesh;
+                        this.meshes[asset] = mesh;
                     } else {
                         // Compute normals
                         geometry.computeFaceNormals();
                         geometry.computeVertexNormals();
 
                         // Duplicate black/white
-                        _.forEach(cfg.sides, function(side) {
+                        _.forEach(cfg.sides, side => {
                             let meshMaterial = material.clone();
                             meshMaterial.color.setHex(cfg.colors.pieces[side].color);
-                            meshMaterial.ambient.setHex(cfg.colors.pieces[side].ambient);
                             meshMaterial.emissive.setHex(cfg.colors.pieces[side].emissive);
                             meshMaterial.specular.setHex(cfg.colors.pieces[side].specular);
 
                             let mesh = new THREE.Mesh(geometry, meshMaterial);
 
-                            if (!self.meshes[side]) {
-                                self.meshes[side] = {};
+                            if (!this.meshes[side]) {
+                                this.meshes[side] = {};
                             }
-                            self.meshes[side][asset] = mesh;
+                            this.meshes[side][asset] = mesh;
                         });
                     }
 
                     log('done loading', asset);
                     resolve();
                 });
-            });
-        }));
+            })
+        ));
     },
 
-    setupBoard: function() {
-        let self = this;
-
-        self.addSkybox();
-        self.addBoard();
-        self.addPieces();
+    setupBoard() {
+        this.addSkybox();
+        this.addBoard();
+        this.addPieces();
     },
 
-    addSkybox: function() {
-        let self = this;
-
+    addSkybox() {
         let material = new THREE.MeshLambertMaterial({
             color: 0xdadada,
             depthWrite: false,
@@ -148,75 +136,69 @@ export default {
 
         let mesh = new THREE.Mesh(new THREE.BoxGeometry(150, 100, 200), material);
         mesh.position.set(0, 50, 0);
-        // self.scene.add(mesh);
+        // this.scene.add(mesh);
     },
 
-    addBoard: function() {
-        let self = this;
-
-        self.board = new THREE.Object3D();
-        self.board.add(self.meshes.board);
-        self.board.scale.set(
+    addBoard() {
+        this.board = new THREE.Object3D();
+        this.board.add(this.meshes.board);
+        this.board.scale.set(
             cfg.gameOpts.boardScale,
             cfg.gameOpts.boardScale,
             cfg.gameOpts.boardScale
         );
 
-        self.scene.add(self.board);
+        this.scene.add(this.board);
     },
 
-    addPieces: function() {
-        let self = this;
-        self.pieces = {};
-        self.captured = { 'w': [], 'b': [] };
+    addPieces() {
+        this.pieces = {};
+        this.captured = { 'w': [], 'b': [] };
 
-        _.forEach(cfg.startPosition, function(pieces, side) {
-            _.forEach(pieces, function(piece, i) {
-                self.addPiece(piece.pos, piece.type, side);
+        _.forEach(cfg.startPosition, (pieces, side) => {
+            _.forEach(pieces, (piece, i) => {
+                this.addPiece(piece.pos, piece.type, side);
             });
         });
     },
 
-    addPiece: function(pos, type, side) {
+    addPiece(pos, type, side) {
         log('creating', type, side);
 
-        let self = this;
         let object = new THREE.Object3D();
-        object.add(self.meshes[side][type].clone());
+        object.add(this.meshes[side][type].clone());
         object.position.setY(cfg.gameOpts.pieceYOffset);
 
-        self.setPiecePosition(object, pos);
+        this.setPiecePosition(object, pos);
 
         // Rotate white
         if (side === 'white') {
             object.rotation.y = Math.PI;
         }
 
-        self.scene.add(object);
-        self.pieces[pos] = {
+        this.scene.add(object);
+        this.pieces[pos] = {
             type: type,
             side: side,
             object: object
         };
     },
 
-    addFriendScreen: function(side, video) {
-        let self = this;
-
+    addFriendScreen(side, video) {
         let material;
 
         if (video) {
-            self.friendVideo = video;
-            self.friendTexture = new THREE.Texture(video);
+            this.friendVideo = video;
+            this.friendTexture = new THREE.Texture(video);
 
-            self.friendTexture.generateMipmaps = false;
+            this.friendTexture.generateMipmaps = false;
 
             material = new THREE.MeshLambertMaterial({
-                map: self.friendTexture,
+                map: this.friendTexture,
                 emissive: 0xeeeeee
             });
         } else {
-            // self.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
+            // this.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
             material = new THREE.MeshLambertMaterial({
                 color: 0x000000
             });
@@ -247,17 +229,16 @@ export default {
             cube.rotation.y = Math.PI;
         }
 
-        self.scene.add(cube);
+        this.scene.add(cube);
 
-        self.setPlayCameraPos(side);
+        this.setPlayCameraPos(side);
     },
 
-    addTileControls: function(legalCallback, moveCallback) {
-        let self = this;
-        self.legalCallback = legalCallback;
-        self.moveCallback = moveCallback;
+    addTileControls(legalCallback, moveCallback) {
+        this.legalCallback = legalCallback;
+        this.moveCallback = moveCallback;
 
-        self.tiles = {};
+        this.tiles = {};
 
         // Create geometry and material
         let geometry = new THREE.PlaneGeometry(
@@ -273,20 +254,18 @@ export default {
         });
 
         // Generate mesh for each tile
-        _.forEach(cfg.files, function(file, i) {
-            _.forEach(cfg.ranks, function(rank, i) {
-                self.addTileControl(file + rank, geometry, material.clone());
+        _.forEach(cfg.files, (file, i) => {
+            _.forEach(cfg.ranks, (rank, i) => {
+                this.addTileControl(file + rank, geometry, material.clone());
             });
         });
 
         // Bind to mouse events
-        self.raycaster = new THREE.Raycaster();
-        self.addMouseListeners();
+        this.raycaster = new THREE.Raycaster();
+        this.addMouseListeners();
     },
 
-    addTileControl: function(pos, geometry, material) {
-        let self = this;
-
+    addTileControl(pos, geometry, material) {
         let offsetX = cfg.fileToOffset[pos[0]];
         let offsetZ = cfg.rankToOffset[pos[1]];
 
@@ -299,136 +278,122 @@ export default {
 
         tile.isTile = true;
         tile.chessPos = pos;
-        self.tiles[pos] = tile;
+        this.tiles[pos] = tile;
 
-        self.scene.add(tile);
+        this.scene.add(tile);
     },
 
-    addMouseListeners: function() {
-        let self = this;
-        self.mousePos = new THREE.Vector2();
-        document.addEventListener('mousemove', self.onMouseMove.bind(self), false);
-        document.addEventListener('mousedown', self.onMouseDown.bind(self), false);
-        document.addEventListener('mouseup', self.onMouseUp.bind(self), false);
+    addMouseListeners() {
+        this.mousePos = new THREE.Vector2();
+        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+        document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+        document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
     },
 
-    onMouseMove: function(event) {
-        let self = this;
-        self.updateMousePos(event);
-        self.highlightActiveTile();
+    onMouseMove(event) {
+        this.updateMousePos(event);
+        this.highlightActiveTile();
     },
 
-    updateMousePos: function(event) {
-        let self = this;
-        self.mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
-        self.mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    updateMousePos(event) {
+        this.mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
+        this.mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
     },
 
-    highlightActiveTile: function() {
-        let self = this;
-        self.recolorTiles();
+    highlightActiveTile() {
+        this.recolorTiles();
 
-        let intersected = self.intersectTile();
+        let intersected = this.intersectTile();
         if (intersected) {
             let tile = intersected.object;
-            self.colorTile(tile, cfg.colors.tiles.active);
+            this.colorTile(tile, cfg.colors.tiles.active);
         }
     },
 
-    onMouseDown: function(event) {
+    onMouseDown(event) {
         event.preventDefault();
-
-        let self = this;
-        self.handleMoveSelection();
+        this.handleMoveSelection();
     },
 
-    handleMoveSelection: function() {
-        let self = this;
-        let intersected = self.intersectTile();
+    handleMoveSelection() {
+        let intersected = this.intersectTile();
 
         if (intersected) {
             let tile = intersected.object;
 
             // We're either in 'piece' or 'move' selection mode (the latter
             // being specific to a piece)
-            if (self.isSelectingPieceMovement) {
+            if (this.isSelectingPieceMovement) {
                 if (tile.isLegalMove) {
-                    self.commitMove(tile);
-                    self.resetTileHighlights();
+                    this.commitMove(tile);
+                    this.resetTileHighlights();
                 } else {
-                    self.resetTileHighlights();
-                    self.highlightLegalMoves(tile);
+                    this.resetTileHighlights();
+                    this.highlightLegalMoves(tile);
                 }
             } else {
-                self.highlightLegalMoves(tile);
+                this.highlightLegalMoves(tile);
             }
         }
     },
 
-    commitMove: function(tile) {
-        let self = this;
-        self.moveCallback.call(self, self.selectedPos, tile.chessPos);
+    commitMove(tile) {
+        this.moveCallback.call(this, this.selectedPos, tile.chessPos);
 
-        self.isSelectingPieceMovement = false;
-        self.selectedPos = null;
+        this.isSelectingPieceMovement = false;
+        this.selectedPos = null;
     },
 
-    highlightLegalMoves: function(tile) {
-        let self = this;
-        self.isSelectingPieceMovement = true;
-        self.selectedPos = tile.chessPos;
+    highlightLegalMoves(tile) {
+        this.isSelectingPieceMovement = true;
+        this.selectedPos = tile.chessPos;
 
-        self.colorTile(tile, cfg.colors.tiles.selected);
+        this.colorTile(tile, cfg.colors.tiles.selected);
 
         // Get legal moves and highlight them
-        self.currentLegalMoves = self.legalCallback.call(self, tile.chessPos);
-        _.forEach(self.currentLegalMoves, function(move) {
-            let tile = self.tiles[move.to];
+        this.currentLegalMoves = this.legalCallback.call(this, tile.chessPos);
+        _.forEach(this.currentLegalMoves, move => {
+            let tile = this.tiles[move.to];
             tile.isLegalMove = true;
-            self.colorTile(tile, cfg.colors.tiles.legal);
+            this.colorTile(tile, cfg.colors.tiles.legal);
         });
     },
 
-    resetTileHighlights: function() {
-        let self = this;
-
-        _.forEach(self.tiles, function(tile, pos) {
+    resetTileHighlights() {
+        _.forEach(this.tiles, (tile, pos) => {
             tile.isLegalMove = null;
         });
-        self.recolorTiles();
+        this.recolorTiles();
     },
 
-    recolorTiles: function() {
-        let self = this;
-
-        _.forEach(self.tiles, function(tile, pos) {
-            self.hideTile(tile);
+    recolorTiles() {
+        _.forEach(this.tiles, (tile, pos) => {
+            this.hideTile(tile);
 
             // Recolor
             if (tile.isLegalMove) {
-                self.colorTile(tile, cfg.colors.tiles.legal);
-            } else if (tile.chessPos == self.selectedPos) {
-                self.colorTile(tile, cfg.colors.tiles.selected);
-            } else if (tile.chessPos === self.prevPosFrom) {
-                self.colorTile(tile, cfg.colors.tiles.prevFrom);
-            } else if (tile.chessPos === self.prevPosTo) {
-                self.colorTile(tile, cfg.colors.tiles.prevTo);
+                this.colorTile(tile, cfg.colors.tiles.legal);
+            } else if (tile.chessPos == this.selectedPos) {
+                this.colorTile(tile, cfg.colors.tiles.selected);
+            } else if (tile.chessPos === this.prevPosFrom) {
+                this.colorTile(tile, cfg.colors.tiles.prevFrom);
+            } else if (tile.chessPos === this.prevPosTo) {
+                this.colorTile(tile, cfg.colors.tiles.prevTo);
             }
         });
     },
 
-    colorTile: function(tile, color) {
+    colorTile(tile, color) {
         tile.material.color.setHex(color);
         tile.material.opacity = cfg.gameOpts.tileOpacity;
     },
 
-    hideTile: function(tile) {
+    hideTile(tile) {
         tile.material.opacity = 0;
     },
 
-    performGraphicalMove: function(move) {
-        let self = this;
-        let piece = self.pieces[move.from];
+    performGraphicalMove(move) {
+        let piece = this.pieces[move.from];
 
         if (typeof piece === 'undefined') {
             log('ERROR: piece not found - bug?');
@@ -436,35 +401,35 @@ export default {
         }
 
         // Cache previous move for highlighting
-        self.prevPosFrom = move.from;
-        self.prevPosTo = move.to;
+        this.prevPosFrom = move.from;
+        this.prevPosTo = move.to;
 
         // Handle moves (order matters because of interactions with
-        // `self.pieces`)
+        // `this.pieces`)
 
         if (move.flags.indexOf('e') !== -1) {
             /** En passant */
         }
         if (move.flags.indexOf('c') !== -1) {
             /** Standard capture */
-            let capturedPiece = self.pieces[move.to];
-            delete self.pieces[move.to];
-            self.captured[move.color].push(capturedPiece);
+            let capturedPiece = this.pieces[move.to];
+            delete this.pieces[move.to];
+            this.captured[move.color].push(capturedPiece);
 
-            self.hidePiece(capturedPiece.object);
+            this.hidePiece(capturedPiece.object);
 
             // Move capturing piece
-            delete self.pieces[move.from];
-            self.pieces[move.to] = piece;
+            delete this.pieces[move.from];
+            this.pieces[move.to] = piece;
 
-            self.setPiecePosition(piece.object, move.to);
+            this.setPiecePosition(piece.object, move.to);
         }
         if (move.flags.indexOf('n') !== -1 || move.flags.indexOf('b') !== -1) {
             /** Standard non-capture or pawn-push */
-            delete self.pieces[move.from];
-            self.pieces[move.to] = piece;
+            delete this.pieces[move.from];
+            this.pieces[move.to] = piece;
 
-            self.setPiecePosition(piece.object, move.to);
+            this.setPiecePosition(piece.object, move.to);
         }
         if (move.flags.indexOf('p') !== -1) {
             /** Promotion */
@@ -476,24 +441,23 @@ export default {
             /** Queenside castle */
         }
 
-        self.recolorTiles();
+        this.recolorTiles();
     },
 
-    onMouseUp: function(event) {
+    onMouseUp(event) {
         event.preventDefault();
     },
 
-    intersectTile: function() {
-        let self = this;
-        self.raycaster.setFromCamera(self.mousePos, self.camera);
+    intersectTile() {
+        this.raycaster.setFromCamera(this.mousePos, this.camera);
 
-        let intersects = self.raycaster.intersectObjects(self.scene.children);
-        return _.first(_.filter(intersects, function(intersected) {
+        let intersects = this.raycaster.intersectObjects(this.scene.children);
+        return _.first(_.filter(intersects, intersected => {
             return intersected.object.isTile;
         }));
     },
 
-    setPiecePosition: function(object, pos) {
+    setPiecePosition(object, pos) {
         let offsetX = cfg.fileToOffset[pos[0]];
         let offsetZ = cfg.rankToOffset[pos[1]];
 
@@ -501,34 +465,31 @@ export default {
         object.position.setZ(cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize);
     },
 
-    hidePiece: function(object) {
+    hidePiece(object) {
         object.visible = false;
     },
 
-    beginRender: function() {
-        let self = this;
-        self.render = self.render.bind(self);
-        self.previousTime = new Date().getTime();
-        self.requestId = requestAnimationFrame(self.render);
+    beginRender() {
+        this.render = this.render.bind(this);
+        this.previousTime = new Date().getTime();
+        this.requestId = requestAnimationFrame(this.render);
     },
 
-    render: function(timestamp) {
-        let self = this;
-
-        self.requestId = requestAnimationFrame(self.render);
+    render(timestamp) {
+        this.requestId = requestAnimationFrame(this.render);
 
         // Compute delta time
         let now = new Date().getTime();
-        let delta = now - self.previousTime;
-        self.previousTime = now;
+        let delta = now - this.previousTime;
+        this.previousTime = now;
 
         // Animations
 
         // Video texture
-        if (self.friendVideo && self.friendVideo.readyState === self.friendVideo.HAVE_ENOUGH_DATA) {
-            self.friendTexture.needsUpdate = true;
+        if (this.friendVideo && this.friendVideo.readyState === this.friendVideo.HAVE_ENOUGH_DATA) {
+            this.friendTexture.needsUpdate = true;
         }
 
-        self.renderer.render(self.scene, self.camera);
+        this.renderer.render(this.scene, this.camera);
     }
 };
