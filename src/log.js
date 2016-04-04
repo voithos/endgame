@@ -1,7 +1,7 @@
 let logEnabled = true;
 
 export default function() {
-    if (global.console && logEnabled) {
-        console.log.apply(console, Array.prototype.slice.call(arguments));
+    if (window.console && logEnabled) {
+        console.log.apply(console, Array.prototype.slice.call(arguments)); // eslint-disable-line no-console
     }
-};
+}

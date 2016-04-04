@@ -11,13 +11,13 @@ export default {
             }
         });
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, unused_reject) => {
             this.peer.on('open', resolve);
         });
     },
 
     listen() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, unused_reject) => {
             this.peer.on('connection', conn => {
                 this.conn = conn;
                 this.remoteId = conn.peer;
@@ -80,7 +80,7 @@ export default {
     },
 
     performMediaCall(isCaller, localMediaStream) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, unused_reject) => {
             if (isCaller) {
                 this.call = this.peer.call(this.remoteId, localMediaStream);
                 resolve(this.call);

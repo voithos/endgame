@@ -1,6 +1,5 @@
 import Promise from 'promise';
 import cfg from './config';
-import log from './log';
 
 export default {
     create(hostId) {
@@ -14,7 +13,7 @@ export default {
         this.ref = new Firebase(cfg.gamesUrl);
         this.gameRef = this.ref.child(gameId);
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, unused_reject) => {
             this.gameRef.once('value', snapshot => {
                 resolve(snapshot.val().hostId);
             });

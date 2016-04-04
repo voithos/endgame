@@ -22,7 +22,7 @@ var extend = require('extend');
 // --------------------
 var VIRT_FILE = 'endgame.js';
 var VIRT_MIN_FILE = 'endgame.min.js';
-var VIRT_TEST_FILE = 'endgame_spec.js';
+var VIRT_TEST_FILE = 'endgame_specbundle.js';
 var ENTRY_FILE = './src/endgame.js';
 var BUILD_PATH = './public/js';
 var TEST_BUILD_PATH = './test';
@@ -46,15 +46,25 @@ var BABELIFY_CONFIG = {
 
 var ESLINT_CONFIG = {
     extends: 'eslint:recommended',
+    parserOptions: {
+        ecmaVersion: 6,
+        sourceType: 'module'
+    },
     env: {
         browser: true,
         es6: true
     },
-    ecmaFeatures: {
-        modules: true
-    },
     rules: {
-        'no-var': 1
+        'no-var': 1,
+        'no-unused-vars': ['error', {'argsIgnorePattern': '^unused'}]
+    },
+    globals: {
+        'Chess': true,
+        'Peer': true,
+        'Firebase': true,
+        'THREE': true,
+        'Vue': true,
+        '$': true
     }
 };
 

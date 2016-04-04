@@ -1,16 +1,13 @@
 import './polyfills';
 
 import Promise from 'promise';
-import _ from 'lodash';
 
-import user from './user';
 import game from './game';
 import media from './media';
 import routes from './routes';
 import rtc from './rtc';
 import scene from './scene';
 import cfg from './config';
-import utils from './utils';
 import views from './views';
 import log from './log';
 
@@ -73,46 +70,44 @@ let endgame = {
         log('setting up the media');
 
         return views.showMediaScreen()
-            .then(() => {
-                // We need to wait for both the local and remote media to be resolved
-                return Promise.all([
-                    // Wait for notice from remote regarding media
-                    new Promise((resolve, reject) => {
-                        rtc.addDataListener((data, conn) => {
-                            if (data.event === 'mediarequestcomplete') {
-                                this.remoteHasMedia = data.hasMedia;
-                                log('remote media request complete:', this.remoteHasMedia);
+            // We need to wait for both the local and remote media to be resolved
+            .then(() => Promise.all([
+                // Wait for notice from remote regarding media
+                new Promise((resolve, unused_reject) => {
+                    rtc.addDataListener((data, unused_conn) => {
+                        if (data.event === 'mediarequestcomplete') {
+                            this.remoteHasMedia = data.hasMedia;
+                            log('remote media request complete:', this.remoteHasMedia);
 
-                                resolve();
-                            } else {
-                                log('ERROR: unknown event type', data.event);
-                            }
-                        }, true);
-                    }),
+                            resolve();
+                        } else {
+                            log('ERROR: unknown event type', data.event);
+                        }
+                    }, true);
+                }),
 
-                    // Request local media
-                    media.init()
-                        .then(() => {
-                            this.localHasMedia = true;
-                            log('local media granted');
+                // Request local media
+                media.init()
+                    .then(() => {
+                        this.localHasMedia = true;
+                        log('local media granted');
 
-                            media.playLocalStream();
+                        media.playLocalStream();
 
-                            rtc.sendData({
-                                event: 'mediarequestcomplete',
-                                hasMedia: true
-                            });
-                        }, () => {
-                            this.localHasMedia = false;
-                            log('local media denied');
+                        rtc.sendData({
+                            event: 'mediarequestcomplete',
+                            hasMedia: true
+                        });
+                    }, () => {
+                        this.localHasMedia = false;
+                        log('local media denied');
 
-                            rtc.sendData({
-                                event: 'mediarequestcomplete',
-                                hasMedia: false
-                            });
-                        })
-                ]);
-            });
+                        rtc.sendData({
+                            event: 'mediarequestcomplete',
+                            hasMedia: false
+                        });
+                    })
+            ]));
     },
 
     performMediaCalls() {
@@ -136,7 +131,7 @@ let endgame = {
     },
 
     displayRemoteMedia(call) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, unused_reject) => {
             if (this.remoteHasMedia) {
                 call.on('stream', (remoteMediaStream) => {
                     let video = media.configureRemoteStream(remoteMediaStream);
@@ -154,7 +149,7 @@ let endgame = {
         log('commencing game');
 
         views.showStatusScreen()
-            .then(() => new Promise((resolve, reject) => {
+            .then(() => new Promise((resolve, unused_reject) => {
                 // Begin chess game
                 this.chess = new Chess();
                 this.isMyTurn = this.side === 'white';
@@ -186,7 +181,7 @@ let endgame = {
                 };
 
                 if (!routes.isDebugMode()) {
-                    rtc.addDataListener((data, conn) => {
+                    rtc.addDataListener((data, unused_conn) => {
                         if (data.event === 'chessmove') {
                             if (!this.isMyTurn) {
                                 // Apply remove move
@@ -217,6 +212,6 @@ let endgame = {
     }
 };
 
-global.endgame = endgame;
+window.endgame = endgame;
 
 endgame.main();

@@ -85,7 +85,7 @@ export default {
 
         // Load all pieces
         return Promise.all(_.map(cfg.pieces.concat(cfg.assets), asset =>
-             new Promise((resolve, reject) => {
+             new Promise((resolve, unused_reject) => {
                 let loader = new THREE.JSONLoader();
                 loader.load('data/' + asset + '.json', (geometry, materials) => {
                     let material = materials[0];
@@ -156,7 +156,7 @@ export default {
         this.captured = { 'w': [], 'b': [] };
 
         _.forEach(cfg.startPosition, (pieces, side) => {
-            _.forEach(pieces, (piece, i) => {
+            _.forEach(pieces, piece => {
                 this.addPiece(piece.pos, piece.type, side);
             });
         });
@@ -254,8 +254,8 @@ export default {
         });
 
         // Generate mesh for each tile
-        _.forEach(cfg.files, (file, i) => {
-            _.forEach(cfg.ranks, (rank, i) => {
+        _.forEach(cfg.files, file => {
+            _.forEach(cfg.ranks, rank => {
                 this.addTileControl(file + rank, geometry, material.clone());
             });
         });
@@ -360,14 +360,14 @@ export default {
     },
 
     resetTileHighlights() {
-        _.forEach(this.tiles, (tile, pos) => {
+        _.forEach(this.tiles, tile => {
             tile.isLegalMove = null;
         });
         this.recolorTiles();
     },
 
     recolorTiles() {
-        _.forEach(this.tiles, (tile, pos) => {
+        _.forEach(this.tiles, tile => {
             this.hideTile(tile);
 
             // Recolor
@@ -475,12 +475,12 @@ export default {
         this.requestId = requestAnimationFrame(this.render);
     },
 
-    render(timestamp) {
+    render(unused_timestamp) {
         this.requestId = requestAnimationFrame(this.render);
 
         // Compute delta time
         let now = new Date().getTime();
-        let delta = now - this.previousTime;
+        let delta = now - this.previousTime; // eslint-disable-line no-unused-vars
         this.previousTime = now;
 
         // Animations

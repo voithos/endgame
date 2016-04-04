@@ -1,6 +1,5 @@
 import Promise from 'promise';
 import cfg from './config';
-import log from './log';
 
 export default {
     init() {
@@ -31,7 +30,7 @@ export default {
         this.playStream(this.localMediaStream, video);
 
         let started = false;
-        video.addEventListener('canplay', ev => {
+        video.addEventListener('canplay', unused_ev => {
             if (!started && (video.videoHeight || video.videoWidth)) {
                 started = true;
 

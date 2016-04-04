@@ -14,7 +14,7 @@ export default {
         }
         let parts = {};
         let match;
-        while (match = search.exec(queryString)) {
+        while ((match = search.exec(queryString))) {
             let [, key, value] = match;
             parts[decode(key)] = decode(value);
         }

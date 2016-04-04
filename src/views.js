@@ -1,7 +1,6 @@
 import Promise from 'promise';
 
 import routes from './routes';
-import log from './log';
 
 export default {
     showWaitScreen(gameId) {

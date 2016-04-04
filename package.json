@@ -14,7 +14,7 @@
     "browserify": "~12.0.1",
     "extend": "~3.0.0",
     "gulp": "~3.9.0",
-    "gulp-eslint": "~1.1.1",
+    "gulp-eslint": "~2.0.0",
     "gulp-jasmine": "~2.2.1",
     "gulp-rename": "~1.2.2",
     "gulp-sourcemaps": "~1.6.0",
