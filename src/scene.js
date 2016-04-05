@@ -406,16 +406,11 @@ export default {
 
         // Handle moves (order matters because of interactions with
         // `this.pieces`)
-
-        if (move.flags.indexOf('e') !== -1) {
-            /** En passant */
-        }
-        if (move.flags.indexOf('c') !== -1) {
-            /** Standard capture */
-            let capturedPiece = this.pieces[move.to];
-            delete this.pieces[move.to];
+        const makeCapturingMove = (move, capturedPos) => {
+            console.log(capturedPos);
+            let capturedPiece = this.pieces[capturedPos];
+            delete this.pieces[capturedPos];
             this.captured[move.color].push(capturedPiece);
-
             this.hidePiece(capturedPiece.object);
 
             // Move capturing piece
@@ -423,6 +418,17 @@ export default {
             this.pieces[move.to] = piece;
 
             this.setPiecePosition(piece.object, move.to);
+        };
+
+        if (move.flags.indexOf('e') !== -1) {
+            /** En passant */
+            // Captured position is computed off of from/to
+            let capturedPos = move.to.charAt(0) + move.from.charAt(1);
+            makeCapturingMove(move, capturedPos);
+        }
+        if (move.flags.indexOf('c') !== -1) {
+            /** Standard capture */
+            makeCapturingMove(move, move.to);
         }
         if (move.flags.indexOf('n') !== -1 || move.flags.indexOf('b') !== -1) {
             /** Standard non-capture or pawn-push */
@@ -433,12 +439,15 @@ export default {
         }
         if (move.flags.indexOf('p') !== -1) {
             /** Promotion */
+            // TODO
         }
         if (move.flags.indexOf('k') !== -1) {
             /** Kingside castle */
+            // TODO
         }
         if (move.flags.indexOf('q') !== -1) {
             /** Queenside castle */
+            // TODO
         }
 
         this.recolorTiles();

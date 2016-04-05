@@ -173,7 +173,7 @@ let endgame = {
                     }
                 });
 
-                let afterMove = move => {
+                const afterMove = move => {
                     this.isMyTurn = !this.isMyTurn;
                     scene.performGraphicalMove(move);
 
