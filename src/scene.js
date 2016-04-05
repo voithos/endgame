@@ -407,7 +407,6 @@ export default {
         // Handle moves (order matters because of interactions with
         // `this.pieces`)
         const makeCapturingMove = (move, capturedPos) => {
-            console.log(capturedPos);
             let capturedPiece = this.pieces[capturedPos];
             delete this.pieces[capturedPos];
             this.captured[move.color].push(capturedPiece);
