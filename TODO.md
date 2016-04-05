@@ -4,9 +4,8 @@
 - look into security for Firebase
 - upgrade code to ES2015
 - switch to Material lite
-- fix lint issues
-- add auto-formatter
 - hide API keys, etc
+- setup host
 
 ## Game
 - complete chess move logic

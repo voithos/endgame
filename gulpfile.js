@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var gutil = require('gulp-util');
 var jasmine = require('gulp-jasmine');
 var eslint = require('gulp-eslint');
+var clangFormat = require('gulp-clang-format');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var sourcemaps = require('gulp-sourcemaps');
@@ -25,7 +26,8 @@ var VIRT_MIN_FILE = 'endgame.min.js';
 var VIRT_TEST_FILE = 'endgame_specbundle.js';
 var ENTRY_FILE = './src/endgame.js';
 var BUILD_PATH = './public/js';
-var TEST_BUILD_PATH = './test';
+var SRC_DIR = './src';
+var TEST_DIR = './test';
 var BASE_DIR = './public';
 var SRC_PATTERN = './src/**/*.js';
 var TEST_PATTERN = './test/**/*_spec.js';
@@ -160,7 +162,7 @@ var buildTests = function() {
         .bundle()
         .on('error', onError)
         .pipe(source(VIRT_TEST_FILE))
-        .pipe(gulp.dest(TEST_BUILD_PATH));
+        .pipe(gulp.dest(TEST_DIR));
 };
 
 
@@ -168,7 +170,7 @@ var buildTests = function() {
  * Run built tests with jasmine.
  */
 var test = function() {
-    return gulp.src(path.join(TEST_BUILD_PATH, VIRT_TEST_FILE))
+    return gulp.src(path.join(TEST_DIR, VIRT_TEST_FILE))
         .pipe(jasmine());
 };
 
@@ -209,6 +211,44 @@ var lintTests = function() {
 };
 
 
+/**
+ * Check format of source files.
+ */
+var checkFormat = function() {
+    return gulp.src(SRC_PATTERN)
+        .pipe(clangFormat.checkFormat(undefined, undefined, {verbose: true}));
+};
+
+
+/**
+ * Check format of test files.
+ */
+var checkFormatTests = function() {
+    return gulp.src(TEST_PATTERN)
+        .pipe(clangFormat.checkFormat(undefined, undefined, {verbose: true}));
+};
+
+
+/**
+ * Autoformat source files.
+ */
+var format = function() {
+    return gulp.src(SRC_PATTERN)
+        .pipe(clangFormat.format())
+        .pipe(gulp.dest(SRC_DIR));
+};
+
+
+/**
+ * Autoformat test files.
+ */
+var formatTests = function() {
+    return gulp.src(TEST_PATTERN)
+        .pipe(clangFormat.format())
+        .pipe(gulp.dest(TEST_DIR));
+};
+
+
 // Build
 gulp.task('build', build);
 gulp.task('watch', watch);
@@ -225,6 +265,10 @@ gulp.task('watch-test', ['watch-test-setup', 'test']);
 // Misc
 gulp.task('lint', lint);
 gulp.task('lint-tests', lintTests);
+gulp.task('check-format', checkFormat);
+gulp.task('check-format-tests', checkFormatTests);
+gulp.task('format', format);
+gulp.task('format-tests', formatTests);
 
 
 gulp.task('validate', ['test', 'lint', 'lint-tests']);
