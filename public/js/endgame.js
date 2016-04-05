@@ -7833,10 +7833,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
 var _utils = require('./utils');
 
 var _utils2 = _interopRequireDefault(_utils);
@@ -7845,7 +7841,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = {
     parseGameId: function parseGameId() {
-        return _lodash2.default.last(_utils2.default.pathParts(window.location.pathname)) || window.location.hash.substring(1);
+        return window.location.hash.substring(1);
     },
     genGameUrl: function genGameUrl(gameId) {
         var url = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
@@ -7858,7 +7854,7 @@ exports.default = {
     }
 };
 
-},{"./utils":18,"lodash":2}],16:[function(require,module,exports){
+},{"./utils":18}],16:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -7876,10 +7872,6 @@ var _lodash2 = _interopRequireDefault(_lodash);
 var _config = require('./config');
 
 var _config2 = _interopRequireDefault(_config);
-
-var _routes = require('./routes');
-
-var _routes2 = _interopRequireDefault(_routes);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -7982,7 +7974,7 @@ exports.default = {
     }
 };
 
-},{"./config":9,"./routes":15,"lodash":2,"promise":4}],17:[function(require,module,exports){
+},{"./config":9,"lodash":2,"promise":4}],17:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
