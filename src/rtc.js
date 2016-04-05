@@ -8,7 +8,8 @@ export default {
             key: cfg.peerJsKey,
             config: {
                 iceServers: cfg.iceServers
-            }
+            },
+            debug: 2 // Print warnings and errors
         });
 
         return new Promise((resolve, unused_reject) => {

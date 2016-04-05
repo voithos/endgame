@@ -1,19 +1,19 @@
 # todo
 
 ## Code
-- look into security for Firebase
+- setup host
 - upgrade code to ES2015
 - switch to Material lite
 - hide API keys, etc
-- setup host
 
 ## Game
 - complete chess move logic
-- improve look of the board
-- improve look of pieces
 - add background room (marble, white, etc?)
+- add move animation
+- improve look of pieces
+- fix board UV mapping
 - think about user-controlled panning or view shift
 - add computer mode
 - rethink UI, clicking
-- change board and pieces graphics
+- change board and pieces models
 - keep history of moves, perhaps display it somehow

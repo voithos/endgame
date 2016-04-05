@@ -9,7 +9,7 @@
         "depthTest": true,
         "opacity": -0.18,
         "colorEmissive": [0.0,0.0,0.0],
-        "colorDiffuse": [0.7700000190734865,0.7788977709248329,0.7768913730515743],
+        "colorDiffuse": [0.77,0.77,0.77],
         "mapDiffuse": "grid.png",
         "shading": "phong",
         "specularCoef": 1176,
