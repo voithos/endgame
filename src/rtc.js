@@ -1,11 +1,13 @@
 import Promise from 'promise';
 import _ from 'lodash';
 import cfg from './config';
+import routes from './routes';
 
 export default {
     init() {
         this.peer = new Peer({
             key: cfg.peerJsKey,
+            secure: !routes.isDevMode(),
             config: {
                 iceServers: cfg.iceServers
             },

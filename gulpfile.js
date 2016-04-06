@@ -129,7 +129,7 @@ var build = function() {
             .pipe(uglify())
         // Passing a relative path here forces the source maps to be
         // written externally.
-        .pipe(sourcemaps.write(BASE_DIR))
+        .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest(BUILD_PATH));
 };
 

@@ -1,6 +1,7 @@
 # todo
 
 ## Code
+- modify PeerJS to communicate via Firebase (hard!)
 - setup host
 - upgrade code to ES2015
 - switch to Material lite

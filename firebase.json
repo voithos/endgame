@@ -1,0 +1,14 @@
+{
+  "firebase": "endgame-chess",
+  "public": "public",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ],
+  "rewrite": {
+    "source": "**",
+    "destination": "/index.html"
+  },
+  "trailingSlash": false
+}
