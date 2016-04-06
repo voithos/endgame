@@ -404,8 +404,6 @@ export default {
         this.prevPosFrom = move.from;
         this.prevPosTo = move.to;
 
-        // Handle moves (order matters because of interactions with
-        // `this.pieces`)
         const makeCapturingMove = (move, capturedPos) => {
             let capturedPiece = this.pieces[capturedPos];
             delete this.pieces[capturedPos];
@@ -419,6 +417,38 @@ export default {
             this.setPiecePosition(piece.object, move.to);
         };
 
+        const makeCastlingMove = (move) => {
+            delete this.pieces[move.from];
+            this.pieces[move.to] = piece;
+            this.setPiecePosition(piece.object, move.to);
+
+            // Figure out if it's kingside or queenside
+            let castleType = move.to.charAt(0) > move.from.charAt(0) ?
+                'kingside' :
+                'queenside';
+
+            const rookPositions = {
+                'kingside': {
+                    'w': {'from': 'h1', 'to': 'f1'},
+                    'b': {'from': 'h8', 'to': 'f8'}
+                },
+                'queenside': {
+                    'w': {'from': 'a1', 'to': 'd1'},
+                    'b': {'from': 'a8', 'to': 'd8'}
+                }
+            };
+
+            // Bring the rook over
+            let rookFrom = rookPositions[castleType][move.color]['from'];
+            let rookTo = rookPositions[castleType][move.color]['to'];
+            let rook = this.pieces[rookFrom];
+            delete this.pieces[rookFrom];
+            this.pieces[rookTo] = rook;
+            this.setPiecePosition(rook.object, rookTo);
+        };
+
+        // Handle moves (order matters because of interactions with
+        // `this.pieces`)
         if (move.flags.indexOf('e') !== -1) {
             /** En passant */
             // Captured position is computed off of from/to
@@ -433,7 +463,6 @@ export default {
             /** Standard non-capture or pawn-push */
             delete this.pieces[move.from];
             this.pieces[move.to] = piece;
-
             this.setPiecePosition(piece.object, move.to);
         }
         if (move.flags.indexOf('p') !== -1) {
@@ -442,11 +471,11 @@ export default {
         }
         if (move.flags.indexOf('k') !== -1) {
             /** Kingside castle */
-            // TODO
+            makeCastlingMove(move);
         }
         if (move.flags.indexOf('q') !== -1) {
             /** Queenside castle */
-            // TODO
+            makeCastlingMove(move);
         }
 
         this.recolorTiles();
