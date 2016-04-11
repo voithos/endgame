@@ -83,7 +83,7 @@ let endgame = {
                         } else {
                             log('ERROR: unknown event type', data.event);
                         }
-                    }, true);
+                    }, /* once */ true);
                 }),
 
                 // Request local media

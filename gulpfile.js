@@ -216,7 +216,7 @@ var lintTests = function() {
  */
 var checkFormat = function() {
     return gulp.src(SRC_PATTERN)
-        .pipe(clangFormat.checkFormat(undefined, undefined, {verbose: true}));
+        .pipe(clangFormat.checkFormat('file', undefined, {verbose: true}));
 };
 
 
@@ -225,7 +225,7 @@ var checkFormat = function() {
  */
 var checkFormatTests = function() {
     return gulp.src(TEST_PATTERN)
-        .pipe(clangFormat.checkFormat(undefined, undefined, {verbose: true}));
+        .pipe(clangFormat.checkFormat('file', undefined, {verbose: true}));
 };
 
 
@@ -234,7 +234,7 @@ var checkFormatTests = function() {
  */
 var format = function() {
     return gulp.src(SRC_PATTERN)
-        .pipe(clangFormat.format())
+        .pipe(clangFormat.format('file'))
         .pipe(gulp.dest(SRC_DIR));
 };
 
@@ -244,7 +244,7 @@ var format = function() {
  */
 var formatTests = function() {
     return gulp.src(TEST_PATTERN)
-        .pipe(clangFormat.format())
+        .pipe(clangFormat.format('file'))
         .pipe(gulp.dest(TEST_DIR));
 };
 
