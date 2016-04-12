@@ -6794,3 +6794,7 @@ canvas {
 .local-video-panel video {
   border-radius: 5px;
 }
+.promotion-icon {
+  height: 75px;
+  width: 75px;
+}

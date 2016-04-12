@@ -23,7 +23,10 @@ export default {
     },
 
     isDebugMode() {
-        const parts = utils.queryStringParts(window.location.search);
-        return parts['debug'] === 'true';
+        if (!this._isDebugMode) {
+            const parts = utils.queryStringParts(window.location.search);
+            this._isDebugMode = parts['debug'] === 'true';
+        }
+        return this._isDebugMode;
     }
 };

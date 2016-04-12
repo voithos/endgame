@@ -29,6 +29,8 @@ open source libraries and assets. Here's the list of them:
 - Chess board (`public/data/board.json`): author `pennomi` from
   http://opengameart.org/content/chess-board. Texture by `Tiziana` from
   http://opengameart.org/node/6988
+- Promotion piece SVGs (`public/data/[piece].svg`): author `Cburnett` from
+  https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
 
 ## Research
 

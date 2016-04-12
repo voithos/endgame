@@ -154,10 +154,14 @@ let endgame = {
                 this.chess = new Chess();
                 this.isMyTurn = this.side === 'white';
 
-                scene.addTileControls(pos => {
+                scene.addTileControls(/* legalCallback */ pos => {
                     return this.chess.moves({ square: pos, verbose: true });
-                }, (from, to) => {
-                    let move = this.chess.move({ from: from, to: to });
+                }, /* moveCallback */ (from, to, opt_promotion) => {
+                    let move = this.chess.move({
+                        from: from,
+                        to: to,
+                        promotion: opt_promotion
+                    });
 
                     if (move) {
                         if (!routes.isDebugMode()) {
@@ -171,10 +175,15 @@ let endgame = {
                     } else {
                         log('ERROR: illegal move attempted locally - bug?');
                     }
+                }, /* onPromotion */ () => {
+                    return views.showPromotionScreen(this.side)
                 });
 
                 const afterMove = move => {
                     this.isMyTurn = !this.isMyTurn;
+                    if (routes.isDebugMode()) {
+                        this.side = this.side === 'white' ? 'black' : 'white';
+                    }
                     scene.performGraphicalMove(move);
 
                     // TODO: Check for game end

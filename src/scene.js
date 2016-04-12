@@ -234,9 +234,10 @@ export default {
         this.setPlayCameraPos(side);
     },
 
-    addTileControls(legalCallback, moveCallback) {
+    addTileControls(legalCallback, moveCallback, onPromotion) {
         this.legalCallback = legalCallback;
         this.moveCallback = moveCallback;
+        this.onPromotion = onPromotion;
 
         this.tiles = {};
 
@@ -325,8 +326,15 @@ export default {
             // being specific to a piece)
             if (this.isSelectingPieceMovement) {
                 if (tile.isLegalMove) {
-                    this.commitMove(tile);
-                    this.resetTileHighlights();
+                    if (tile.isPromotion) {
+                        this.onPromotion().then(promotion => {
+                            this.commitMove(tile, promotion);
+                            this.resetTileHighlights();
+                        });
+                    } else {
+                        this.commitMove(tile);
+                        this.resetTileHighlights();
+                    }
                 } else {
                     this.resetTileHighlights();
                     this.highlightLegalMoves(tile);
@@ -337,8 +345,8 @@ export default {
         }
     },
 
-    commitMove(tile) {
-        this.moveCallback.call(this, this.selectedPos, tile.chessPos);
+    commitMove(tile, opt_promotion) {
+        this.moveCallback(this.selectedPos, tile.chessPos, opt_promotion);
 
         this.isSelectingPieceMovement = false;
         this.selectedPos = null;
@@ -351,10 +359,11 @@ export default {
         this.colorTile(tile, cfg.colors.tiles.selected);
 
         // Get legal moves and highlight them
-        this.currentLegalMoves = this.legalCallback.call(this, tile.chessPos);
+        this.currentLegalMoves = this.legalCallback(tile.chessPos);
         _.forEach(this.currentLegalMoves, move => {
             let tile = this.tiles[move.to];
             tile.isLegalMove = true;
+            tile.isPromotion = move.flags.indexOf('p') !== -1;
             this.colorTile(tile, cfg.colors.tiles.legal);
         });
     },
@@ -467,7 +476,16 @@ export default {
         }
         if (move.flags.indexOf('p') !== -1) {
             /** Promotion */
-            // TODO
+            const promotionTypes = {
+                'q': 'queen',
+                'r': 'rook',
+                'b': 'bishop',
+                'n': 'knight'
+            };
+            // Pawn-push is handled via the code above.
+            piece.object.remove(piece.object.children[0]);
+            let promotionType = promotionTypes[move.promotion];
+            piece.object.add(this.meshes[piece.side][promotionType].clone());
         }
         if (move.flags.indexOf('k') !== -1) {
             /** Kingside castle */

@@ -54,6 +54,29 @@
             </div>
         </div>
 
+        <div id="promotionscreen" class="snotice modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">
+                            <span class="label label-default">Promotion</span>
+                        </h4>
+                    </div>
+                    <div class="modal-body container-fluid">
+                        <div class="col-md-3 text-center" v-repeat="piece: pieces">
+                            <a href="#" v-on="click: onClick(piece, $event)">
+                                <img class="promotion-icon img-thumbnail"
+                                    v-attr="src: 'data/' + color + '_' + piece + '.svg'">
+                                <div class="caption">
+                                    {{piece | capitalize}}
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="localvideopanel" class="local-video-panel panel panel-default">
             <div class="panel-body">
                 <video id="localvideo" autoplay muted></video>
