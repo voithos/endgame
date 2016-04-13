@@ -15,10 +15,10 @@
 - improve look of pieces
 - fix board UV mapping
 - think about user-controlled panning or view shift
-- add computer mode
 - rethink UI, clicking
 - change board and pieces models
-- keep history of moves, perhaps display it somehow
+? add computer mode
+? keep history of moves, perhaps display it somehow
 
 ## Bugs
 - user can exit out of promotion screen

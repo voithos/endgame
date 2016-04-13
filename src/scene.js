@@ -136,7 +136,7 @@ export default {
 
         let mesh = new THREE.Mesh(new THREE.BoxGeometry(150, 100, 200), material);
         mesh.position.set(0, 50, 0);
-        // this.scene.add(mesh);
+        this.scene.add(mesh);
     },
 
     addBoard() {

@@ -7,7 +7,7 @@
         "wireframe": false,
         "colorSpecular": [1.0,0.9764297604560852,0.9057191014289856],
         "depthTest": true,
-        "opacity": -0.18,
+        "opacity": 1,
         "colorEmissive": [0.0,0.0,0.0],
         "colorDiffuse": [0.77,0.77,0.77],
         "mapDiffuse": "grid.png",
