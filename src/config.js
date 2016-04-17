@@ -87,7 +87,9 @@ export default {
         cameraPlayLookAt: { x: 0, y: 5, z: 0 },
 
         friendScreenSize: { x: 30, y: 20, z: 5 },
-        friendScreenPos: { x: 0, y: 10, z: -30 }
+        friendScreenPos: { x: 0, y: 10, z: -30 },
+
+        animationSpeed: 500
     },
 
     colors: {

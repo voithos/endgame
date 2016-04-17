@@ -167,9 +167,9 @@ export default {
 
         let object = new THREE.Object3D();
         object.add(this.meshes[side][type].clone());
-        object.position.setY(cfg.gameOpts.pieceYOffset);
+        object.position.y = cfg.gameOpts.pieceYOffset;
 
-        this.setPiecePosition(object, pos);
+        this.setPiecePosition(object, pos, /* opt_instant */ true);
 
         // Rotate white
         if (side === 'white') {
@@ -272,10 +272,10 @@ export default {
 
         let tile = new THREE.Mesh(geometry, material);
         tile.rotation.x = Math.PI / 2;
-        tile.position.setY(cfg.gameOpts.pieceYOffset + 0.05);
+        tile.position.y = cfg.gameOpts.pieceYOffset + 0.05;
 
-        tile.position.setX(-cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize);
-        tile.position.setZ(cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize);
+        tile.position.x = -cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize;
+        tile.position.z = cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize;
 
         tile.isTile = true;
         tile.chessPos = pos;
@@ -512,12 +512,27 @@ export default {
         }));
     },
 
-    setPiecePosition(object, pos) {
+    setPiecePosition(object, pos, opt_instant) {
         let offsetX = cfg.fileToOffset[pos[0]];
         let offsetZ = cfg.rankToOffset[pos[1]];
+        let posX = -cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize;
+        let posZ = cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize;
 
-        object.position.setX(-cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize);
-        object.position.setZ(cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize);
+        if (opt_instant) {
+            object.position.x = posX;
+            object.position.z = posZ;
+        } else {
+            let position = {x: object.position.x, z: object.position.z};
+            let target = {x: posX, z: posZ};
+
+            new TWEEN.Tween(position).to(target, cfg.gameOpts.animationSpeed)
+                .onUpdate(() => {
+                    object.position.x = position.x;
+                    object.position.z = position.z;
+                })
+                .easing(TWEEN.Easing.Cubic.InOut)
+                .start();
+        }
     },
 
     hidePiece(object) {
