@@ -530,8 +530,9 @@ export default {
         this.requestId = requestAnimationFrame(this.render);
     },
 
-    render(unused_timestamp) {
+    render(timestamp) {
         this.requestId = requestAnimationFrame(this.render);
+        TWEEN.update(timestamp);
 
         // Compute delta time
         let now = new Date().getTime();
