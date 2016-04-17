@@ -10,7 +10,6 @@
 
 ## Game
 - check for game end
-- add piece capture animation
 - add background room (marble, white, etc?)
 - improve look of pieces
 - fix board UV mapping

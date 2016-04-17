@@ -92,6 +92,7 @@ export default {
 
                     if (_.contains(cfg.assets, asset)) {
                         let mesh = new THREE.Mesh(geometry, material);
+                        mesh.name = asset + 'Mesh';
                         this.meshes[asset] = mesh;
                     } else {
                         // Compute normals
@@ -106,6 +107,7 @@ export default {
                             meshMaterial.specular.setHex(cfg.colors.pieces[side].specular);
 
                             let mesh = new THREE.Mesh(geometry, meshMaterial);
+                            mesh.name = 'pieceMesh';
 
                             if (!this.meshes[side]) {
                                 this.meshes[side] = {};
@@ -522,39 +524,35 @@ export default {
             object.position.x = posX;
             object.position.z = posZ;
         } else {
-            let position = {x: object.position.x, z: object.position.z};
             let target = {x: posX, z: posZ};
-
-            new TWEEN.Tween(position).to(target, cfg.gameOpts.animationSpeed)
-                .onUpdate(() => {
-                    object.position.x = position.x;
-                    object.position.z = position.z;
-                })
+            new TWEEN.Tween(object.position).to(target, cfg.gameOpts.animationSpeed)
                 .easing(TWEEN.Easing.Cubic.InOut)
                 .start();
         }
     },
 
     hidePiece(object) {
-        object.visible = false;
+        let mesh = object.getObjectByName('pieceMesh');
+        // Clone the material, else it will affect all pieces of the same type.
+        mesh.material = mesh.material.clone();
+        // 'transparent' must be true for the opacity to take effect.
+        mesh.material.transparent = true;
+        new TWEEN.Tween(mesh.material).to({opacity: 0}, cfg.gameOpts.animationSpeed)
+            .onComplete(() => {
+                object.visible = false;
+            })
+            .easing(TWEEN.Easing.Cubic.Out)
+            .start();
     },
 
     beginRender() {
         this.render = this.render.bind(this);
-        this.previousTime = new Date().getTime();
         this.requestId = requestAnimationFrame(this.render);
     },
 
     render(timestamp) {
         this.requestId = requestAnimationFrame(this.render);
         TWEEN.update(timestamp);
-
-        // Compute delta time
-        let now = new Date().getTime();
-        let delta = now - this.previousTime; // eslint-disable-line no-unused-vars
-        this.previousTime = now;
-
-        // Animations
 
         // Video texture
         if (this.friendVideo && this.friendVideo.readyState === this.friendVideo.HAVE_ENOUGH_DATA) {
