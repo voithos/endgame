@@ -31,7 +31,7 @@
                     </div>
                     <div class="modal-body">
                         <p>A game room has been created for you! Send this link to a friend to have them join:</p>
-                        <p><code>{{link}}</code></p>
+                        <p><code v-on="click: onClick($event)">{{link}}</code></p>
                         <p>The game will automatically continue once they join.</p>
                     </div>
                 </div>

@@ -8,6 +8,14 @@ export default {
             el: '#waitscreen',
             data: {
                 link: routes.genGameUrl(gameId)
+            },
+            methods: {
+                onClick(e) {
+                    let select = window.getSelection();
+                    let range = document.createRange();
+                    range.selectNodeContents(e.target);
+                    select.addRange(range);
+                }
             }
         });
 
