@@ -2,11 +2,10 @@
 
 ## Code
 - modify PeerJS to communicate via Firebase (hard!)
+- hide API keys, etc
+- create favicon
 - upgrade code to ES2015
 - switch to Material lite
-- hide API keys, etc
-- remove firebase records after communication is complete
-- create favicon
 
 ## Game
 - check for game end
