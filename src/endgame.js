@@ -15,7 +15,7 @@ let endgame = {
     config: cfg,
 
     main() {
-        scene.init();
+        scene.init(routes.isDebugMode());
         scene.loadGameGeometry()
             .then(scene.setupBoard.bind(scene))
             .done();

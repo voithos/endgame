@@ -7,15 +7,24 @@ import cfg from './config';
 import log from './log';
 
 export default {
-    init() {
+    init(isDebugMode) {
+        this.isDebugMode = isDebugMode;
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(
             45, window.innerWidth / window.innerHeight, 0.1, 1000
         );
+        if (this.isDebugMode) {
+            this.controls = new THREE.TrackballControls(this.camera);
+            this.controls.rotateSpeed = 2.0;
+            this.controls.zoomSpeed = 1.2;
+            this.controls.panSpeed = 0.8;
+        }
 
         this.renderer = this.createRenderer();
         this.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         document.body.appendChild(this.renderer.domElement);
 
@@ -55,8 +64,21 @@ export default {
 
     addLighting() {
         this.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-        this.dirLight.position.set(0, 80, 0).normalize();
+        this.dirLight.position.set(25, 25, 25);
+        this.dirLight.castShadow = true;
+        this.dirLight.shadow.camera.near = 10;
+        this.dirLight.shadow.camera.far = 100;
+        this.dirLight.shadow.bias = 0.0001;
+        // Set camera size to 50
+        this.dirLight.shadow.camera.top = 40;
+        this.dirLight.shadow.camera.right = 40;
+        this.dirLight.shadow.camera.bottom = -40;
+        this.dirLight.shadow.camera.left = -40;
         this.scene.add(this.dirLight);
+
+        if (this.isDebugMode) {
+            this.scene.add(new THREE.CameraHelper(this.dirLight.shadow.camera));
+        }
 
         this.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
         this.scene.add(this.hemiLight);
@@ -93,6 +115,7 @@ export default {
                     if (_.contains(cfg.assets, asset)) {
                         let mesh = new THREE.Mesh(geometry, material);
                         mesh.name = asset + 'Mesh';
+                        mesh.receiveShadow = true;
                         this.meshes[asset] = mesh;
                     } else {
                         // Compute normals
@@ -108,6 +131,7 @@ export default {
 
                             let mesh = new THREE.Mesh(geometry, meshMaterial);
                             mesh.name = 'pieceMesh';
+                            mesh.castShadow = true;
 
                             if (!this.meshes[side]) {
                                 this.meshes[side] = {};
@@ -553,6 +577,9 @@ export default {
     render(timestamp) {
         this.requestId = requestAnimationFrame(this.render);
         TWEEN.update(timestamp);
+        if (this.isDebugMode) {
+            this.controls.update();
+        }
 
         // Video texture
         if (this.friendVideo && this.friendVideo.readyState === this.friendVideo.HAVE_ENOUGH_DATA) {
