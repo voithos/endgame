@@ -164,7 +164,7 @@ export default {
         this.depthMaterial.depthPacking = THREE.RGBADepthPacking;
         this.depthMaterial.blending = THREE.NoBlending;
 
-        var params = {minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter};
+        let params = {minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter};
         this.depthRenderTarget = new THREE.WebGLRenderTarget(
                 window.innerWidth, window.innerHeight, params);
 
