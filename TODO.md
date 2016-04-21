@@ -12,6 +12,7 @@
 - add background room (marble, white, etc?)
 - improve look of pieces
 - fix board UV mapping
+- add animation to initial camera movement
 - think about user-controlled panning or view shift
 - rethink UI, clicking
 - change board and pieces models

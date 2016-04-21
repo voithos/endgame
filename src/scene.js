@@ -13,12 +13,6 @@ export default {
         this.camera = new THREE.PerspectiveCamera(
             45, window.innerWidth / window.innerHeight, 0.1, 1000
         );
-        if (this.isDebugMode) {
-            this.controls = new THREE.TrackballControls(this.camera);
-            this.controls.rotateSpeed = 2.0;
-            this.controls.zoomSpeed = 1.2;
-            this.controls.panSpeed = 0.8;
-        }
 
         this.renderer = this.createRenderer();
         this.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
@@ -32,6 +26,13 @@ export default {
 
         this.addLighting();
         this.setInitialCameraPos();
+
+        if (this.isDebugMode) {
+            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+            this.controls.enableDamping = true;
+            this.controls.dampingFactor = 0.5;
+            this.controls.enableZoom = true;
+        }
     },
 
     resize() {
@@ -64,7 +65,7 @@ export default {
 
     addLighting() {
         this.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-        this.dirLight.position.set(25, 25, 25);
+        this.dirLight.position.set(-25, 25, 25);
         this.dirLight.castShadow = true;
         this.dirLight.shadow.camera.near = 10;
         this.dirLight.shadow.camera.far = 100;
@@ -132,6 +133,7 @@ export default {
                             let mesh = new THREE.Mesh(geometry, meshMaterial);
                             mesh.name = 'pieceMesh';
                             mesh.castShadow = true;
+                            mesh.receiveShadow = true;
 
                             if (!this.meshes[side]) {
                                 this.meshes[side] = {};
