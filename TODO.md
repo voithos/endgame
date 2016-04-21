@@ -20,5 +20,6 @@
 ? keep history of moves, perhaps display it somehow
 
 ## Bugs
+- fix strange SSAO rendering issue
 - user can exit out of promotion screen
 - user can move opponent's pieces on their turn

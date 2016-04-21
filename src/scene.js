@@ -19,12 +19,15 @@ export default {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.gammaInput = true;
+        this.renderer.gammaOutput = true;
 
         document.body.appendChild(this.renderer.domElement);
 
         window.addEventListener('resize', this.resize.bind(this), false);
 
         this.addLighting();
+        this.setupPostprocessing();
         this.setInitialCameraPos();
 
         if (this.isDebugMode) {
@@ -155,9 +158,36 @@ export default {
         this.addPieces();
     },
 
+    setupPostprocessing() {
+        this.renderPass = new THREE.RenderPass(this.scene, this.camera);
+        this.depthMaterial = new THREE.MeshDepthMaterial();
+        this.depthMaterial.depthPacking = THREE.RGBADepthPacking;
+        this.depthMaterial.blending = THREE.NoBlending;
+
+        var params = {minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter};
+        this.depthRenderTarget = new THREE.WebGLRenderTarget(
+                window.innerWidth, window.innerHeight, params);
+
+        this.ssaoPass = new THREE.ShaderPass(THREE.SSAOShader);
+        this.ssaoPass.renderToScreen = true;
+        this.ssaoPass.uniforms['tDepth'].value = this.depthRenderTarget;
+        this.ssaoPass.uniforms['size'].value.set(window.innerWidth, window.innerHeight);
+        this.ssaoPass.uniforms['cameraNear'].value = this.camera.near;
+        this.ssaoPass.uniforms['cameraFar'].value = this.camera.far;
+        this.ssaoPass.uniforms['onlyAO'].value = false;
+        this.ssaoPass.uniforms['aoClamp'].value = 0.8;
+        this.ssaoPass.uniforms['lumInfluence'].value = 0.9;
+
+        this.effectComposer = new THREE.EffectComposer(this.renderer);
+        this.effectComposer.addPass(this.renderPass);
+        this.effectComposer.addPass(this.ssaoPass);
+    },
+
     addSkybox() {
-        let material = new THREE.MeshLambertMaterial({
+        let material = new THREE.MeshPhongMaterial({
             color: 0xdadada,
+            specular: 0xffffff,
+            shininess: 50,
             depthWrite: false,
             side: THREE.BackSide
         });
@@ -221,18 +251,18 @@ export default {
 
             this.friendTexture.generateMipmaps = false;
 
-            material = new THREE.MeshLambertMaterial({
+            material = new THREE.MeshPhongMaterial({
                 map: this.friendTexture,
                 emissive: 0xeeeeee
             });
         } else {
             // this.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
-            material = new THREE.MeshLambertMaterial({
+            material = new THREE.MeshPhongMaterial({
                 color: 0x000000
             });
         }
 
-        let filler = new THREE.MeshLambertMaterial({
+        let filler = new THREE.MeshPhongMaterial({
             color: cfg.colors.friendScreen
         });
 
@@ -275,7 +305,7 @@ export default {
             cfg.gameOpts.tileSize
         );
 
-        let material = new THREE.MeshLambertMaterial({
+        let material = new THREE.MeshPhongMaterial({
             color: cfg.colors.tiles.active,
             side: THREE.DoubleSide,
             transparent: true,
@@ -588,6 +618,12 @@ export default {
             this.friendTexture.needsUpdate = true;
         }
 
-        this.renderer.render(this.scene, this.camera);
+        // Render with postprocessing. First, render depth into depthRenderTarget.
+        this.scene.overrideMaterial = this.depthMaterial;
+        this.renderer.render(this.scene, this.camera, this.depthRenderTarget, /* forceClear */ true);
+
+        // Next, run renderPass and SSAO shaderPass.
+        this.scene.overrideMaterial = null;
+        this.effectComposer.render();
     }
 };
