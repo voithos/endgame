@@ -67,13 +67,17 @@ export default {
     },
 
     addLighting() {
+        this.ambientLight = new THREE.AmbientLight(0x202020);
+        this.scene.add(this.ambientLight);
+
+        // TODO: Consider using PointLight.
+        // this.pointLight = new THREE.PointLight(0xffffff, 0.9, 200);
         this.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
         this.dirLight.position.set(-25, 25, 25);
         this.dirLight.castShadow = true;
         this.dirLight.shadow.camera.near = 10;
         this.dirLight.shadow.camera.far = 100;
         this.dirLight.shadow.bias = 0.0001;
-        // Set camera size to 50
         this.dirLight.shadow.camera.top = 40;
         this.dirLight.shadow.camera.right = 40;
         this.dirLight.shadow.camera.bottom = -40;
@@ -185,14 +189,35 @@ export default {
 
     addSkybox() {
         let material = new THREE.MeshPhongMaterial({
-            color: 0xdadada,
+            color: 0xbababa,
             specular: 0xffffff,
-            shininess: 50,
-            depthWrite: false,
+            shininess: 3,
+            vertexColors: THREE.VertexColors,
+            depthWrite: true,
             side: THREE.BackSide
         });
 
-        let mesh = new THREE.Mesh(new THREE.BoxGeometry(150, 100, 200), material);
+        let geometry = new THREE.BoxGeometry(150, 100, 200);
+
+        // Add ambient-occlusion-like vertex colors.
+        // let light = new THREE.Color(0xffffff);
+        // let shadow = new THREE.Color(0x505050);
+
+        // TODO: Decide on whether or not to use vertex colors.
+        // geometry.faces[0].vertexColors = [light, shadow, light];
+        // geometry.faces[1].vertexColors = [shadow, shadow, light];
+        // geometry.faces[2].vertexColors = [light, shadow, light];
+        // geometry.faces[3].vertexColors = [shadow, shadow, light];
+        // geometry.faces[4].vertexColors = [light, shadow, light];
+        // geometry.faces[5].vertexColors = [shadow, shadow, light];
+        // geometry.faces[6].vertexColors = [light, shadow, light];
+        // geometry.faces[7].vertexColors = [shadow, shadow, light];
+        // geometry.faces[8].vertexColors = [light, shadow, light];
+        // geometry.faces[9].vertexColors = [shadow, shadow, light];
+        // geometry.faces[10].vertexColors = [light, shadow, light];
+        // geometry.faces[11].vertexColors = [shadow, shadow, light];
+
+        let mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(0, 50, 0);
         this.scene.add(mesh);
     },

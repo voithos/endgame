@@ -3,6 +3,8 @@ import _ from 'lodash';
 import utils from './utils';
 
 export default {
+    parts: utils.queryStringParts(window.location.search),
+
     parseGameId() {
         return _.last(utils.pathParts(window.location.pathname)) ||
             window.location.hash.substring(1);
@@ -23,10 +25,10 @@ export default {
     },
 
     isDebugMode() {
-        if (!this._isDebugMode) {
-            const parts = utils.queryStringParts(window.location.search);
-            this._isDebugMode = parts['debug'] === 'true';
-        }
-        return this._isDebugMode;
+        return this.parts['debug'] === 'true';
+    },
+
+    getDebugSide() {
+        return this.parts['side'];
     }
 };

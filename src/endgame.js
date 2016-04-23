@@ -215,7 +215,7 @@ let endgame = {
     },
 
     beginDebugGame() {
-        this.side = 'white';
+        this.side = routes.getDebugSide() || 'white';
         scene.setPlayCameraPos(this.side);
         this.beginGame();
     }
