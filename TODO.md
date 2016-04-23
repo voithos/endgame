@@ -14,7 +14,6 @@
 - add animation to initial camera movement
 - add loading screen
 - consider using fog effect
-- add bloom filter
 - add antialiasing
 - add board reflection
 - fix board UV mapping
@@ -27,6 +26,6 @@
 ? keep history of moves, perhaps display it somehow
 
 ## Bugs
-- fix strange SSAO rendering issue
+- fix strange SSAO rendering issue (actually, looks to be shadow issue - unrelated to SSAO pass)
 - user can exit out of promotion screen
 - user can move opponent's pieces on their turn

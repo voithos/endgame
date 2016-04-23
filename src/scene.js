@@ -163,7 +163,17 @@ export default {
     },
 
     setupPostprocessing() {
+        let effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+        effectCopy.renderToScreen = true;
+
+        // Setup basic render pass with texture pass, so that we can reuse it.
         this.renderPass = new THREE.RenderPass(this.scene, this.camera);
+
+        // Bloom pass.
+        this.bloomPass = new THREE.BloomPass(2.5, 12, 5.0, 256);
+
+        // Setup postprocessing passes.
+        // Depth material is used to render depth for SSAO.
         this.depthMaterial = new THREE.MeshDepthMaterial();
         this.depthMaterial.depthPacking = THREE.RGBADepthPacking;
         this.depthMaterial.blending = THREE.NoBlending;
@@ -173,7 +183,6 @@ export default {
                 window.innerWidth, window.innerHeight, params);
 
         this.ssaoPass = new THREE.ShaderPass(THREE.SSAOShader);
-        this.ssaoPass.renderToScreen = true;
         this.ssaoPass.uniforms['tDepth'].value = this.depthRenderTarget;
         this.ssaoPass.uniforms['size'].value.set(window.innerWidth, window.innerHeight);
         this.ssaoPass.uniforms['cameraNear'].value = this.camera.near;
@@ -182,9 +191,12 @@ export default {
         this.ssaoPass.uniforms['aoClamp'].value = 0.8;
         this.ssaoPass.uniforms['lumInfluence'].value = 0.9;
 
+        // Setup composer for effects.
         this.effectComposer = new THREE.EffectComposer(this.renderer);
         this.effectComposer.addPass(this.renderPass);
+        this.effectComposer.addPass(this.bloomPass);
         this.effectComposer.addPass(this.ssaoPass);
+        this.effectComposer.addPass(effectCopy);
     },
 
     addSkybox() {
@@ -643,11 +655,14 @@ export default {
             this.friendTexture.needsUpdate = true;
         }
 
-        // Render with postprocessing. First, render depth into depthRenderTarget.
+        // Render postprocessing. First, render depth into depthRenderTarget.
         this.scene.overrideMaterial = this.depthMaterial;
         this.renderer.render(this.scene, this.camera, this.depthRenderTarget, /* forceClear */ true);
 
-        // Next, run renderPass and SSAO shaderPass.
+        this.renderer.autoClear = false;
+        this.renderer.clear();
+
+        // Next, run postprocessing composer.
         this.scene.overrideMaterial = null;
         this.effectComposer.render();
     }
