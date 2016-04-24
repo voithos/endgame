@@ -48,7 +48,7 @@ export default {
     createRenderer() {
         // Choose between WebGL and Canvas renderer based on availability
         let renderer = this.webglAvailable() ?
-            new THREE.WebGLRenderer({ antialias: true }) :
+            new THREE.WebGLRenderer({ antialias: false }) :
             new THREE.CanvasRenderer();
 
         return renderer;
@@ -77,11 +77,13 @@ export default {
         this.dirLight.castShadow = true;
         this.dirLight.shadow.camera.near = 10;
         this.dirLight.shadow.camera.far = 100;
-        this.dirLight.shadow.bias = 0.0001;
+        this.dirLight.shadow.bias = 0;
         this.dirLight.shadow.camera.top = 40;
         this.dirLight.shadow.camera.right = 40;
         this.dirLight.shadow.camera.bottom = -40;
         this.dirLight.shadow.camera.left = -40;
+        this.dirLight.shadow.mapSize.width = 1024;
+        this.dirLight.shadow.mapSize.height = 1024;
         this.scene.add(this.dirLight);
 
         if (this.isDebugMode) {
@@ -169,10 +171,10 @@ export default {
         // Setup basic render pass with texture pass, so that we can reuse it.
         this.renderPass = new THREE.RenderPass(this.scene, this.camera);
 
+        // Setup postprocessing passes.
         // Bloom pass.
         this.bloomPass = new THREE.BloomPass(2.5, 12, 5.0, 256);
 
-        // Setup postprocessing passes.
         // Depth material is used to render depth for SSAO.
         this.depthMaterial = new THREE.MeshDepthMaterial();
         this.depthMaterial.depthPacking = THREE.RGBADepthPacking;
@@ -191,11 +193,16 @@ export default {
         this.ssaoPass.uniforms['aoClamp'].value = 0.8;
         this.ssaoPass.uniforms['lumInfluence'].value = 0.9;
 
+        // Antialiasing.
+        this.fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
+        this.fxaaPass.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+
         // Setup composer for effects.
         this.effectComposer = new THREE.EffectComposer(this.renderer);
         this.effectComposer.addPass(this.renderPass);
         this.effectComposer.addPass(this.bloomPass);
         this.effectComposer.addPass(this.ssaoPass);
+        this.effectComposer.addPass(this.fxaaPass);
         this.effectComposer.addPass(effectCopy);
     },
 

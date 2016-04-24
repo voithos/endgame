@@ -9,15 +9,13 @@
 
 ## Game
 - check for game end
-- add background room (marble, white, etc?)
 - when black, put the light somewhere else
 - add animation to initial camera movement
 - add loading screen
-- consider using fog effect
-- add antialiasing
 - add board reflection
 - fix board UV mapping
 - replace multiple tile colors with a "glowy" effect for last-piece moved (same color)
+- consider using fog effect
 - think about user-controlled panning or view shift
 ? rethink UI, clicking
 ? improve look of pieces
