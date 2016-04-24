@@ -68,7 +68,7 @@ export default {
             });
 
             $('#promotionscreen').modal({
-                backdrop: true,
+                backdrop: 'static',
                 keyboard: false
             });
         });

@@ -9,6 +9,7 @@ import log from './log';
 export default {
     init(isDebugMode) {
         this.isDebugMode = isDebugMode;
+        this.hasFocus = true;
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(
             45, window.innerWidth / window.innerHeight, 0.1, 1000
@@ -408,8 +409,10 @@ export default {
     },
 
     onMouseMove(event) {
-        this.updateMousePos(event);
-        this.highlightActiveTile();
+        if (this.hasFocus) {
+            this.updateMousePos(event);
+            this.highlightActiveTile();
+        }
     },
 
     updateMousePos(event) {
@@ -428,8 +431,10 @@ export default {
     },
 
     onMouseDown(event) {
-        event.preventDefault();
-        this.handleMoveSelection();
+        if (this.hasFocus) {
+            event.preventDefault();
+            this.handleMoveSelection();
+        }
     },
 
     handleMoveSelection() {
@@ -443,7 +448,9 @@ export default {
             if (this.isSelectingPieceMovement) {
                 if (tile.isLegalMove) {
                     if (tile.isPromotion) {
+                        this.hasFocus = false;
                         this.onPromotion().then(promotion => {
+                            this.hasFocus = true;
                             this.commitMove(tile, promotion);
                             this.resetTileHighlights();
                         });
@@ -474,7 +481,7 @@ export default {
 
         this.colorTile(tile, cfg.colors.tiles.selected);
 
-        // Get legal moves and highlight them
+        // Get legal moves and highlight them.
         this.currentLegalMoves = this.legalCallback(tile.chessPos);
         _.forEach(this.currentLegalMoves, move => {
             let tile = this.tiles[move.to];

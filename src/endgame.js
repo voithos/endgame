@@ -157,11 +157,12 @@ let endgame = {
                 scene.addTileControls(/* legalCallback */ pos => {
                     return this.chess.moves({ square: pos, verbose: true });
                 }, /* moveCallback */ (from, to, opt_promotion) => {
-                    let move = this.chess.move({
+                    let moveArgs = {
                         from: from,
                         to: to,
                         promotion: opt_promotion
-                    });
+                    };
+                    let move = this.chess.move(moveArgs);
 
                     if (move) {
                         if (!routes.isDebugMode()) {
@@ -174,6 +175,7 @@ let endgame = {
                         afterMove(move);
                     } else {
                         log('ERROR: illegal move attempted locally - bug?');
+                        log(moveArgs);
                     }
                 }, /* onPromotion */ () => {
                     return views.showPromotionScreen(this.side)
