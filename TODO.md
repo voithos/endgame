@@ -12,7 +12,6 @@
 - when black, put the light somewhere else
 - add animation to initial camera movement
 - add loading screen
-- add board reflection
 - fix board UV mapping
 - replace multiple tile colors with a "glowy" effect for last-piece moved (same color)
 - consider using fog effect
@@ -24,6 +23,7 @@
 ? keep history of moves, perhaps display it somehow
 
 ## Bugs
+- fix issue with tile controls
 - fix strange SSAO rendering issue (actually, looks to be shadow issue - unrelated to SSAO pass)
 - user can exit out of promotion screen
 - user can move opponent's pieces on their turn

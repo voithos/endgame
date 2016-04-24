@@ -173,7 +173,7 @@ export default {
 
         // Setup postprocessing passes.
         // Bloom pass.
-        this.bloomPass = new THREE.BloomPass(2.5, 12, 5.0, 256);
+        this.bloomPass = new THREE.BloomPass(3, 11, 5.0, 256);
 
         // Depth material is used to render depth for SSAO.
         this.depthMaterial = new THREE.MeshDepthMaterial();
@@ -251,6 +251,20 @@ export default {
         );
 
         this.scene.add(this.board);
+
+        // Setup board mirroring.
+        this.boardMirrorPlane = new THREE.PlaneBufferGeometry(38, 38);
+        this.boardMirror = new THREE.Mirror(this.renderer, this.camera, {
+            opacity: 0.2,
+            clipBias: 0.003,
+            textureWidth: window.innerWidth,
+            textureHeight: window.innerHeight
+        });
+        this.mirrorMesh = new THREE.Mesh(this.boardMirrorPlane, this.boardMirror.material);
+        this.mirrorMesh.add(this.boardMirror);
+        this.mirrorMesh.rotateX(-Math.PI / 2);
+        this.mirrorMesh.position.y = 1.8;
+        this.scene.add(this.mirrorMesh);
     },
 
     addPieces() {
@@ -672,5 +686,10 @@ export default {
         // Next, run postprocessing composer.
         this.scene.overrideMaterial = null;
         this.effectComposer.render();
+
+        // The mirror effect is added after-load.
+        if (this.boardMirror) {
+            this.boardMirror.render();
+        }
     }
 };
