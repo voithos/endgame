@@ -91,6 +91,8 @@ export default {
 
         skyboxSize: { x: 150, y: 100, z: 200 },
 
+        dirLightPos: { x: -25, y: 25, z: 25 },
+
         mirrorOpacity: 0.2,
 
         animationSpeed: 500

@@ -74,7 +74,10 @@ export default {
         // TODO: Consider using PointLight.
         // this.pointLight = new THREE.PointLight(0xffffff, 0.9, 200);
         this.dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-        this.dirLight.position.set(-25, 25, 25);
+        this.dirLight.position.set(
+                cfg.gameOpts.dirLightPos.x,
+                cfg.gameOpts.dirLightPos.y,
+                cfg.gameOpts.dirLightPos.z);
         this.dirLight.castShadow = true;
         this.dirLight.shadow.camera.near = 10;
         this.dirLight.shadow.camera.far = 100;
@@ -103,14 +106,31 @@ export default {
     },
 
     setPlayCameraPos(side) {
-        this.camera.position.x = cfg.gameOpts.cameraPlayPos.x;
-        this.camera.position.y = cfg.gameOpts.cameraPlayPos.y;
-        this.camera.position.z = (side === 'black' ? -1 : 1) * cfg.gameOpts.cameraPlayPos.z;
-        this.camera.lookAt(new THREE.Vector3(
-            cfg.gameOpts.cameraPlayLookAt.x,
-            cfg.gameOpts.cameraPlayLookAt.y,
-            cfg.gameOpts.cameraPlayLookAt.z
-        ));
+        let target = {
+            x: cfg.gameOpts.cameraPlayPos.x,
+            y: cfg.gameOpts.cameraPlayPos.y,
+            z: (side === 'black' ? -1 : 1) * cfg.gameOpts.cameraPlayPos.z
+        };
+
+        new TWEEN.Tween(this.camera.position).to(target, cfg.gameOpts.animationSpeed * 6)
+            .easing(TWEEN.Easing.Cubic.InOut)
+            .onUpdate(() => {
+                this.camera.lookAt(new THREE.Vector3(
+                    cfg.gameOpts.cameraPlayLookAt.x,
+                    cfg.gameOpts.cameraPlayLookAt.y,
+                    cfg.gameOpts.cameraPlayLookAt.z
+                ));
+            })
+            .start();
+
+        if (side === 'black') {
+            // For black, we move the directional light, to provide a better
+            // view.
+            let target = { x: -cfg.gameOpts.dirLightPos.x, z: -cfg.gameOpts.dirLightPos.z };
+            new TWEEN.Tween(this.dirLight.position).to(target, cfg.gameOpts.animationSpeed * 6)
+                .easing(TWEEN.Easing.Cubic.InOut)
+                .start();
+        }
     },
 
     loadGameGeometry() {

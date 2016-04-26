@@ -8,16 +8,15 @@
 - upgrade code to ES2015
 
 ## Game
-- check for game end
-- when black, put the light somewhere else
-- add animation to initial camera movement
-- add loading screen
 - replace tiles with glowy circle effect
 - check to see if tiles need to be rendered in order for raycasting to work
+- check for game end
+- add loading screen
+- think about user-controlled panning or view shift
 - fix board UV mapping
 - consider using fog effect
-- think about user-controlled panning or view shift
 - show captured pieces somewhere
+- consider adding sounds
 ? rethink UI, clicking
 ? improve look of pieces
 ? change board and pieces models
