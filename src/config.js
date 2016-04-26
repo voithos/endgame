@@ -114,6 +114,10 @@ export default {
             prevTo: 0xda2820
         },
 
+        glow: {
+            afterMove: 0x62ccff
+        },
+
         clear: 'lightgray',
 
         friendScreen: 0xdadada

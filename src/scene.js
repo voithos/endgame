@@ -145,6 +145,14 @@ export default {
                             mesh.castShadow = true;
                             mesh.receiveShadow = true;
 
+                            // Add glow effect.
+                            let glowMesh = new THREEx.GeometricGlowMesh(mesh);
+                            glowMesh.object3d.name = 'glowMesh';
+                            glowMesh.object3d.visible = false;
+                            glowMesh.insideMesh.material.uniforms.glowColor.value.set(cfg.colors.glow.afterMove);
+                            glowMesh.outsideMesh.material.uniforms.glowColor.value.set(cfg.colors.glow.afterMove);
+                            mesh.add(glowMesh.object3d);
+
                             if (!this.meshes[side]) {
                                 this.meshes[side] = {};
                             }
@@ -286,7 +294,7 @@ export default {
         object.add(this.meshes[side][type].clone());
         object.position.y = cfg.gameOpts.pieceYOffset;
 
-        this.setPiecePosition(object, pos, /* opt_instant */ true);
+        this.setPiecePosition(object, pos, /* opt_instant */ true, /* opt_noglow */ true);
 
         // Rotate white
         if (side === 'white') {
@@ -635,7 +643,7 @@ export default {
         }));
     },
 
-    setPiecePosition(object, pos, opt_instant) {
+    setPiecePosition(object, pos, opt_instant, opt_noglow) {
         let offsetX = cfg.fileToOffset[pos[0]];
         let offsetZ = cfg.rankToOffset[pos[1]];
         let posX = -cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize;
@@ -648,6 +656,51 @@ export default {
             let target = {x: posX, z: posZ};
             new TWEEN.Tween(object.position).to(target, cfg.gameOpts.animationSpeed)
                 .easing(TWEEN.Easing.Cubic.InOut)
+                .start();
+        }
+
+        if (!opt_noglow) {
+            if (this.lastGlowMesh) {
+                this.fadeOutGlowMesh(this.lastGlowMesh);
+            }
+            let glowMesh = object.getObjectByName('glowMesh');
+            this.fadeInGlowMesh(glowMesh);
+            this.lastGlowMesh = glowMesh;
+        }
+    },
+
+    fadeInGlowMesh(glowMesh) {
+        // GlowMesh has 2 materials that need animation.
+        glowMesh.visible = true;
+        for (let i = 0; i < 2; i++) {
+            glowMesh.children[i].material.uniforms.glowOpacity.value = 0;
+            new TWEEN.Tween({glowOpacity: 0})
+                .to({glowOpacity: 1}, cfg.gameOpts.animationSpeed)
+                .easing(TWEEN.Easing.Cubic.Out)
+                // Don't use arrow function here because intermediate values
+                // are accessed via `this` set by TWEEN.js
+                .onUpdate(function() {
+                    glowMesh.children[i].material.uniforms.glowOpacity.value = this.glowOpacity;
+                })
+                .start();
+        }
+    },
+
+    fadeOutGlowMesh(glowMesh) {
+        // GlowMesh has 2 materials that need animation.
+        for (let i = 0; i < 2; i++) {
+            glowMesh.children[i].material.uniforms.glowOpacity.value = 1;
+            new TWEEN.Tween({glowOpacity: 1})
+                .to({glowOpacity: 0}, cfg.gameOpts.animationSpeed / 2)
+                .easing(TWEEN.Easing.Cubic.In)
+                // Don't use arrow function here because intermediate values
+                // are accessed via `this` set by TWEEN.js
+                .onUpdate(function() {
+                    glowMesh.children[i].material.uniforms.glowOpacity.value = this.glowOpacity;
+                })
+                .onComplete(() => {
+                    glowMesh.visible = false;
+                })
                 .start();
         }
     },

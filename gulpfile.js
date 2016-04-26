@@ -65,6 +65,7 @@ var ESLINT_CONFIG = {
         'Peer': true,
         'Firebase': true,
         'THREE': true,
+        'THREEx': true,
         'TWEEN': true,
         'Vue': true,
         '$': true
