@@ -182,7 +182,11 @@ export default {
 
         // Setup postprocessing passes.
         // Bloom pass.
-        this.bloomPass = new THREE.BloomPass(3, 11, 5.0, 256);
+        this.bloomPass = new THREE.BloomPass(
+                cfg.effects.bloom.strength,
+                cfg.effects.bloom.kernel,
+                cfg.effects.bloom.sigma,
+                cfg.effects.bloom.resolution);
 
         // Depth material is used to render depth for SSAO.
         this.depthMaterial = new THREE.MeshDepthMaterial();
@@ -199,8 +203,8 @@ export default {
         this.ssaoPass.uniforms['cameraNear'].value = this.camera.near;
         this.ssaoPass.uniforms['cameraFar'].value = this.camera.far;
         this.ssaoPass.uniforms['onlyAO'].value = false;
-        this.ssaoPass.uniforms['aoClamp'].value = 0.8;
-        this.ssaoPass.uniforms['lumInfluence'].value = 0.9;
+        this.ssaoPass.uniforms['aoClamp'].value = cfg.effects.ssao.clamp;
+        this.ssaoPass.uniforms['lumInfluence'].value = cfg.effects.ssao.lumInfluence;
 
         // Antialiasing.
         this.fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
@@ -217,7 +221,7 @@ export default {
 
     addSkybox() {
         let material = new THREE.MeshPhongMaterial({
-            color: 0xbababa,
+            color: cfg.colors.skybox,
             specular: 0xffffff,
             shininess: 3,
             vertexColors: THREE.VertexColors,
@@ -225,7 +229,10 @@ export default {
             side: THREE.BackSide
         });
 
-        let geometry = new THREE.BoxGeometry(150, 100, 200);
+        let geometry = new THREE.BoxGeometry(
+                cfg.gameOpts.skyboxSize.x,
+                cfg.gameOpts.skyboxSize.y,
+                cfg.gameOpts.skyboxSize.z);
 
         // Add ambient-occlusion-like vertex colors.
         // let light = new THREE.Color(0xffffff);
@@ -264,14 +271,14 @@ export default {
         // Setup board mirroring.
         this.boardMirrorPlane = new THREE.PlaneBufferGeometry(38, 38);
         this.boardMirror = new THREE.Mirror(this.renderer, this.camera, {
-            opacity: 0.2,
+            opacity: cfg.gameOpts.mirrorOpacity,
             clipBias: 0.003,
             textureWidth: window.innerWidth,
             textureHeight: window.innerHeight
         });
         this.mirrorMesh = new THREE.Mesh(this.boardMirrorPlane, this.boardMirror.material);
         this.mirrorMesh.add(this.boardMirror);
-        this.mirrorMesh.rotateX(-Math.PI / 2);
+        this.mirrorMesh.rotateX(-Math.PI / 2);  // Quarter rotation, to face up.
         this.mirrorMesh.position.y = 1.8;
         this.scene.add(this.mirrorMesh);
     },

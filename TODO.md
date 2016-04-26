@@ -12,8 +12,9 @@
 - when black, put the light somewhere else
 - add animation to initial camera movement
 - add loading screen
+- replace tiles with glowy circle effect
+- check to see if tiles need to be rendered in order for raycasting to work
 - fix board UV mapping
-- replace multiple tile colors with a "glowy" effect for last-piece moved (same color)
 - consider using fog effect
 - think about user-controlled panning or view shift
 - show captured pieces somewhere

@@ -89,7 +89,24 @@ export default {
         friendScreenSize: { x: 30, y: 20, z: 5 },
         friendScreenPos: { x: 0, y: 10, z: -30 },
 
+        skyboxSize: { x: 150, y: 100, z: 200 },
+
+        mirrorOpacity: 0.2,
+
         animationSpeed: 500
+    },
+
+    effects: {
+        bloom: {
+            strength: 3,
+            kernel: 11,
+            sigma: 5.0,
+            resolution: 256
+        },
+        ssao: {
+            clamp: 0.8,
+            lumInfluence: 0.9
+        }
     },
 
     colors: {
@@ -119,7 +136,7 @@ export default {
         },
 
         clear: 'lightgray',
-
+        skybox: 0xbababa,
         friendScreen: 0xdadada
     }
 };
