@@ -33,7 +33,7 @@ export default {
     dbBaseUrl: DB_BASE_URL,
     usersUrl: DB_BASE_URL + '/users',
     gamesUrl: DB_BASE_URL + '/games',
-    peerJsKey: 'e47332e9vb4yrpb9',
+    peerJsBackendUrl: DB_BASE_URL + '/peerjs',
 
     iceServers: [
         { 'url': 'stun:stun.l.google.com:19302' },

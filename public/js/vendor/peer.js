@@ -1,4 +1,4 @@
-/*! peerjs build:0.3.13, development. Copyright(c) 2013 Michelle Bu <michelle@michellebu.com> */(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*! peerjs build:0.3.14, development. Copyright(c) 2013 Michelle Bu <michelle@michellebu.com> */(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 module.exports.RTCSessionDescription = window.RTCSessionDescription ||
 	window.mozRTCSessionDescription;
 module.exports.RTCPeerConnection = window.RTCPeerConnection ||
@@ -519,7 +519,7 @@ Negotiator._setupListeners = function(connection, pc, pc_id) {
   pc.onicecandidate = function(evt) {
     if (evt.candidate) {
       util.log('Received ICE candidates for:', connection.peer);
-      provider.socket.send({
+      provider.sendMessage({
         type: 'CANDIDATE',
         payload: {
           candidate: evt.candidate,
@@ -533,8 +533,12 @@ Negotiator._setupListeners = function(connection, pc, pc_id) {
 
   pc.oniceconnectionstatechange = function() {
     switch (pc.iceConnectionState) {
-      case 'disconnected':
       case 'failed':
+        util.log('iceConnectionState is disconnected, closing connections to ' + peerId);
+        connection.emit('error', new Error('Negotiation of connection to ' + peerId + ' failed.'));
+        connection.close();
+        break;
+      case 'disconnected':
         util.log('iceConnectionState is disconnected, closing connections to ' + peerId);
         connection.close();
         break;
@@ -608,7 +612,7 @@ Negotiator._makeOffer = function(connection) {
 
     pc.setLocalDescription(offer, function() {
       util.log('Set localDescription: offer', 'for:', connection.peer);
-      connection.provider.socket.send({
+      connection.provider.sendMessage({
         type: 'OFFER',
         payload: {
           sdp: offer,
@@ -644,7 +648,7 @@ Negotiator._makeAnswer = function(connection) {
 
     pc.setLocalDescription(answer, function() {
       util.log('Set localDescription: answer', 'for:', connection.peer);
-      connection.provider.socket.send({
+      connection.provider.sendMessage({
         type: 'ANSWER',
         payload: {
           sdp: answer,
@@ -721,6 +725,7 @@ function Peer(id, options) {
 
   // Configurize options
   options = util.extend({
+    firebaseURL: null,
     debug: 0, // 1: Errors, 2: Warnings, 3: All logs
     host: util.CLOUD_HOST,
     port: util.CLOUD_PORT,
@@ -753,6 +758,8 @@ function Peer(id, options) {
   util.setLogLevel(options.debug);
   //
 
+  this.hasFirebase = !!options.firebaseURL;
+
   // Sanity checks
   // Ensure WebRTC supported
   if (!util.supports.audioVideo && !util.supports.data ) {
@@ -764,16 +771,25 @@ function Peer(id, options) {
     this._delayedAbort('invalid-id', 'ID "' + id + '" is invalid');
     return;
   }
-  // Ensure valid key
-  if (!util.validateKey(options.key)) {
-    this._delayedAbort('invalid-key', 'API KEY "' + options.key + '" is invalid');
-    return;
-  }
-  // Ensure not using unsecure cloud server on SSL page
-  if (options.secure && options.host === '0.peerjs.com') {
-    this._delayedAbort('ssl-unavailable',
-      'The cloud server currently does not support HTTPS. Please run your own PeerServer to use HTTPS.');
-    return;
+
+  if (this.hasFirebase) {
+    if (typeof Firebase === 'undefined') {
+      this._delayedAbort('no-firebase', 'Firebase cannot be found - did you include it?');
+      return;
+    }
+  } else {
+    // Ensure valid key
+    if (!util.validateKey(options.key)) {
+      this._delayedAbort('invalid-key', 'API KEY "' + options.key + '" is invalid');
+      return;
+    }
+
+    // Ensure not using unsecure cloud server on SSL page
+    if (options.secure && options.host === '0.peerjs.com') {
+      this._delayedAbort('ssl-unavailable',
+        'The cloud server currently does not support HTTPS. Please run your own PeerServer to use HTTPS.');
+      return;
+    }
   }
   //
 
@@ -789,16 +805,42 @@ function Peer(id, options) {
   //
 
   // Start the server connection
-  this._initializeServerConnection();
-  if (id) {
-    this._initialize(id);
+  if (this.hasFirebase) {
+    this._initializeFirebaseConnection();
   } else {
-    this._retrieveId();
+    this._initializeServerConnection();
+    //
+    if (id) {
+      this._initializeSocket(id);
+    } else {
+      this._retrieveId();
+    }
+    //
   }
   //
 }
 
 util.inherits(Peer, EventEmitter);
+
+// Initialize the Firebase connection
+Peer.prototype._initializeFirebaseConnection = function() {
+  var self = this;
+  this.firebaseRoot = new Firebase(this.options.firebaseURL);
+  this.firebase = this.firebaseRoot.push();
+  this.id = this.firebase.key();
+  util.log('Firebase created', this.id);
+
+  this.firebase.on('child_added', function(childSnapshot) {
+    util.log('Firebase child added', childSnapshot.val());
+    self._handleMessage(childSnapshot.val());
+  });
+  this.firebase.onDisconnect().remove();
+
+  // Firebase connection is available immediately.
+  util.setZeroTimeout(function(){
+    self._handleMessage({type: 'OPEN'});
+  });
+};
 
 // Initialize the 'socket' (which is actually a mix of XHR streaming and
 // websockets.)
@@ -856,13 +898,13 @@ Peer.prototype._retrieveId = function(cb) {
       http.onerror();
       return;
     }
-    self._initialize(http.responseText);
+    self._initializeSocket(http.responseText);
   };
   http.send(null);
 };
 
 /** Initialize a connection with the server. */
-Peer.prototype._initialize = function(id) {
+Peer.prototype._initializeSocket = function(id) {
   this.id = id;
   this.socket.start(this.id, this.options.token);
 };
@@ -956,6 +998,32 @@ Peer.prototype._handleMessage = function(message) {
         util.warn('You received an unrecognized message:', message);
       }
       break;
+  }
+};
+
+/** Sends messages to the server. */
+Peer.prototype.sendMessage = function(message) {
+  if (this.hasFirebase) {
+    this._sendFirebaseMessage(message);
+  } else {
+    this.socket.send(message);
+  }
+};
+
+/** Sends messages to the Firebase. */
+Peer.prototype._sendFirebaseMessage = function(message) {
+  if (['LEAVE', 'CANDIDATE', 'OFFER', 'ANSWER'].indexOf(message.type) !== -1) {
+    var preparedMessage = {
+      type: message.type,
+      src: this.id,
+      dst: message.dst,
+      payload: JSON.parse(JSON.stringify(message.payload))
+    };
+    util.log('Pushing Firebase message', preparedMessage);
+    var peerFirebase = this.firebaseRoot.child(preparedMessage.dst);
+    peerFirebase.push(preparedMessage);
+  } else {
+    util.error('Firebase message unrecognized');
   }
 };
 
@@ -1114,6 +1182,10 @@ Peer.prototype._cleanupPeer = function(peer) {
  *  disconnected. It also cannot reconnect to the server.
  */
 Peer.prototype.disconnect = function() {
+  if (this.hasFirebase) {
+    util.error('You cannot disconnect from Firebase.');
+    return;
+  }
   var self = this;
   util.setZeroTimeout(function(){
     if (!self.disconnected) {
@@ -1131,11 +1203,15 @@ Peer.prototype.disconnect = function() {
 
 /** Attempts to reconnect with the same ID. */
 Peer.prototype.reconnect = function() {
+  if (this.hasFirebase) {
+    util.error('You cannot reconnect to Firebase.');
+    return;
+  }
   if (this.disconnected && !this.destroyed) {
     util.log('Attempting reconnection to server with ID ' + this._lastServerId);
     this.disconnected = false;
     this._initializeServerConnection();
-    this._initialize(this._lastServerId);
+    this._initializeSocket(this._lastServerId);
   } else if (this.destroyed) {
     throw new Error('This peer cannot reconnect to the server. It has already been destroyed.');
   } else if (!this.disconnected && !this.open) {
@@ -1153,6 +1229,10 @@ Peer.prototype.reconnect = function() {
  * your key.
  */
 Peer.prototype.listAllPeers = function(cb) {
+  if (this.hasFirebase) {
+    util.error('listAllPeers not supported in Firebase mode.');
+    return;
+  }
   cb = cb || function() {};
   var self = this;
   var http = new XMLHttpRequest();
@@ -1587,12 +1667,12 @@ var util = {
   // Ensure alphanumeric ids
   validateId: function(id) {
     // Allow empty ids
-    return !id || /^[A-Za-z0-9_-]+(?:[ _-][A-Za-z0-9]+)*$/.exec(id);
+    return !id || /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/.exec(id);
   },
 
   validateKey: function(key) {
     // Allow empty keys
-    return !key || /^[A-Za-z0-9_-]+(?:[ _-][A-Za-z0-9]+)*$/.exec(key);
+    return !key || /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/.exec(key);
   },
 
 
@@ -1769,9 +1849,10 @@ EventEmitter.prototype._events = undefined;
  */
 EventEmitter.prototype.listeners = function listeners(event) {
   if (!this._events || !this._events[event]) return [];
+  if (this._events[event].fn) return [this._events[event].fn];
 
-  for (var i = 0, l = this._events[event].length, ee = []; i < l; i++) {
-    ee.push(this._events[event][i].fn);
+  for (var i = 0, l = this._events[event].length, ee = new Array(l); i < l; i++) {
+    ee[i] = this._events[event][i].fn;
   }
 
   return ee;
@@ -1788,30 +1869,31 @@ EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
   if (!this._events || !this._events[event]) return false;
 
   var listeners = this._events[event]
-    , length = listeners.length
     , len = arguments.length
-    , ee = listeners[0]
     , args
-    , i, j;
+    , i;
 
-  if (1 === length) {
-    if (ee.once) this.removeListener(event, ee.fn, true);
+  if ('function' === typeof listeners.fn) {
+    if (listeners.once) this.removeListener(event, listeners.fn, true);
 
     switch (len) {
-      case 1: return ee.fn.call(ee.context), true;
-      case 2: return ee.fn.call(ee.context, a1), true;
-      case 3: return ee.fn.call(ee.context, a1, a2), true;
-      case 4: return ee.fn.call(ee.context, a1, a2, a3), true;
-      case 5: return ee.fn.call(ee.context, a1, a2, a3, a4), true;
-      case 6: return ee.fn.call(ee.context, a1, a2, a3, a4, a5), true;
+      case 1: return listeners.fn.call(listeners.context), true;
+      case 2: return listeners.fn.call(listeners.context, a1), true;
+      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
+      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
+      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
     }
 
     for (i = 1, args = new Array(len -1); i < len; i++) {
       args[i - 1] = arguments[i];
     }
 
-    ee.fn.apply(ee.context, args);
+    listeners.fn.apply(listeners.context, args);
   } else {
+    var length = listeners.length
+      , j;
+
     for (i = 0; i < length; i++) {
       if (listeners[i].once) this.removeListener(event, listeners[i].fn, true);
 
@@ -1841,9 +1923,16 @@ EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
  * @api public
  */
 EventEmitter.prototype.on = function on(event, fn, context) {
+  var listener = new EE(fn, context || this);
+
   if (!this._events) this._events = {};
-  if (!this._events[event]) this._events[event] = [];
-  this._events[event].push(new EE( fn, context || this ));
+  if (!this._events[event]) this._events[event] = listener;
+  else {
+    if (!this._events[event].fn) this._events[event].push(listener);
+    else this._events[event] = [
+      this._events[event], listener
+    ];
+  }
 
   return this;
 };
@@ -1857,9 +1946,16 @@ EventEmitter.prototype.on = function on(event, fn, context) {
  * @api public
  */
 EventEmitter.prototype.once = function once(event, fn, context) {
+  var listener = new EE(fn, context || this, true);
+
   if (!this._events) this._events = {};
-  if (!this._events[event]) this._events[event] = [];
-  this._events[event].push(new EE(fn, context || this, true ));
+  if (!this._events[event]) this._events[event] = listener;
+  else {
+    if (!this._events[event].fn) this._events[event].push(listener);
+    else this._events[event] = [
+      this._events[event], listener
+    ];
+  }
 
   return this;
 };
@@ -1878,17 +1974,25 @@ EventEmitter.prototype.removeListener = function removeListener(event, fn, once)
   var listeners = this._events[event]
     , events = [];
 
-  if (fn) for (var i = 0, length = listeners.length; i < length; i++) {
-    if (listeners[i].fn !== fn && listeners[i].once !== once) {
-      events.push(listeners[i]);
+  if (fn) {
+    if (listeners.fn && (listeners.fn !== fn || (once && !listeners.once))) {
+      events.push(listeners);
+    }
+    if (!listeners.fn) for (var i = 0, length = listeners.length; i < length; i++) {
+      if (listeners[i].fn !== fn || (once && !listeners[i].once)) {
+        events.push(listeners[i]);
+      }
     }
   }
 
   //
   // Reset the array, or remove it completely if we have no more listeners.
   //
-  if (events.length) this._events[event] = events;
-  else this._events[event] = null;
+  if (events.length) {
+    this._events[event] = events.length === 1 ? events[0] : events;
+  } else {
+    delete this._events[event];
+  }
 
   return this;
 };
@@ -1902,7 +2006,7 @@ EventEmitter.prototype.removeListener = function removeListener(event, fn, once)
 EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
   if (!this._events) return this;
 
-  if (event) this._events[event] = null;
+  if (event) delete this._events[event];
   else this._events = {};
 
   return this;
@@ -1928,9 +2032,10 @@ EventEmitter.EventEmitter = EventEmitter;
 EventEmitter.EventEmitter2 = EventEmitter;
 EventEmitter.EventEmitter3 = EventEmitter;
 
-if ('object' === typeof module && module.exports) {
-  module.exports = EventEmitter;
-}
+//
+// Expose the module.
+//
+module.exports = EventEmitter;
 
 },{}],10:[function(require,module,exports){
 var BufferBuilder = require('./bufferbuilder').BufferBuilder;

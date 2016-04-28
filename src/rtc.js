@@ -6,7 +6,7 @@ import routes from './routes';
 export default {
     init() {
         this.peer = new Peer({
-            key: cfg.peerJsKey,
+            firebaseURL: cfg.peerJsBackendUrl,
             secure: !routes.isDevMode(),
             config: {
                 iceServers: cfg.iceServers
