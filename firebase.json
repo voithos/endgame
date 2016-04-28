@@ -6,9 +6,9 @@
     "**/.*",
     "**/node_modules/**"
   ],
-  "rewrite": {
+  "rewrites": [{
     "source": "**",
     "destination": "/index.html"
-  },
+  }],
   "trailingSlash": false
 }
