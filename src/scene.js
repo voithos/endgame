@@ -403,7 +403,7 @@ export default {
             color: cfg.colors.tiles.active,
             side: THREE.DoubleSide,
             transparent: true,
-            opacity: 0
+            opacity: cfg.gameOpts.tileOpacity
         });
 
         // Generate mesh for each tile
@@ -423,8 +423,9 @@ export default {
         let offsetZ = cfg.rankToOffset[pos[1]];
 
         let tile = new THREE.Mesh(geometry, material);
+        tile.visible = false;
         tile.rotation.x = Math.PI / 2;
-        tile.position.y = cfg.gameOpts.pieceYOffset + 0.05;
+        tile.position.y = cfg.gameOpts.pieceYOffset + 0.15;
 
         tile.position.x = -cfg.gameOpts.boardStartOffset + offsetX * cfg.gameOpts.tileSize;
         tile.position.z = cfg.gameOpts.boardStartOffset - offsetZ * cfg.gameOpts.tileSize;
@@ -552,11 +553,11 @@ export default {
 
     colorTile(tile, color) {
         tile.material.color.setHex(color);
-        tile.material.opacity = cfg.gameOpts.tileOpacity;
+        tile.visible = true;
     },
 
     hideTile(tile) {
-        tile.material.opacity = 0;
+        tile.visible = false;
     },
 
     performGraphicalMove(move) {
@@ -664,7 +665,10 @@ export default {
     intersectTile() {
         this.raycaster.setFromCamera(this.mousePos, this.camera);
 
-        let intersects = this.raycaster.intersectObjects(this.scene.children);
+        // We can't use `intersectObjects` directly because it ignores
+        // invisible objects.
+        let intersects = [];
+        this.scene.children.forEach(child => child.raycast(this.raycaster, intersects));
         return _.first(_.filter(intersects, intersected => {
             return intersected.object.isTile;
         }));
