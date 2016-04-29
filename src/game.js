@@ -6,10 +6,7 @@ export default {
         this.ref = new Firebase(cfg.gamesUrl);
         this.gameRef = this.ref.push();
         this.gameRef.set({ hostId: hostId });
-        // Setup cleanup function.
-        window.addEventListener('beforeunload', unused_e => {
-            this.gameRef.remove();
-        });
+        this.gameRef.onDisconnect().remove();
         return Promise.resolve(this.gameRef.key());
     },
 
@@ -17,8 +14,14 @@ export default {
         this.ref = new Firebase(cfg.gamesUrl);
         this.gameRef = this.ref.child(gameId);
 
-        return new Promise((resolve, unused_reject) => {
+        return new Promise((resolve, reject) => {
             this.gameRef.once('value', snapshot => {
+                let val = snapshot.val();
+                if (!val) {
+                    // TODO: Handle rejection, show error message.
+                    reject();
+                    return;
+                }
                 this.gameRef.remove();
                 this.gameRef = null;
                 resolve(snapshot.val().hostId);
