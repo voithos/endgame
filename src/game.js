@@ -1,5 +1,6 @@
 import Promise from 'promise';
 import cfg from './config';
+import log from './log';
 
 export default {
     create(hostId) {
@@ -19,6 +20,7 @@ export default {
                 let val = snapshot.val();
                 if (!val) {
                     // TODO: Handle rejection, show error message.
+                    log(`ERROR: failed to load game ${gameId}`);
                     reject();
                     return;
                 }

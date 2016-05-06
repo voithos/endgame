@@ -17,6 +17,7 @@ export default {
 
         this.renderer = this.createRenderer();
         this.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
+        this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -134,6 +135,7 @@ export default {
     },
 
     loadGameGeometry() {
+        log('loading geometry');
         this.meshes = {};
 
         // Load all pieces
@@ -180,7 +182,6 @@ export default {
                         });
                     }
 
-                    log('done loading', asset);
                     resolve();
                 });
             })
@@ -304,6 +305,8 @@ export default {
     },
 
     addPieces() {
+        log('creating pieces');
+
         this.pieces = {};
         this.captured = { 'w': [], 'b': [] };
 
@@ -315,8 +318,6 @@ export default {
     },
 
     addPiece(pos, type, side) {
-        log('creating', type, side);
-
         let object = new THREE.Object3D();
         object.add(this.meshes[side][type].clone());
         object.position.y = cfg.gameOpts.pieceYOffset;
@@ -340,18 +341,22 @@ export default {
         let material;
 
         if (video) {
+            log('adding friend screen (with video)');
             this.friendVideo = video;
-            this.friendTexture = new THREE.Texture(video);
+            this.friendTexture = new THREE.VideoTexture(this.friendVideo);
+            this.friendTexture.minFilter = THREE.LinearFilter;
+            this.friendTexture.magFilter = THREE.LinearFilter;
+            this.friendTexture.format = THREE.RGBFormat;
 
-            this.friendTexture.generateMipmaps = false;
-
-            material = new THREE.MeshPhongMaterial({
+            material = new THREE.MeshLambertMaterial({
                 map: this.friendTexture,
-                emissive: 0xeeeeee
+                color: 0xeeeeee
             });
         } else {
+            log('adding friend screen (no video)');
+            // TODO: Add anonymous portrait here.
             // this.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
-            material = new THREE.MeshPhongMaterial({
+            material = new THREE.MeshLambertMaterial({
                 color: 0x000000
             });
         }

@@ -25,6 +25,14 @@ export default {
         });
     },
 
+    hasLocalVideo() {
+        return this.localMediaStream.getVideoTracks().length > 0;
+    },
+
+    hasLocalAudio() {
+        return this.localMediaStream.getAudioTracks().length > 0;
+    },
+
     playLocalStream() {
         let video = $('#localvideo').get(0);
         this.playStream(this.localMediaStream, video);

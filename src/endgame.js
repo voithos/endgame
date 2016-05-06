@@ -76,8 +76,11 @@ let endgame = {
                 new Promise((resolve, unused_reject) => {
                     rtc.addDataListener((data, unused_conn) => {
                         if (data.event === 'mediarequestcomplete') {
+                            this.remoteHasVideo = data.hasVideo;
+                            this.remoteHasAudio = data.hasAudio;
                             this.remoteHasMedia = data.hasMedia;
-                            log('remote media request complete:', this.remoteHasMedia);
+                            log(`remote media request complete (hasMedia: ${this.remoteHasMedia}, ` +
+                                `hasVideo: ${this.remoteHasVideo}, hasAudio: ${this.remoteHasAudio})`);
 
                             resolve();
                         } else {
@@ -89,22 +92,33 @@ let endgame = {
                 // Request local media
                 media.init()
                     .then(() => {
-                        this.localHasMedia = true;
-                        log('local media granted');
+                        this.localHasVideo = media.hasLocalVideo();
+                        this.localHasAudio = media.hasLocalAudio();
+                        this.localHasMedia = this.localHasVideo || this.localHasAudio;
+                        log(`local media granted (hasVideo: ${this.localHasVideo}, ` +
+                            `hasAudio: ${this.localHasAudio})`);
 
-                        media.playLocalStream();
+                        if (this.localHasVideo) {
+                            media.playLocalStream();
+                        }
 
                         rtc.sendData({
                             event: 'mediarequestcomplete',
-                            hasMedia: true
+                            hasMedia: this.localHasMedia,
+                            hasVideo: this.localHasVideo,
+                            hasAudio: this.localHasAudio
                         });
                     }, () => {
                         this.localHasMedia = false;
-                        log('local media denied');
+                        this.localHasVideo = false;
+                        this.localHasAudio = false;
+                        log('local media denied!');
 
                         rtc.sendData({
                             event: 'mediarequestcomplete',
-                            hasMedia: false
+                            hasMedia: false,
+                            hasVideo: false,
+                            hasAudio: false
                         });
                     })
             ]));
@@ -115,14 +129,27 @@ let endgame = {
 
         if (!this.localHasMedia && !this.remoteHasMedia) {
             // No media to exchange
+            log('no media to exchange');
             return Promise.resolve();
         }
 
         // Because caller must provide mediaStream, we need to figure out if
-        // we're the caller or not. If the host has a mediaStream, it will
+        // we're the caller or not. If the host has a (video) mediaStream, it will
         // always be the caller; otherwise, the friend will be.
-        let isCaller = (this.isHost && this.localHasMedia) ||
+        //
+        // In addition, add a preference for the peer that has video, as it
+        // seems to only work reliably from the initial call.
+        // TODO: Figure out why this is the case.
+        let videoPeerExists = this.localHasVideo || this.remoteHasVideo;
+        let isPreferredVideoPeer = (this.isHost && this.localHasVideo) ||
+            (!this.isHost && !this.remoteHasVideo && this.localHasVideo);
+        let isPreferredMediaPeer = (this.isHost && this.localHasMedia) ||
             (!this.isHost && !this.remoteHasMedia && this.localHasMedia);
+
+        let isCaller = videoPeerExists ?
+            isPreferredVideoPeer :
+            isPreferredMediaPeer;
+        log(`initial caller determined - isCaller: ${isCaller}`);
 
         return rtc.performMediaCall(
             isCaller,
@@ -131,14 +158,18 @@ let endgame = {
     },
 
     displayRemoteMedia(call) {
+        log('displaying remote media');
         return new Promise((resolve, unused_reject) => {
             if (this.remoteHasMedia) {
                 call.on('stream', (remoteMediaStream) => {
+                    // Configure media, even if it's audio-only.
                     let video = media.configureRemoteStream(remoteMediaStream);
-                    scene.addFriendScreen(this.side, video);
+                    scene.addFriendScreen(this.side, this.remoteHasVideo ? video : null);
+                    log('media display complete');
                     resolve();
                 });
             } else {
+                log('no media; add empty friend screen');
                 scene.addFriendScreen(this.side);
                 resolve();
             }
