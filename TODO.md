@@ -2,7 +2,6 @@
 
 ## Code
 ! hide API keys, etc
-! create favicon
 - switch to Material lite
 - upgrade code to ES2015
 
@@ -13,7 +12,6 @@
 ! think about user-controlled panning or view shift
 ! fix board UV mapping
 ! show captured pieces somewhere
-- consider using fog effect
 - consider adding sounds
 - consider adding touch support (test on tablets, etc)
 ? rethink UI, clicking
