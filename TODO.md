@@ -10,7 +10,6 @@
 ! check for game end
 ! add loading screen
 ! think about user-controlled panning or view shift
-! fix board UV mapping
 ! show captured pieces somewhere
 - consider adding sounds
 - consider adding touch support (test on tablets, etc)
