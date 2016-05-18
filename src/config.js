@@ -140,5 +140,10 @@ export default {
         clear: 'lightgray',
         skybox: 0xbababa,
         friendScreen: 0xdadada
+    },
+
+    loadingScreen: {
+        backgroundColor: '#fff',
+        fadeOutDuration: 2000
     }
 };

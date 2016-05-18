@@ -10,6 +10,9 @@ export default {
     init(isDebugMode) {
         this.isDebugMode = isDebugMode;
         this.hasFocus = true;
+        this.isLoaded = false;
+        this.percentLoaded = 0;
+
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(
             45, window.innerWidth / window.innerHeight, 0.1, 1000
@@ -32,12 +35,31 @@ export default {
         this.setupPostprocessing();
         this.setInitialCameraPos();
 
+        this.setupLoader();
+
         if (this.isDebugMode) {
             this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
             this.controls.enableDamping = true;
             this.controls.dampingFactor = 0.5;
             this.controls.enableZoom = true;
         }
+    },
+
+    setupLoader() {
+        this.loaderElement = $('#loadingscreen');
+        this.loaderElement.css({
+            'background-color': cfg.loadingScreen.backgroundColor,
+            width: window.innerWidth,
+            height: window.innerHeight
+        });
+    },
+
+    onLoadProgress(item, loaded, total) {
+        if (loaded === total) {
+            this.isLoaded = true;
+            this.loaderElement.fadeOut(cfg.loadingScreen.fadeOutDuration);
+        }
+        this.percentLoaded = loaded / total;
     },
 
     resize() {
@@ -138,54 +160,64 @@ export default {
         log('loading geometry');
         this.meshes = {};
 
-        // Load all pieces
-        return Promise.all(_.map(cfg.pieces.concat(cfg.assets), asset =>
-             new Promise((resolve, unused_reject) => {
-                let loader = new THREE.JSONLoader();
-                loader.load('data/' + asset + '.json', (geometry, materials) => {
-                    let material = materials[0];
-
-                    if (_.contains(cfg.assets, asset)) {
-                        let mesh = new THREE.Mesh(geometry, material);
-                        mesh.name = asset + 'Mesh';
-                        mesh.receiveShadow = true;
-                        this.meshes[asset] = mesh;
-                    } else {
-                        // Compute normals
-                        geometry.computeFaceNormals();
-                        geometry.computeVertexNormals();
-
-                        // Duplicate black/white
-                        _.forEach(cfg.sides, side => {
-                            let meshMaterial = material.clone();
-                            meshMaterial.color.setHex(cfg.colors.pieces[side].color);
-                            meshMaterial.emissive.setHex(cfg.colors.pieces[side].emissive);
-                            meshMaterial.specular.setHex(cfg.colors.pieces[side].specular);
-
-                            let mesh = new THREE.Mesh(geometry, meshMaterial);
-                            mesh.name = 'pieceMesh';
-                            mesh.castShadow = true;
-                            mesh.receiveShadow = true;
-
-                            // Add glow effect.
-                            let glowMesh = new THREEx.GeometricGlowMesh(mesh);
-                            glowMesh.object3d.name = 'glowMesh';
-                            glowMesh.object3d.visible = false;
-                            glowMesh.insideMesh.material.uniforms.glowColor.value.set(cfg.colors.glow.afterMove);
-                            glowMesh.outsideMesh.material.uniforms.glowColor.value.set(cfg.colors.glow.afterMove);
-                            mesh.add(glowMesh.object3d);
-
-                            if (!this.meshes[side]) {
-                                this.meshes[side] = {};
-                            }
-                            this.meshes[side][asset] = mesh;
-                        });
-                    }
-
+        return new Promise((resolve, unused_reject) => {
+            // Setup loader.
+            THREE.DefaultLoadingManager.onProgress = (item, loaded, total) => {
+                this.onLoadProgress(item, loaded, total);
+                if (this.isLoaded) {
                     resolve();
-                });
-            })
-        ));
+                }
+            };
+
+            // Load all pieces
+            return Promise.all(_.map(cfg.pieces.concat(cfg.assets), asset =>
+                 new Promise((resolve, unused_reject) => {
+                    let loader = new THREE.JSONLoader();
+                    loader.load('data/' + asset + '.json', (geometry, materials) => {
+                        let material = materials[0];
+
+                        if (_.contains(cfg.assets, asset)) {
+                            let mesh = new THREE.Mesh(geometry, material);
+                            mesh.name = asset + 'Mesh';
+                            mesh.receiveShadow = true;
+                            this.meshes[asset] = mesh;
+                        } else {
+                            // Compute normals
+                            geometry.computeFaceNormals();
+                            geometry.computeVertexNormals();
+
+                            // Duplicate black/white
+                            _.forEach(cfg.sides, side => {
+                                let meshMaterial = material.clone();
+                                meshMaterial.color.setHex(cfg.colors.pieces[side].color);
+                                meshMaterial.emissive.setHex(cfg.colors.pieces[side].emissive);
+                                meshMaterial.specular.setHex(cfg.colors.pieces[side].specular);
+
+                                let mesh = new THREE.Mesh(geometry, meshMaterial);
+                                mesh.name = 'pieceMesh';
+                                mesh.castShadow = true;
+                                mesh.receiveShadow = true;
+
+                                // Add glow effect.
+                                let glowMesh = new THREEx.GeometricGlowMesh(mesh);
+                                glowMesh.object3d.name = 'glowMesh';
+                                glowMesh.object3d.visible = false;
+                                glowMesh.insideMesh.material.uniforms.glowColor.value.set(cfg.colors.glow.afterMove);
+                                glowMesh.outsideMesh.material.uniforms.glowColor.value.set(cfg.colors.glow.afterMove);
+                                mesh.add(glowMesh.object3d);
+
+                                if (!this.meshes[side]) {
+                                    this.meshes[side] = {};
+                                }
+                                this.meshes[side][asset] = mesh;
+                            });
+                        }
+
+                        resolve();
+                    });
+                })
+            ));
+        });
     },
 
     setupBoard() {
@@ -767,7 +799,10 @@ export default {
             this.controls.update();
         }
 
-        // Video texture
+        // If we haven't loaded everything yet, return early.
+        if (!this.isLoaded) return;
+
+        // Video texture.
         if (this.friendVideo && this.friendVideo.readyState === this.friendVideo.HAVE_ENOUGH_DATA) {
             this.friendTexture.needsUpdate = true;
         }

@@ -6798,3 +6798,7 @@ canvas {
   height: 75px;
   width: 75px;
 }
+.loading-screen {
+  position: absolute;
+  z-index: 9000;
+}
