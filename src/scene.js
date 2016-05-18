@@ -126,9 +126,28 @@ export default {
         this.camera.position.y = cfg.gameOpts.cameraStartPos.y;
         this.camera.position.z = cfg.gameOpts.cameraStartPos.z;
         this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        let camera = this.camera;
+        this.initialCameraRotation = new TWEEN.Tween({rotation: 0})
+            .to({rotation: 2 * Math.PI}, cfg.gameOpts.rotationSpeed)
+            // .easing(TWEEN.Easing.Cubic.InOut)
+            .onUpdate(function() {
+                camera.position.x = cfg.gameOpts.cameraStartPos.x * Math.cos(this.rotation);
+                camera.position.z = cfg.gameOpts.cameraStartPos.z * Math.sin(this.rotation);
+                camera.lookAt(new THREE.Vector3(
+                    cfg.gameOpts.cameraPlayLookAt.x,
+                    cfg.gameOpts.cameraPlayLookAt.y,
+                    cfg.gameOpts.cameraPlayLookAt.z
+                ));
+            })
+            .repeat(Infinity)
+            .start();
+
     },
 
     setPlayCameraPos(side) {
+        this.initialCameraRotation.stop();
+
         let target = {
             x: cfg.gameOpts.cameraPlayPos.x,
             y: cfg.gameOpts.cameraPlayPos.y,

@@ -95,7 +95,8 @@ export default {
 
         mirrorOpacity: 0.2,
 
-        animationSpeed: 500
+        animationSpeed: 500,
+        rotationSpeed: 15000
     },
 
     effects: {
