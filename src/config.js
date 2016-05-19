@@ -144,7 +144,6 @@ export default {
     },
 
     loadingScreen: {
-        backgroundColor: '#fff',
-        fadeOutDuration: 2000
+        fadeOutDuration: 1000
     }
 };

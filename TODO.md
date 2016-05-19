@@ -8,7 +8,6 @@
 ## Game
 ! replace tiles with glowy circle effect
 ! check for game end
-! add loading screen
 ! think about user-controlled panning or view shift
 ! show captured pieces somewhere
 - consider adding sounds

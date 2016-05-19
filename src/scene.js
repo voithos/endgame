@@ -48,10 +48,10 @@ export default {
     setupLoader() {
         this.loaderElement = $('#loadingscreen');
         this.loaderElement.css({
-            'background-color': cfg.loadingScreen.backgroundColor,
             width: window.innerWidth,
             height: window.innerHeight
         });
+        this.loaderBar = $('#loadingscreen .inner-bar');
     },
 
     onLoadProgress(item, loaded, total) {
@@ -59,7 +59,8 @@ export default {
             this.isLoaded = true;
             this.loaderElement.fadeOut(cfg.loadingScreen.fadeOutDuration);
         }
-        this.percentLoaded = loaded / total;
+        this.percentLoaded = loaded / total * 100;
+        this.loaderBar.css('width', `${this.percentLoaded}%`);
     },
 
     resize() {
