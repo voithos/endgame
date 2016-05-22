@@ -6805,6 +6805,8 @@ canvas {
   align-items: center;
   justify-content: center;
   background-color: #ffffff;
+  transition: opacity 400ms ease-in-out;
+  transition-delay: 750ms;
 }
 .loading-screen .outer-bar {
   flex-basis: 50%;
@@ -6816,4 +6818,7 @@ canvas {
   width: 0%;
   transition: width 500ms ease-in-out;
   background-color: #000000;
+}
+.delayed-fade-out {
+  opacity: 0;
 }

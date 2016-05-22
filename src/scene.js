@@ -57,7 +57,7 @@ export default {
     onLoadProgress(item, loaded, total) {
         if (loaded === total) {
             this.isLoaded = true;
-            this.loaderElement.fadeOut(cfg.loadingScreen.fadeOutDuration);
+            this.loaderElement.addClass('delayed-fade-out');
         }
         this.percentLoaded = loaded / total * 100;
         this.loaderBar.css('width', `${this.percentLoaded}%`);
