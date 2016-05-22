@@ -19,5 +19,4 @@
 ? keep history of moves, perhaps display it somehow
 
 ## Bugs
-! user can move opponent's pieces on their turn
 ? fix strange SSAO rendering issue (actually, looks to be shadow issue - unrelated to SSAO pass)

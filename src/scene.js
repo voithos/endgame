@@ -11,6 +11,7 @@ export default {
         this.isDebugMode = isDebugMode;
         this.hasFocus = true;
         this.isLoaded = false;
+        this.movesEnabled = false;
         this.percentLoaded = 0;
 
         this.scene = new THREE.Scene();
@@ -536,6 +537,9 @@ export default {
     },
 
     handleMoveSelection() {
+        if (!this.movesEnabled) {
+            return;
+        }
         let intersected = this.intersectTile();
 
         if (intersected) {
