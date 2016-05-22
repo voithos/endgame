@@ -68,6 +68,11 @@ export default {
         this.camera.updateProjectionMatrix();
 
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        this.loaderElement.css({
+            width: window.innerWidth,
+            height: window.innerHeight
+        });
     },
 
     createRenderer() {
