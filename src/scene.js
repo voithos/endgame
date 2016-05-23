@@ -12,6 +12,7 @@ export default {
         this.hasFocus = true;
         this.isLoaded = false;
         this.movesEnabled = false;
+        this.activeSide = 'white';
         this.percentLoaded = 0;
 
         this.scene = new THREE.Scene();
@@ -228,8 +229,6 @@ export default {
                                 let glowMesh = new THREEx.GeometricGlowMesh(mesh);
                                 glowMesh.object3d.name = 'glowMesh';
                                 glowMesh.object3d.visible = false;
-                                glowMesh.insideMesh.material.uniforms.glowColor.value.set(cfg.colors.glow.afterMove);
-                                glowMesh.outsideMesh.material.uniforms.glowColor.value.set(cfg.colors.glow.afterMove);
                                 mesh.add(glowMesh.object3d);
 
                                 if (!this.meshes[side]) {
@@ -377,7 +376,7 @@ export default {
 
     addPiece(pos, type, side) {
         let object = new THREE.Object3D();
-        object.add(this.meshes[side][type].clone());
+        object.add(this.cloneMesh(side, type));
         object.position.y = cfg.gameOpts.pieceYOffset;
 
         this.setPiecePosition(object, pos, /* opt_instant */ true, /* opt_noglow */ true);
@@ -393,6 +392,16 @@ export default {
             side: side,
             object: object
         };
+    },
+
+    cloneMesh(side, type) {
+        let mesh = this.meshes[side][type].clone();
+        let glowMesh = mesh.getObjectByName('glowMesh');
+        // We need to clone the material because each piece may need to animate
+        // its glow independently.
+        glowMesh.children[0].material = glowMesh.children[0].material.clone();
+        glowMesh.children[1].material = glowMesh.children[1].material.clone();
+        return mesh;
     },
 
     addFriendScreen(side, video) {
@@ -591,6 +600,16 @@ export default {
             tile.isPromotion = move.flags.indexOf('p') !== -1;
             this.colorTile(tile, cfg.colors.tiles.legal);
         });
+
+        // If there is a piece under the cursor, highlight it.
+        let piece = this.pieces[tile.chessPos];
+        if (piece && piece.side === this.activeSide) {
+            this.lastSelectedGlowMesh = this.fadeInOutObjectGlow(
+                    piece.object, this.lastSelectedGlowMesh, cfg.colors.glow.selection);
+        } else if (this.lastSelectedGlowMesh) {
+            this.fadeOutGlowMesh(this.lastSelectedGlowMesh);
+            this.lastSelectedGlowMesh = null;
+        }
     },
 
     resetTileHighlights() {
@@ -710,7 +729,7 @@ export default {
             // Pawn-push is handled via the code above.
             piece.object.remove(piece.object.children[0]);
             let promotionType = promotionTypes[move.promotion];
-            piece.object.add(this.meshes[piece.side][promotionType].clone());
+            piece.object.add(this.cloneMesh(piece.side, promotionType));
         }
         if (move.flags.indexOf('k') !== -1) {
             /** Kingside castle */
@@ -757,49 +776,56 @@ export default {
         }
 
         if (!opt_noglow) {
-            if (this.lastGlowMesh) {
-                this.fadeOutGlowMesh(this.lastGlowMesh);
-            }
-            let glowMesh = object.getObjectByName('glowMesh');
-            this.fadeInGlowMesh(glowMesh);
-            this.lastGlowMesh = glowMesh;
+            this.lastMovedGlowMesh = this.fadeInOutObjectGlow(
+                    object, this.lastMovedGlowMesh, cfg.colors.glow.afterMove);
         }
     },
 
-    fadeInGlowMesh(glowMesh) {
+    fadeInOutObjectGlow(object, lastGlowMesh, color) {
+        if (lastGlowMesh) {
+            this.fadeOutGlowMesh(lastGlowMesh);
+        }
+        let glowMesh = object.getObjectByName('glowMesh');
+        this.fadeInGlowMesh(glowMesh, color);
+        return glowMesh;
+    },
+
+    fadeInGlowMesh(glowMesh, color) {
         // GlowMesh has 2 materials that need animation.
         glowMesh.visible = true;
-        for (let i = 0; i < 2; i++) {
-            glowMesh.children[i].material.uniforms.glowOpacity.value = 0;
-            new TWEEN.Tween({glowOpacity: 0})
-                .to({glowOpacity: 1}, cfg.gameOpts.animationSpeed)
-                .easing(TWEEN.Easing.Cubic.Out)
-                // Don't use arrow function here because intermediate values
-                // are accessed via `this` set by TWEEN.js
-                .onUpdate(function() {
-                    glowMesh.children[i].material.uniforms.glowOpacity.value = this.glowOpacity;
-                })
-                .start();
-        }
+        glowMesh.children[0].material.uniforms.glowOpacity.value = 0;
+        glowMesh.children[1].material.uniforms.glowOpacity.value = 0;
+        glowMesh.children[0].material.uniforms.glowColor.value.set(color);
+        glowMesh.children[1].material.uniforms.glowColor.value.set(color);
+        new TWEEN.Tween({glowOpacity: 0})
+            .to({glowOpacity: cfg.gameOpts.glowOpacity}, cfg.gameOpts.animationSpeed)
+            .easing(TWEEN.Easing.Cubic.Out)
+            // Don't use arrow function here because intermediate values
+            // are accessed via `this` set by TWEEN.js
+            .onUpdate(function() {
+                glowMesh.children[0].material.uniforms.glowOpacity.value = this.glowOpacity;
+                glowMesh.children[1].material.uniforms.glowOpacity.value = this.glowOpacity;
+            })
+            .start();
     },
 
     fadeOutGlowMesh(glowMesh) {
         // GlowMesh has 2 materials that need animation.
-        for (let i = 0; i < 2; i++) {
-            glowMesh.children[i].material.uniforms.glowOpacity.value = 1;
-            new TWEEN.Tween({glowOpacity: 1})
-                .to({glowOpacity: 0}, cfg.gameOpts.animationSpeed / 2)
-                .easing(TWEEN.Easing.Cubic.In)
-                // Don't use arrow function here because intermediate values
-                // are accessed via `this` set by TWEEN.js
-                .onUpdate(function() {
-                    glowMesh.children[i].material.uniforms.glowOpacity.value = this.glowOpacity;
-                })
-                .onComplete(() => {
-                    glowMesh.visible = false;
-                })
-                .start();
-        }
+        glowMesh.children[0].material.uniforms.glowOpacity.value = cfg.gameOpts.glowOpacity;
+        glowMesh.children[1].material.uniforms.glowOpacity.value = cfg.gameOpts.glowOpacity;
+        new TWEEN.Tween({glowOpacity: cfg.gameOpts.glowOpacity})
+            .to({glowOpacity: 0}, cfg.gameOpts.animationSpeed / 2)
+            .easing(TWEEN.Easing.Cubic.In)
+            // Don't use arrow function here because intermediate values
+            // are accessed via `this` set by TWEEN.js
+            .onUpdate(function() {
+                glowMesh.children[0].material.uniforms.glowOpacity.value = this.glowOpacity;
+                glowMesh.children[1].material.uniforms.glowOpacity.value = this.glowOpacity;
+            })
+            .onComplete(() => {
+                glowMesh.visible = false;
+            })
+            .start();
     },
 
     hidePiece(object) {

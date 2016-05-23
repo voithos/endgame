@@ -185,6 +185,7 @@ let endgame = {
                 this.chess = new Chess();
                 this.isMyTurn = this.side === 'white';
                 scene.movesEnabled = this.isMyTurn;
+                scene.activeSide = this.side;
 
                 scene.addTileControls(/* legalCallback */ pos => {
                     return this.chess.moves({ square: pos, verbose: true });
@@ -216,6 +217,7 @@ let endgame = {
                 const afterMove = move => {
                     this.isMyTurn = !this.isMyTurn;
                     scene.movesEnabled = this.isMyTurn || routes.isDebugMode();
+                    scene.activeSide = scene.activeSide === 'white' ? 'black' : 'white';
 
                     if (routes.isDebugMode()) {
                         this.side = this.side === 'white' ? 'black' : 'white';

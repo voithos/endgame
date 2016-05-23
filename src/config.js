@@ -94,6 +94,7 @@ export default {
         dirLightPos: { x: -25, y: 25, z: 25 },
 
         mirrorOpacity: 0.2,
+        glowOpacity: 0.7,
 
         animationSpeed: 500,
         rotationSpeed: 15000
@@ -127,14 +128,15 @@ export default {
         },
 
         tiles: {
-            active: 0xffa500,
-            legal: 0x7ac142,
-            selected: 0x3a7a99,
+            active: 0xffffff,
+            legal: 0xffde86,
+            selected: 0xdadada,
             prevFrom: 0x62ccff,
-            prevTo: 0xda2820
+            prevTo: 0x62ccff
         },
 
         glow: {
+            selection: 0xffffff,
             afterMove: 0x62ccff
         },
 
