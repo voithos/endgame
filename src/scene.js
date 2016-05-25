@@ -570,7 +570,6 @@ export default {
                         this.resetTileHighlights();
                     }
                 } else {
-                    this.resetTileHighlights();
                     this.highlightLegalMoves(tile);
                 }
             } else {
@@ -590,7 +589,7 @@ export default {
         this.isSelectingPieceMovement = true;
         this.selectedPos = tile.chessPos;
 
-        this.colorTile(tile, cfg.colors.tiles.selected);
+        this.resetTileHighlights();
 
         // Get legal moves and highlight them.
         this.currentLegalMoves = this.legalCallback(tile.chessPos);

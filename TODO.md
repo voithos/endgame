@@ -20,5 +20,4 @@
 ? keep history of moves, perhaps display it somehow
 
 ## Bugs
-- tile highlight doesn't update when clicking on new tile, until mouse move
 ? fix strange SSAO rendering issue (actually, looks to be shadow issue - unrelated to SSAO pass)
