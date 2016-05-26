@@ -16,7 +16,7 @@ let endgame = {
 
     main() {
         scene.init(routes.isDebugMode());
-        scene.loadGameGeometry()
+        scene.loadGameAssets()
             .then(scene.setupBoard.bind(scene))
             .done();
 
@@ -222,7 +222,7 @@ let endgame = {
                     if (routes.isDebugMode()) {
                         this.side = this.side === 'white' ? 'black' : 'white';
                     }
-                    scene.performGraphicalMove(move);
+                    scene.performMove(move);
 
                     // TODO: Check for game end
                 };

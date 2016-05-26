@@ -50,6 +50,7 @@ export default {
 
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],
+    sounds: [{name: 'move', ext: 'wav'}],
 
     sides: SIDES,
     ranks: RANKS,

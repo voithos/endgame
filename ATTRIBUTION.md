@@ -9,7 +9,7 @@ open source libraries and assets. Here's the list of them:
 - PeerJS
 - Promise
 - Lo-Dash
-- Three.js
+- Three.js, with various extensions
 - Vue.js
 - Bootstrap
 - Bootswatch Simplex theme
@@ -31,6 +31,8 @@ open source libraries and assets. Here's the list of them:
   http://opengameart.org/node/6988
 - Promotion piece SVGs (`public/data/[piece].svg`): author `Cburnett` from
   https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
+- Piece move sound (`public/data/move.wav`): author `greenvwbeetle` from
+  http://www.freesound.org/people/greenvwbeetle/sounds/240313/
 
 ## Research
 

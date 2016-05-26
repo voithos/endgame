@@ -20,6 +20,9 @@ export default {
             45, window.innerWidth / window.innerHeight, 0.1, 1000
         );
 
+        this.audioListener = new THREE.AudioListener();
+        this.camera.add(this.audioListener);
+
         this.renderer = this.createRenderer();
         this.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
         this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -183,9 +186,10 @@ export default {
         }
     },
 
-    loadGameGeometry() {
-        log('loading geometry');
+    loadGameAssets() {
+        log('loading assets');
         this.meshes = {};
+        this.sounds = {};
 
         return new Promise((resolve, unused_reject) => {
             // Setup loader.
@@ -196,11 +200,24 @@ export default {
                 }
             };
 
-            // Load all pieces
-            return Promise.all(_.map(cfg.pieces.concat(cfg.assets), asset =>
+            // Load all sounds.
+            let soundPromises = _.map(cfg.sounds, sound =>
+                new Promise((resolve, unused_reject) => {
+                    let loader = new THREE.AudioLoader();
+                    loader.load(`data/${sound.name}.${sound.ext}`, audioBuffer => {
+                        let audio = new THREE.Audio(this.audioListener);
+                        audio.setBuffer(audioBuffer);
+                        this.sounds[sound.name] = audio;
+                        resolve();
+                    });
+                })
+            );
+
+            // Load all pieces.
+            let geometryPromises = _.map(cfg.pieces.concat(cfg.assets), asset =>
                  new Promise((resolve, unused_reject) => {
                     let loader = new THREE.JSONLoader();
-                    loader.load('data/' + asset + '.json', (geometry, materials) => {
+                    loader.load(`data/${asset}.json`, (geometry, materials) => {
                         let material = materials[0];
 
                         if (_.contains(cfg.assets, asset)) {
@@ -241,7 +258,9 @@ export default {
                         resolve();
                     });
                 })
-            ));
+            );
+
+            return Promise.all(soundPromises.concat(geometryPromises));
         });
     },
 
@@ -642,6 +661,11 @@ export default {
 
     hideTile(tile) {
         tile.visible = false;
+    },
+
+    performMove(move) {
+        this.sounds.move.play();
+        this.performGraphicalMove(move);
     },
 
     performGraphicalMove(move) {
