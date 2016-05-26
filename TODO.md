@@ -21,5 +21,4 @@
 ? keep history of moves, perhaps display it somehow
 
 ## Bugs
-- selecting a piece un-highlights the last-moved piece
 ? fix strange SSAO rendering issue (actually, looks to be shadow issue - unrelated to SSAO pass)

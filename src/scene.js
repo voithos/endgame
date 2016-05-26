@@ -397,6 +397,9 @@ export default {
         let object = new THREE.Object3D();
         object.add(this.cloneMesh(side, type));
         object.position.y = cfg.gameOpts.pieceYOffset;
+        object.userData.origPos = pos;
+        object.userData.type = type;
+        object.userData.side = side;
 
         this.setPiecePosition(object, pos, /* opt_instant */ true, /* opt_noglow */ true);
 
@@ -799,6 +802,7 @@ export default {
         }
 
         if (!opt_noglow) {
+            this.lastSelectedGlowMesh = null;
             this.lastMovedGlowMesh = this.fadeInOutObjectGlow(
                     object, this.lastMovedGlowMesh, cfg.colors.glow.afterMove);
         }
