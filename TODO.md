@@ -8,7 +8,6 @@
 
 ## Game
 ! check for game end
-! think about user-controlled panning or view shift
 ! show captured pieces somewhere
 ! add anonymous portrait when video is not present
 - animate tiles glow-in/out
