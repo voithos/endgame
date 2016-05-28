@@ -185,7 +185,6 @@ let endgame = {
                 this.chess = new Chess();
                 this.isMyTurn = this.side === 'white';
                 scene.movesEnabled = this.isMyTurn;
-                scene.activeSide = this.side;
 
                 scene.addTileControls(/* legalCallback */ pos => {
                     return this.chess.moves({ square: pos, verbose: true });

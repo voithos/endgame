@@ -87,6 +87,9 @@ export default {
         cameraPlayPos: { x: 0, y: 22, z: 45 },
         cameraPlayLookAt: { x: 0, y: 5, z: 0 },
         cameraStrength: 15,
+        cameraAnimationSpeed: 300,
+
+        mouseThrottle: 50,
 
         friendScreenSize: { x: 30, y: 20, z: 5 },
         friendScreenPos: { x: 0, y: 10, z: -30 },

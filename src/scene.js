@@ -16,6 +16,7 @@ export default {
         this.activeSide = 'white';
         this.percentLoaded = 0;
         this.cameraMoveEnabled = false;
+        this.cameraTween = null;
 
         this.halfX = window.innerWidth / 2;
         this.halfY = window.innerHeight / 2;
@@ -557,7 +558,8 @@ export default {
 
     addMouseListeners() {
         this.mousePos = new THREE.Vector2();
-        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+        document.addEventListener('mousemove',
+                _.throttle(this.onMouseMove.bind(this), cfg.gameOpts.mouseThrottle), false);
         document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
         document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
     },
@@ -572,6 +574,44 @@ export default {
     updateMousePos(event) {
         this.mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
         this.mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        if (this.cameraMoveEnabled) {
+            this.tweenCamera();
+        }
+    },
+
+    tweenCamera() {
+        let sideMultiplier = this.side === 'black' ? -1 : 1;
+        let rotateStrength = 2 * cfg.gameOpts.cameraStrength;
+
+        let rotateX = this.mousePos.x;
+        let offsetY = this.mousePos.y * cfg.gameOpts.cameraStrength;
+
+        let targetX = cfg.gameOpts.cameraPlayPos.x +
+            sideMultiplier * rotateStrength *
+            Math.sin(Math.PI * rotateX / 2);
+        let targetY = cfg.gameOpts.cameraPlayPos.y + offsetY;
+        let targetZ = sideMultiplier * cfg.gameOpts.cameraPlayPos.z +
+            (-1 * sideMultiplier) * 0.5 * rotateStrength *
+            Math.sin(Math.PI * Math.abs(rotateX) / 2);
+
+        targetY = Math.max(targetY, 5);
+
+        let target = {x: targetX, y: targetY, z: targetZ};
+        if (this.cameraTween) {
+            this.cameraTween.stop();
+        }
+        this.cameraTween = new TWEEN.Tween(this.camera.position)
+            .to(target, cfg.gameOpts.cameraAnimationSpeed)
+            .easing(TWEEN.Easing.Quadratic.Out)
+            .onUpdate(() => {
+                this.camera.lookAt(new THREE.Vector3(
+                    cfg.gameOpts.cameraPlayLookAt.x,
+                    cfg.gameOpts.cameraPlayLookAt.y,
+                    cfg.gameOpts.cameraPlayLookAt.z
+                ));
+            })
+            .start();
     },
 
     highlightActiveTile() {
@@ -902,9 +942,6 @@ export default {
         this.requestId = requestAnimationFrame(this.render);
         TWEEN.update(timestamp);
 
-        if (this.cameraMoveEnabled) {
-            this.updateCamera();
-        }
         if (this.isDebugMode) {
             this.controls.update();
         }
@@ -932,29 +969,5 @@ export default {
         if (this.boardMirror) {
             this.boardMirror.render();
         }
-    },
-
-    updateCamera() {
-        let sideMultiplier = this.side === 'black' ? -1 : 1;
-        let rotateStrength = 2 * cfg.gameOpts.cameraStrength;
-
-        let rotateX = this.mousePos.x;
-        let offsetY = this.mousePos.y * cfg.gameOpts.cameraStrength;
-
-        this.camera.position.x = cfg.gameOpts.cameraPlayPos.x +
-            sideMultiplier * rotateStrength *
-            Math.sin(Math.PI * rotateX / 2);
-        this.camera.position.y = cfg.gameOpts.cameraPlayPos.y + offsetY;
-        this.camera.position.z = sideMultiplier * cfg.gameOpts.cameraPlayPos.z +
-            (-1 * sideMultiplier) * 0.5 * rotateStrength *
-            Math.sin(Math.PI * Math.abs(rotateX) / 2);
-
-        this.camera.position.y = Math.max(this.camera.position.y, 5);
-
-        this.camera.lookAt(new THREE.Vector3(
-            cfg.gameOpts.cameraPlayLookAt.x,
-            cfg.gameOpts.cameraPlayLookAt.y,
-            cfg.gameOpts.cameraPlayLookAt.z
-        ));
     }
 };
