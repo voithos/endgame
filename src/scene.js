@@ -576,6 +576,13 @@ export default {
                 _.throttle(this.onMouseMove.bind(this), cfg.gameOpts.mouseThrottle), false);
         document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
         document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+        document.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
+    },
+
+    onContextMenu(event) {
+        if (this.hasFocus) {
+            event.preventDefault();
+        }
     },
 
     onMouseMove(event) {
