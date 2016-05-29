@@ -17,6 +17,7 @@ export default {
         this.percentLoaded = 0;
         this.cameraMoveEnabled = false;
         this.cameraTween = null;
+        this.auxMouseButtonHeld = false;
 
         this.halfX = window.innerWidth / 2;
         this.halfY = window.innerHeight / 2;
@@ -575,12 +576,14 @@ export default {
         this.mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
         this.mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-        if (this.cameraMoveEnabled) {
-            this.tweenCamera();
-        }
+        this.tweenCamera();
     },
 
     tweenCamera() {
+        if (!this.cameraMoveEnabled || !this.auxMouseButtonHeld) {
+            return;
+        }
+
         let sideMultiplier = this.side === 'black' ? -1 : 1;
         let rotateStrength = 2 * cfg.gameOpts.cameraStrength;
 
@@ -627,7 +630,13 @@ export default {
     onMouseDown(event) {
         if (this.hasFocus) {
             event.preventDefault();
-            this.handleMoveSelection();
+            // Determine right-click vs left-click.
+            if (event.button === 0) {
+                this.handleMoveSelection();
+            } else if (event.button === 2) {
+                this.auxMouseButtonHeld = true;
+                this.tweenCamera();
+            }
         }
     },
 
@@ -834,7 +843,13 @@ export default {
     },
 
     onMouseUp(event) {
-        event.preventDefault();
+        if (this.hasFocus) {
+            event.preventDefault();
+            // If right-click.
+            if (event.button === 2) {
+                this.auxMouseButtonHeld = false;
+            }
+        }
     },
 
     intersectTile() {

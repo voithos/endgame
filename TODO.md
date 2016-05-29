@@ -13,7 +13,6 @@
 - animate tiles glow-in/out
 - consider adding touch support (test on tablets, etc)
 - improve move sound
-? rethink UI, clicking
 ? improve look of pieces
 ? change board and pieces models
 ? add computer mode
