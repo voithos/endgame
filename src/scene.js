@@ -216,6 +216,7 @@ export default {
         log('loading assets');
         this.meshes = {};
         this.sounds = {};
+        this.textures = {};
 
         return new Promise((resolve, unused_reject) => {
             // Setup loader.
@@ -234,6 +235,17 @@ export default {
                         let audio = new THREE.Audio(this.audioListener);
                         audio.setBuffer(audioBuffer);
                         this.sounds[sound.name] = audio;
+                        resolve();
+                    });
+                })
+            );
+
+            // Load textures
+            let texturePromises = _.map(cfg.textures, texture =>
+                new Promise((resolve, unused_reject) => {
+                    let loader = new THREE.TextureLoader();
+                    loader.load(`data/${texture.name}.${texture.ext}`, loadedTexture => {
+                        this.textures[texture.name] = loadedTexture;
                         resolve();
                     });
                 })
@@ -286,7 +298,9 @@ export default {
                 })
             );
 
-            return Promise.all(soundPromises.concat(geometryPromises));
+            return Promise.all(
+                    soundPromises.concat(texturePromises)
+                    .concat(geometryPromises));
         });
     },
 
@@ -469,10 +483,9 @@ export default {
             });
         } else {
             log('adding friend screen (no video)');
-            // TODO: Add anonymous portrait here.
-            // this.friendTexture = THREE.ImageUtils.loadTexture('grid.png');
             material = new THREE.MeshLambertMaterial({
-                color: 0x000000
+                map: this.textures['user'],
+                color: 0xeeeeee
             });
         }
 

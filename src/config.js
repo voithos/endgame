@@ -51,6 +51,7 @@ export default {
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],
     sounds: [{name: 'move', ext: 'wav'}],
+    textures: [{name: 'user', ext: 'png'}],
 
     sides: SIDES,
     ranks: RANKS,

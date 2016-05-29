@@ -33,6 +33,8 @@ open source libraries and assets. Here's the list of them:
   https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
 - Piece move sound (`public/data/move.wav`): author `greenvwbeetle` from
   http://www.freesound.org/people/greenvwbeetle/sounds/240313/
+- Anonymous user (`public/data/user.png`): author `WandererCreative` from
+  https://pixabay.com/en/blank-profile-picture-mystery-man-973460/
 
 ## Research
 
