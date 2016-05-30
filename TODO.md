@@ -2,7 +2,6 @@
 
 ## Code
 ! hide API keys, etc
-! minify code and data
 - switch to Material lite
 - upgrade code to ES2015
 

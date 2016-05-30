@@ -260,4 +260,4 @@ let endgame = {
 
 window.endgame = endgame;
 
-endgame.main();
+document.addEventListener('DOMContentLoaded', endgame.main.bind(endgame));

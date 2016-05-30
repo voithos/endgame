@@ -6,6 +6,13 @@ var clangFormat = require('gulp-clang-format');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var sourcemaps = require('gulp-sourcemaps');
+var concat = require('gulp-concat');
+var inject = require('gulp-inject');
+var clean = require('gulp-clean');
+
+var minifyCss = require('gulp-minify-css');
+var rev = require('gulp-rev');
+var revdel = require('gulp-rev-delete-original');
 
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
@@ -24,11 +31,15 @@ var extend = require('extend');
 var VIRT_FILE = 'endgame.js';
 var VIRT_MIN_FILE = 'endgame.min.js';
 var VIRT_TEST_FILE = 'endgame_specbundle.js';
+var VIRT_CSS = 'endgame.css';
+var VIRT_HTML = 'index.html';
+var ENTRY_HTML = './public/index.html';
 var ENTRY_FILE = './src/endgame.js';
 var BUILD_PATH = './public/js';
 var SRC_DIR = './src';
 var TEST_DIR = './test';
 var BASE_DIR = './public';
+var DIST_DIR = './dist';
 var SRC_PATTERN = './src/**/*.js';
 var TEST_PATTERN = './test/**/*_spec.js';
 
@@ -70,6 +81,34 @@ var ESLINT_CONFIG = {
         'Vue': true,
         '$': true
     }
+};
+
+var SRC_CONFIG = {
+    misc: ['public/index.html', 'public/favicon.ico'],
+    css: ['public/css/endgame.css'],
+    js: [
+        'public/js/vendor/three.js',
+        'public/js/vendor/peer.js',
+        'public/js/vendor/three.canvasrenderer.js',
+        'public/js/vendor/three.copyshader.js',
+        'public/js/vendor/three.convolutionshader.js',
+        'public/js/vendor/three.fxaashader.js',
+        'public/js/vendor/three.ssaoshader.js',
+        'public/js/vendor/three.effectcomposer.js',
+        'public/js/vendor/three.bloompass.js',
+        'public/js/vendor/three.maskpass.js',
+        'public/js/vendor/three.renderpass.js',
+        'public/js/vendor/three.shaderpass.js',
+        'public/js/vendor/three.texturepass.js',
+        'public/js/vendor/three.mirror.js',
+        'public/js/vendor/three.orbitcontrols.js',
+        'public/js/vendor/threex.atmospherematerial.js',
+        'public/js/vendor/threex.dilategeometry.js',
+        'public/js/vendor/threex.geometricglowmesh.js',
+        'public/js/vendor/chess.js',
+        'public/js/vendor/tween.js',
+        'public/js/endgame.js'
+    ]
 };
 
 
@@ -125,10 +164,11 @@ var build = function() {
         // text stream to an efficient vinyl stream usable by gulp.
         .pipe(source(VIRT_FILE))
         .pipe(buffer())
+        .pipe(sourcemaps.init())
         .pipe(gulp.dest(BUILD_PATH))
         .pipe(rename(VIRT_MIN_FILE))
         .pipe(sourcemaps.init({ loadMaps: true }))
-            .pipe(uglify())
+        .pipe(uglify())
         // Passing a relative path here forces the source maps to be
         // written externally.
         .pipe(sourcemaps.write('./'))
@@ -186,6 +226,92 @@ var watchTestSetup = function() {
     bundler.on('update', function() {
         gulp.start('test');
     });
+};
+
+
+/**
+ * Inject srcs into index.
+ */
+var index = function() {
+    return gulp.src(ENTRY_HTML)
+        .pipe(inject(
+            gulp.src(SRC_CONFIG.css.concat(SRC_CONFIG.js), {read: false}),
+            {relative: true}))
+        .pipe(gulp.dest(BASE_DIR));
+};
+
+
+/**
+ * Minify and relocate data files.
+ */
+var distData = function() {
+    return gulp.src(path.join(BASE_DIR, 'data') + '/**')
+        .pipe(gulp.dest(path.join(DIST_DIR, 'data')));
+};
+
+
+/**
+ * Minify and relocate misc files.
+ */
+var distMisc = function() {
+    return gulp.src(SRC_CONFIG.misc)
+        .pipe(gulp.dest(DIST_DIR));
+};
+
+
+/**
+ * Minify and relocate js.
+ */
+var distJs = function() {
+    return gulp.src(SRC_CONFIG.js)
+        .pipe(concat(VIRT_FILE))
+        .pipe(uglify())
+        .pipe(gulp.dest(path.join(DIST_DIR, 'js')));
+};
+
+
+/**
+ * Minify and relocate css.
+ */
+var distCss = function() {
+    return gulp.src(SRC_CONFIG.css)
+        .pipe(concat(VIRT_CSS))
+        .pipe(minifyCss())
+        .pipe(gulp.dest(path.join(DIST_DIR, 'css')));
+};
+
+
+/**
+ * Add revision IDs.
+ */
+var distRev = function() {
+    var sources = [path.join(DIST_DIR, '**/*.css'), path.join(DIST_DIR, '**/*.js')];
+    return gulp.src(sources, {base: DIST_DIR})
+        .pipe(rev())
+        .pipe(revdel())
+        .pipe(gulp.dest(DIST_DIR));
+};
+
+
+/**
+ * Rename the revision IDs in the html.
+ */
+var distRename = function() {
+    var sources = [path.join(DIST_DIR, '**/*.css'), path.join(DIST_DIR, '**/*.js')];
+    return gulp.src(path.join(DIST_DIR, VIRT_HTML))
+        .pipe(inject(
+            gulp.src(sources, {read: false}),
+            {relative: true}))
+        .pipe(gulp.dest(DIST_DIR));
+};
+
+
+/**
+ * Clean dist directory.
+ */
+var distClean = function() {
+    return gulp.src(DIST_DIR, {read: false})
+        .pipe(clean());
 };
 
 
@@ -252,8 +378,9 @@ var formatTests = function() {
 
 
 // Build
-gulp.task('build', build);
-gulp.task('watch', watch);
+gulp.task('index', index);
+gulp.task('build', ['index'], build);
+gulp.task('watch', ['index'], watch);
 gulp.task('watch-reload', ['build'], function() {
     browserSync.reload();
 });
@@ -271,6 +398,14 @@ gulp.task('check-format', checkFormat);
 gulp.task('check-format-tests', checkFormatTests);
 gulp.task('format', format);
 gulp.task('format-tests', formatTests);
+
+gulp.task('dist-clean', distClean);
+gulp.task('dist-data', ['dist-clean'], distData);
+gulp.task('dist-misc', ['dist-clean'], distMisc);
+gulp.task('dist-js', ['dist-clean', 'build'], distJs);
+gulp.task('dist-css', ['dist-clean'], distCss);
+gulp.task('dist-rev', ['dist-js', 'dist-css'], distRev);
+gulp.task('dist', ['dist-data', 'dist-misc', 'dist-rev'], distRename);
 
 
 gulp.task('validate', ['test', 'lint', 'lint-tests']);
