@@ -1,14 +1,39 @@
 import Promise from 'promise';
 import cfg from './config';
 import log from './log';
+import utils from './utils';
 
 export default {
     create(hostId) {
-        this.ref = new Firebase(cfg.gamesUrl);
-        this.gameRef = this.ref.push();
-        this.gameRef.set({ hostId: hostId });
-        this.gameRef.onDisconnect().remove();
-        return Promise.resolve(this.gameRef.key());
+        return new Promise((resolve, unused_reject) => {
+            let data = { hostId: hostId };
+            this.ref = new Firebase(cfg.gamesUrl);
+
+            const attemptGenerateId = () => {
+                // Attempt to generate a readable ID.
+                let gameId = utils.randomReadableId();
+                this.gameRef = this.ref.child(gameId);
+
+                this.gameRef.transaction(currentData => {
+                    // If no data exists, overwrite it.
+                    if (currentData === null) {
+                        return data;
+                    }
+                    // Else, abort transaction (return `undefined`).
+                }, (error, committed) => {
+                    // If the transaction was a successful, resolve. Otherwise,
+                    // retry.
+                    if (committed) {
+                        this.gameRef.onDisconnect().remove();
+                        resolve(this.gameRef.key());
+                    } else {
+                        // TODO: Unmanaged recursion (albeit async).
+                        attemptGenerateId();
+                    }
+                });
+            };
+            attemptGenerateId();
+        });
     },
 
     join(gameId) {
