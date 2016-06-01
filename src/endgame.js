@@ -3,6 +3,7 @@ import './polyfills';
 import Promise from 'promise';
 
 import game from './game';
+import user from './user';
 import media from './media';
 import routes from './routes';
 import rtc from './rtc';
@@ -29,14 +30,16 @@ let endgame = {
             return;
         }
 
-        let gameId = routes.parseGameId();
-        if (gameId) {
-            this.isHost = false;
-            this.connectToGame(gameId);
-        } else {
-            this.isHost = true;
-            this.setupGame();
-        }
+        user.init().then(() => {
+            let gameId = routes.parseGameId();
+            if (gameId) {
+                this.isHost = false;
+                this.connectToGame(gameId);
+            } else {
+                this.isHost = true;
+                this.setupGame();
+            }
+        });
     },
 
     setupGame() {

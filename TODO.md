@@ -1,9 +1,10 @@
 # todo
 
 ## Code
-! hide API keys, etc
 - switch to Material lite
 - upgrade code to ES2015
+- upgrade to new Firebase
+- handle error cases (e.g. invalid room)
 
 ## Game
 ! check for game end
