@@ -316,6 +316,18 @@ var distClean = function() {
 
 
 /**
+ * Starts a local server for the minified sources.
+ */
+var distServe = function() {
+    browserSync.init({
+        server: {
+            baseDir: DIST_DIR
+        }
+    });
+};
+
+
+/**
  * Lint the source files.
  */
 var lint = function() {
@@ -406,6 +418,7 @@ gulp.task('dist-js', ['dist-clean', 'build'], distJs);
 gulp.task('dist-css', ['dist-clean'], distCss);
 gulp.task('dist-rev', ['dist-js', 'dist-css'], distRev);
 gulp.task('dist', ['dist-data', 'dist-misc', 'dist-rev'], distRename);
+gulp.task('dist-serve', ['dist'], distServe);
 
 
 gulp.task('validate', ['test', 'lint', 'lint-tests']);
