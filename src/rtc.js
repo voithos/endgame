@@ -1,6 +1,7 @@
 import Promise from 'promise';
 import _ from 'lodash';
 import cfg from './config';
+import log from './log';
 import routes from './routes';
 
 export default {
@@ -12,6 +13,10 @@ export default {
                 iceServers: cfg.iceServers
             },
             debug: 2 // Print warnings and errors
+        });
+
+        this.peer.on('error', err => {
+            log(`PeerJS error: ${err.type}`);
         });
 
         return new Promise((resolve, unused_reject) => {
@@ -43,6 +48,10 @@ export default {
     setupDataBus(conn) {
         this.queuedData = [];
         this.listeners = [];
+
+        conn.on('error', err => {
+            log(`PeerJS data connection error: ${err}`);
+        });
 
         conn.on('open', () => {
             conn.on('data', data => {
@@ -82,14 +91,22 @@ export default {
         }
     },
 
+    setupMedia(call) {
+        call.on('error', err => {
+            log(`PeerJS media connection error: ${err}`);
+        });
+    },
+
     performMediaCall(isCaller, localMediaStream) {
         return new Promise((resolve, unused_reject) => {
             if (isCaller) {
                 this.call = this.peer.call(this.remoteId, localMediaStream);
+                this.setupMedia(this.call);
                 resolve(this.call);
             } else {
                 this.peer.on('call', call => {
                     this.call = call;
+                    this.setupMedia(this.call);
 
                     if (localMediaStream) {
                         call.answer(localMediaStream);

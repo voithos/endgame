@@ -1,5 +1,6 @@
 import Promise from 'promise';
 import cfg from './config';
+import log from './log';
 
 export default {
     init() {
@@ -7,6 +8,7 @@ export default {
         return new Promise((resolve, reject) => {
             this.ref.authAnonymously((error, unused_authData) => {
                 if (error) {
+                    log(`Firebase auth failed: ${error}`);
                     reject();
                 } else {
                     resolve();
