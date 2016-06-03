@@ -44,9 +44,8 @@ export default {
             this.gameRef.once('value', snapshot => {
                 let val = snapshot.val();
                 if (!val) {
-                    // TODO: Handle rejection, show error message.
                     log(`ERROR: failed to load game ${gameId}`);
-                    reject();
+                    reject(['join', gameId]);
                     return;
                 }
                 this.gameRef.remove();

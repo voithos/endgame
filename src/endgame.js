@@ -66,7 +66,20 @@ let endgame = {
             .then(this.performMediaCalls.bind(this))
             .then(this.displayRemoteMedia.bind(this))
             .then(this.beginGame.bind(this))
+            .catch(this.handleError.bind(this))
             .done();
+    },
+
+    handleError([type, data]) {
+        if (type === 'join') {
+            views.showMessage(
+                    'Game Not Found',
+                    `Alas, game room <code>${data}</code> doesn't seem to exist.
+                    <p>Perhaps check the spelling? Or <a href="/">create a new game room</a>.`,
+                    'danger');
+        } else {
+            throw Error(`unknown error type: ${type}`);
+        }
     },
 
     setupMedia() {
@@ -115,7 +128,7 @@ let endgame = {
                         this.localHasMedia = false;
                         this.localHasVideo = false;
                         this.localHasAudio = false;
-                        log('local media denied!');
+                        log('local media denied or unavilable');
 
                         rtc.sendData({
                             event: 'mediarequestcomplete',

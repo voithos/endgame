@@ -72,5 +72,25 @@ export default {
                 keyboard: false
             });
         });
+    },
+
+    showMessage(title, msg, type = null) {
+        if (this.messageScreen) {
+            this.messageScreen.$destroy();
+        }
+
+        this.messageScreen = new Vue({
+            el: '#messagescreen',
+            data: {
+                title,
+                msg,
+                type
+            }
+        });
+
+        $('#messagescreen').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
     }
 };

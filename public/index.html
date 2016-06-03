@@ -97,6 +97,22 @@
             </div>
         </div>
 
+        <div id="messagescreen" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">
+                            <span class="label label-{{type || 'default'}}">{{title}}</span>
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>{{{msg}}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <div id="localvideopanel" class="local-video-panel panel panel-default">
             <div class="panel-body">
                 <video id="localvideo" autoplay muted></video>
