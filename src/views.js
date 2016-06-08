@@ -38,8 +38,18 @@ export default {
         return Promise.resolve();
     },
 
-    showStatusScreen() {
+    showStatusScreen(capturedPieces) {
         $('#mediascreen').modal('hide');
+
+        this.statusScreen = new Vue({
+            el: '#statusscreen',
+            data: {
+                colors: ['white', 'black'],
+                pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen'],
+                capturedPieces: capturedPieces
+            }
+        });
+        $('#statusscreen').show('slow');
 
         return Promise.resolve();
     },

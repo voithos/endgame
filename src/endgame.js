@@ -192,13 +192,36 @@ let endgame = {
         });
     },
 
+    updateCapturedCount(move) {
+        const mapping = {
+            'p': 'pawn',
+            'n': 'knight',
+            'b': 'bishop',
+            'r': 'rook',
+            'q': 'queen'
+        };
+        // Check for standard capture (c) and en-passant (e).
+        if (move.captured) {
+            // The opposite color was captured.
+            let color = move.color === 'w' ? 'black' : 'white';
+            let piece = mapping[move.captured];
+            this.capturedPieces[color][piece] += 1;
+        }
+    },
+
     beginGame() {
         log('commencing game');
 
-        views.showStatusScreen()
+        // Begin chess game
+        this.chess = new Chess();
+        this.capturedPieces = {
+            'white': {'pawn': 0, 'knight': 0, 'bishop': 0, 'rook': 0, 'queen': 0},
+            'black': {'pawn': 0, 'knight': 0, 'bishop': 0, 'rook': 0, 'queen': 0}
+        };
+
+        // Pass the object directly so that the view can bind to it.
+        views.showStatusScreen(this.capturedPieces)
             .then(() => new Promise((resolve, unused_reject) => {
-                // Begin chess game
-                this.chess = new Chess();
                 this.isMyTurn = this.side === 'white';
                 scene.movesEnabled = this.isMyTurn;
 
@@ -237,6 +260,7 @@ let endgame = {
                     if (routes.isDebugMode()) {
                         this.side = this.side === 'white' ? 'black' : 'white';
                     }
+                    this.updateCapturedCount(move);
                     scene.performMove(move);
 
                     // TODO: Check for game end
