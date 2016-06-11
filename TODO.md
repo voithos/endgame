@@ -17,7 +17,6 @@
 ? change board and pieces models
 ? add computer mode
 ? keep history of moves, perhaps display it somehow
-? move captures pieces panel into lower/upper toolbar, with additional info (game room ID?)
 ? persist state to server to allow re-connecting to games
 
 ## Bugs

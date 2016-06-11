@@ -75,17 +75,18 @@
         </div>
 
         <div id="statusscreen" class="status-screen panel panel-default">
-            <div class="panel-heading">Captured Pieces</div>
             <div class="panel-body">
-                <div class="status-row" v-repeat="color: colors">
-                    <div class="status-col" v-repeat="piece: pieces">
+                <span class="label label-default">Captured Pieces</span>
+                <span v-repeat="color: colors">
+                    <span v-repeat="piece: pieces">
                         <img class="captured-icon img-circle"
                             v-attr="src: 'data/' + color + '_' + piece + '.svg'">
                         <span class="captured-count">
                             {{capturedPieces[color][piece]}}
                         </span>
-                    </div>
-                </div>
+                    </span>
+                    <span class="status-separator"></span>
+                </span>
             </div>
         </div>
 
