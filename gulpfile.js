@@ -86,8 +86,16 @@ var ESLINT_CONFIG = {
 
 var SRC_CONFIG = {
     misc: ['public/index.html', 'public/favicon.ico'],
-    css: ['public/css/endgame.css'],
+    css: [
+        'public/css/vendor/toastr.css',
+        'public/css/endgame.css'
+    ],
     js: [
+        'public/js/vendor/firebase.js',
+        'public/js/vendor/vue.js',
+        'public/js/vendor/jquery.js',
+        'public/js/vendor/bootstrap.js',
+        'public/js/vendor/toastr.js',
         'public/js/vendor/three.js',
         'public/js/vendor/peer.js',
         'public/js/vendor/three.canvasrenderer.js',

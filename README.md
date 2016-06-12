@@ -6,6 +6,8 @@ A WebRTC-enabled 3D chess game.
 
 - Install dependencies (`npm install`).
 - Run gulp to build targets and start devserver.
+- Run `gulp dist` to minify and build distributable.
+- Run `firebase deploy` to deploy to Firebase.
 
 ## Attribution
 
