@@ -48,6 +48,9 @@ export default {
     mediaHeight: 240,
     mediaMinFrameRate: 10,
 
+    connDropCheckInterval: 1000, // milliseconds
+    connDropTimeout: 4, // intervals
+
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],
     sounds: [{name: 'move', ext: 'wav'}],

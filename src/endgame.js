@@ -271,7 +271,7 @@ let endgame = {
                     rtc.addDataListener((data, unused_conn) => {
                         if (data.event === 'chessmove') {
                             if (!this.isMyTurn) {
-                                // Apply remove move
+                                // Apply remote move.
                                 let move = this.chess.move(data.move);
 
                                 if (move) {

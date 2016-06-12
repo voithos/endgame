@@ -7,7 +7,7 @@
 
 ## Game
 ! check for game end
-! display message when opponent disconnects
+! add help icon
 - animate tiles glow-in/out
 - add low-quality mode for improved perf on weaker devices
 - add UI element when player is in check

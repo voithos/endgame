@@ -46,6 +46,7 @@ export default {
         this.conn = conn;
         this.remoteId = conn.peer;
         this.setupDataBus(conn);
+        window.foo = this;
         return Promise.resolve(conn);
     },
 
@@ -58,11 +59,20 @@ export default {
         });
 
         conn.on('open', () => {
+            // `close` doesn't fire on Firefox, so we use drop detection.
+            this.startDropDetection();
+            conn.on('close', () => {
+                // Cancel drop detection.
+                clearInterval(this.dropDetectionId);
+                this.onCloseFn();
+            });
+
             conn.on('data', data => {
                 let listeners = this.listeners.slice();
 
                 _.forEach(listeners, listener => {
-                    listener.fn.call(this, data, conn);
+                    let value = listener.fn.call(this, data, conn);
+                    if (value === false) return false;
 
                     if (listener.once) {
                         let idx = this.listeners.indexOf(listener);
@@ -77,12 +87,41 @@ export default {
                 this.conn.send(data);
             });
         });
-
-        conn.on('close', this.onCloseFn);
     },
 
-    addDataListener(fn, once) {
-        this.listeners.push({
+    startDropDetection() {
+        // Unfortunately, Firefox doesn't change the RTCPeerConnection state
+        // when a connection is lost, so we have to manually infer this.
+
+        const checkInterval = cfg.connDropCheckInterval; // milliseconds
+        const timeoutIntervals = cfg.connDropTimeout;
+        let countdown = timeoutIntervals;
+
+        this.dropDetectionId = setInterval(() => {
+            this.sendData({
+                event: 'heartbeat'
+            });
+
+            if (!countdown) {
+                clearInterval(this.dropDetectionId);
+                this.onCloseFn();
+            }
+            countdown -= 1;
+        }, checkInterval);
+
+        this.addDataListener((data, unused_conn) => {
+            if (data.event === 'heartbeat') {
+                // Reset countdown.
+                countdown = timeoutIntervals;
+                // Stop other listeners.
+                return false;
+            }
+        }, /* once */ false, /* first */ true);
+    },
+
+    addDataListener(fn, once, first) {
+        let method = first ? 'unshift' : 'push';
+        this.listeners[method]({
             fn: fn,
             once: once
         });
