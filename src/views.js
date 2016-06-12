@@ -102,5 +102,9 @@ export default {
             backdrop: 'static',
             keyboard: false
         });
+    },
+
+    showAlert(msg, title = '', type = 'info', timeout = 5000) {
+        toastr[type](msg, title, {timeOut: timeout});
     }
 };

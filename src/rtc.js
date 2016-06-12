@@ -5,7 +5,11 @@ import log from './log';
 import routes from './routes';
 
 export default {
-    init() {
+    init(onCloseFn = null) {
+        if (!onCloseFn) {
+            onCloseFn = () => {};
+        }
+        this.onCloseFn = onCloseFn;
         this.peer = new Peer({
             firebaseURL: cfg.peerJsBackendUrl,
             secure: !routes.isDevMode(),
@@ -73,6 +77,8 @@ export default {
                 this.conn.send(data);
             });
         });
+
+        conn.on('close', this.onCloseFn);
     },
 
     addDataListener(fn, once) {

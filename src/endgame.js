@@ -45,7 +45,7 @@ let endgame = {
     setupGame() {
         this.side = 'white';
 
-        rtc.init()
+        rtc.init(this.onConnClose.bind(this))
             .then(game.create.bind(game))
             .then(views.showWaitScreen.bind(views))
             .then(rtc.listen.bind(rtc))
@@ -59,7 +59,7 @@ let endgame = {
     connectToGame(gameId) {
         this.side = 'black';
 
-        rtc.init()
+        rtc.init(this.onConnClose.bind(this))
             .then(game.join.bind(game, gameId))
             .then(rtc.connect.bind(rtc))
             .then(this.setupMedia.bind(this))
@@ -295,6 +295,10 @@ let endgame = {
         this.side = routes.getDebugSide() || 'white';
         scene.setPlayCameraPos(this.side);
         this.beginGame();
+    },
+
+    onConnClose() {
+        views.showAlert('The opponent has left the game.');
     }
 };
 

@@ -79,7 +79,8 @@ var ESLINT_CONFIG = {
         'THREEx': true,
         'TWEEN': true,
         'Vue': true,
-        '$': true
+        '$': true,
+        'toastr': true
     }
 };
 
