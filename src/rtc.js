@@ -61,11 +61,7 @@ export default {
         conn.on('open', () => {
             // `close` doesn't fire on Firefox, so we use drop detection.
             this.startDropDetection();
-            conn.on('close', () => {
-                // Cancel drop detection.
-                clearInterval(this.dropDetectionId);
-                this.onCloseFn();
-            });
+            conn.on('close', () => this.onDrop());
 
             conn.on('data', data => {
                 let listeners = this.listeners.slice();
@@ -103,8 +99,7 @@ export default {
             });
 
             if (!countdown) {
-                clearInterval(this.dropDetectionId);
-                this.onCloseFn();
+                this.onDrop();
             }
             countdown -= 1;
         }, checkInterval);
@@ -117,6 +112,17 @@ export default {
                 return false;
             }
         }, /* once */ false, /* first */ true);
+    },
+
+    onDrop() {
+        // Cancel drop detection.
+        clearInterval(this.dropDetectionId);
+
+        // Avoid duplicate drops.
+        if (this.dropped) return;
+        this.dropped = true;
+
+        this.onCloseFn();
     },
 
     addDataListener(fn, once, first) {
