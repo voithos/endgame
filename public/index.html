@@ -75,7 +75,7 @@
         </div>
 
         <div id="statusscreen" class="status-screen panel panel-default">
-            <div class="panel-body">
+            <div class="panel-body status-body">
                 <span class="label label-default">Captured Pieces</span>
                 <span v-repeat="color: colors">
                     <span v-repeat="piece: pieces">
@@ -87,6 +87,9 @@
                     </span>
                     <span class="status-separator"></span>
                 </span>
+                <img class="help-icon img-circle" src="data/help.svg"
+                    data-toggle="popover" data-trigger="hover focus" data-placement="top"
+                    data-content="Click piece tiles to move or capture. Right-click and hold anywhere on the screen to move the camera.">
             </div>
         </div>
 

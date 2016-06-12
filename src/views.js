@@ -50,6 +50,9 @@ export default {
             }
         });
         $('#statusscreen').show('slow');
+        $('.help-icon').popover()
+            // Add a custom class so that we can mess with the styles. :(
+            .data('bs.popover').tip().addClass('help-popover');
 
         return Promise.resolve();
     },

@@ -31,6 +31,7 @@ open source libraries and assets. Here's the list of them:
   http://opengameart.org/node/6988
 - Piece SVGs (`public/data/[piece].svg`): author `Cburnett` from
   https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
+- Help SVG (`public/data/help.svg`) taken from Material Design iconset
 - Piece move sound (`public/data/move.wav`): author `greenvwbeetle` from
   http://www.freesound.org/people/greenvwbeetle/sounds/240313/
 - Anonymous user (`public/data/user.png`): author `WandererCreative` from
