@@ -34,6 +34,7 @@ let endgame = {
             let gameId = routes.parseGameId();
             if (gameId) {
                 this.isHost = false;
+                routes.resetPath();
                 this.connectToGame(gameId);
             } else {
                 this.isHost = true;
@@ -299,6 +300,9 @@ let endgame = {
 
     onConnClose() {
         views.showAlert('The opponent has left the game.');
+        setTimeout(() => {
+            views.showAlert('To create a new game room, refresh the page.', '', 'info', 15000);
+        }, 8000);
     }
 };
 
