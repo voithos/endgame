@@ -5,7 +5,7 @@
      \___|_| |_|\__,_|\__, |\__,_|_| |_| |_|\___|
                       |___/
 
-A WebRTC-enabled 3D chess game.
+A WebRTC-enabled 3D chess game. [endgame-chess.firebaseapp.com](https://endgame-chess.firebaseapp.com/)
 
 ## Intro
 

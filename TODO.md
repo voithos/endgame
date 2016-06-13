@@ -6,9 +6,10 @@
 - upgrade to new Firebase sdk
 
 ## Game
+! disallow further interaction once game is over
+! add low-quality mode for improved perf on weaker devices
+! add UI element when player is in check
 - animate tiles glow-in/out
-- add low-quality mode for improved perf on weaker devices
-- add UI element when player is in check
 - improve move sound
 - add ability to disable sound
 - add touch support (test on tablets, etc)
@@ -18,6 +19,6 @@
 ? persist state to server to allow re-connecting to games
 
 ## Bugs
-- test on multiple browsers
+! test on multiple browsers
 - navigator.getUserMedia deprecated
 ? fix strange SSAO rendering issue (actually, looks to be shadow issue - unrelated to SSAO pass)
