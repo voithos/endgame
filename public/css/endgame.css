@@ -6731,6 +6731,7 @@ button.close {
   border: 1px solid #ac6819;
 }
 body {
+  overflow: hidden;
   font-weight: 200;
 }
 th {
@@ -6865,4 +6866,43 @@ canvas {
 .delayed-fade-out {
   opacity: 0;
   height: 0 !important;
+}
+.game-over-screen {
+  position: absolute;
+  overflow: hidden;
+  top: 0; left: 0; bottom: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  opacity: 0;
+  max-height: 0;
+  transform: scale(1.5);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+.game-over-screen.transition-in {
+  transform: scale(1);
+  max-height: 5000px;
+  opacity: 1;
+}
+.game-over-screen.transition-out {
+  transform: scale(1.5);
+  max-height: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out, max-height 0s linear 0.8s;
+}
+.game-over-screen svg {
+  width: 60%;
+  height: 60%;
+}
+.game-over-screen svg text {
+  fill: #ffffff;
+  stroke: #474949;
+  stroke-width: 2;
+  font-weight: bold;
+  font-size: 55px;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.game-over-screen .game-end {
+  font-size: 100px;
 }

@@ -87,6 +87,21 @@ export default {
         });
     },
 
+    showGameEndScreen(reason) {
+        this.gameEndScreen = new Vue({
+            el: '#gameoverscreen',
+            data: {
+                reason: reason
+            }
+        });
+
+        // Delay display of end screen.
+        setTimeout(() => {
+            $('#gameoverscreen').addClass('transition-in');
+            setTimeout(() => $('#gameoverscreen').addClass('transition-out'), 4500);
+        }, 1000);
+    },
+
     showMessage(title, msg, type = null) {
         if (this.messageScreen) {
             this.messageScreen.$destroy();

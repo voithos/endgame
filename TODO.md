@@ -6,7 +6,6 @@
 - upgrade to new Firebase sdk
 
 ## Game
-! check for game end
 - animate tiles glow-in/out
 - add low-quality mode for improved perf on weaker devices
 - add UI element when player is in check

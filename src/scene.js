@@ -760,7 +760,8 @@ export default {
     },
 
     performMove(move) {
-        this.sounds.move.play();
+        // TODO: Improve move sound, or remove it completely.
+        // this.sounds.move.play();
         this.performGraphicalMove(move);
     },
 

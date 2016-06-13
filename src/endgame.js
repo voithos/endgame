@@ -264,7 +264,7 @@ let endgame = {
                     this.updateCapturedCount(move);
                     scene.performMove(move);
 
-                    // TODO: Check for game end
+                    this.checkGameOver();
                 };
 
                 if (!routes.isDebugMode()) {
@@ -296,6 +296,31 @@ let endgame = {
         this.side = routes.getDebugSide() || 'white';
         scene.setPlayCameraPos(this.side);
         this.beginGame();
+    },
+
+    checkGameOver() {
+        if (this.chess.game_over()) {
+            // Game over! Determine cause, and display message.
+            let reason = '';
+
+            if (this.chess.in_checkmate()) {
+                let winner = this.chess.turn() === 'w' ? 'Black' : 'White';
+                reason = `Checkmate - ${winner} Wins`;
+            } else if (this.chess.in_stalemate()) {
+                reason = `Stalemate`;
+            } else if (this.chess.insufficient_material()) {
+                reason = `Draw - Insufficient Material`;
+            } else if (this.chess.in_draw()) {
+                // We already checked for insufficient material, so the only
+                // remaining possibility is 50-move rule.
+                reason = `Draw - 50-Move Rule`;
+            }
+
+            if (!reason) {
+                log('ERROR: no game-end reason determined?');
+            }
+            views.showGameEndScreen(reason);
+        }
     },
 
     onConnClose() {
