@@ -1,7 +1,7 @@
 # Attribution
 
-`endgame` would not be possible were it not for a large variety of
-open source libraries and assets. Here's the list of them:
+endgame would not be possible were it not for a large body of open source
+libraries and assets. Here's the list of them:
 
 ## Dependencies
 
@@ -10,6 +10,8 @@ open source libraries and assets. Here's the list of them:
 - Promise
 - Lo-Dash
 - Three.js, with various extensions
+- Tween.js
+- Toastr.js
 - Vue.js
 - Bootstrap
 - Bootswatch Simplex theme
@@ -17,9 +19,8 @@ open source libraries and assets. Here's the list of them:
 
 ## Tools
 
-- gulp.js
+- gulp
 - browserify
-- Less
 - Blender
 
 ## Assets
