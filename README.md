@@ -7,6 +7,18 @@
 
 A WebRTC-enabled 3D chess game.
 
+## Intro
+
+endgame is a simple online 3D chess game. Load the page, share the link,
+connect up and play chess!
+
+endgame began as an entry for Static Showdown 2015, and has slowly crystallized
+into existence from that point on. The goal was to build an interesting way of
+playing chess with remote friends or family, while using it as an excuse to
+learn about
+[WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and
+[WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API).
+
 ## Development
 
 Get the code and install the Node packages.
@@ -30,6 +42,9 @@ isolate, concatenate, and minify endgame's source.
 endgame was made to be hosted on Firebase. See their docs for directions on how
 to set up Firebase hosting and DB. To use a custom Firebase DB, modify the
 `DB_BASE_URL` constant in `src/config.js`.
+
+After configuring Firebase, simply run `gulp dist` to generate the
+distributable and then `firebase deploy` to deploy to hosting.
 
 ## Attribution
 
