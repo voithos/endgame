@@ -6,7 +6,6 @@
 - upgrade to new Firebase sdk
 
 ## Game
-! disallow further interaction once game is over
 ! add low-quality mode for improved perf on weaker devices
 ! add UI element when player is in check
 - animate tiles glow-in/out

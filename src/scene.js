@@ -12,6 +12,7 @@ export default {
         this.hasFocus = true;
         this.isLoaded = false;
         this.movesEnabled = false;
+        this.gameOver = false;
         this.side = null;
         this.activeSide = 'white';
         this.percentLoaded = 0;
@@ -661,7 +662,7 @@ export default {
     },
 
     handleMoveSelection() {
-        if (!this.movesEnabled) {
+        if (!this.movesEnabled || this.gameOver) {
             return;
         }
         let intersected = this.intersectTile();

@@ -300,6 +300,8 @@ let endgame = {
 
     checkGameOver() {
         if (this.chess.game_over()) {
+            scene.gameOver = true;
+
             // Game over! Determine cause, and display message.
             let reason = '';
 
