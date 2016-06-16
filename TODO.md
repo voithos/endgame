@@ -7,8 +7,8 @@
 
 ## Game
 ! add low-quality mode for improved perf on weaker devices
-! add UI element when player is in check
 - animate tiles glow-in/out
+- look into adding background music (akin to Gratia Mundi)
 - improve move sound
 - add ability to disable sound
 - add touch support (test on tablets, etc)

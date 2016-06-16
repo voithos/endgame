@@ -262,7 +262,7 @@ let endgame = {
                         this.side = this.side === 'white' ? 'black' : 'white';
                     }
                     this.updateCapturedCount(move);
-                    scene.performMove(move);
+                    scene.performMove(move, this.chess.in_check());
 
                     this.checkGameOver();
                 };

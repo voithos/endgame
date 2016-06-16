@@ -141,7 +141,8 @@ export default {
             legal: 0xffde86,
             selected: 0xdadada,
             prevFrom: 0x62ccff,
-            prevTo: 0x62ccff
+            prevTo: 0x62ccff,
+            check: 0xd91f1f
         },
 
         glow: {

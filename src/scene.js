@@ -13,6 +13,7 @@ export default {
         this.isLoaded = false;
         this.movesEnabled = false;
         this.gameOver = false;
+        this.isInCheck = false;
         this.side = null;
         this.activeSide = 'white';
         this.percentLoaded = 0;
@@ -748,6 +749,15 @@ export default {
             } else if (tile.chessPos === this.prevPosTo) {
                 this.colorTile(tile, cfg.colors.tiles.prevTo);
             }
+
+            if (this.isInCheck) {
+                // The active side has already been swapped, so look for the
+                // king.
+                let piece = this.pieces[tile.chessPos];
+                if (piece && piece.type === 'king' && piece.side === this.activeSide) {
+                    this.colorTile(tile, cfg.colors.tiles.check);
+                }
+            }
         });
     },
 
@@ -760,7 +770,9 @@ export default {
         tile.visible = false;
     },
 
-    performMove(move) {
+    performMove(move, isInCheck) {
+        this.isInCheck = isInCheck;
+
         // TODO: Improve move sound, or remove it completely.
         // this.sounds.move.play();
         this.performGraphicalMove(move);
