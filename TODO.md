@@ -11,7 +11,6 @@
 - look into adding background music (akin to Gratia Mundi)
 - improve move sound
 - add ability to disable sound
-- add touch support (test on tablets, etc)
 ? change board and pieces models
 ? add computer mode
 ? keep history of moves, perhaps display it somehow

@@ -19,7 +19,9 @@ export default {
         this.percentLoaded = 0;
         this.cameraMoveEnabled = false;
         this.cameraTween = null;
-        this.auxMouseButtonHeld = false;
+        this.isMovingCamera = false;
+        this.touchStarted = false;
+        this.lastTouchTime = 0;
 
         this.halfX = window.innerWidth / 2;
         this.halfY = window.innerHeight / 2;
@@ -578,6 +580,10 @@ export default {
                 _.throttle(this.onMouseMove.bind(this), cfg.gameOpts.mouseThrottle), false);
         document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
         document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+        document.addEventListener('touchmove',
+                _.throttle(this.onTouchMove.bind(this), cfg.gameOpts.touchThrottle), false);
+        document.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        document.addEventListener('touchend', this.onTouchEnd.bind(this), false);
         document.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
     },
 
@@ -594,6 +600,21 @@ export default {
         }
     },
 
+    onTouchMove(event) {
+        if (this.hasFocus && this.touchStarted) {
+            event.preventDefault();
+            // See if sufficient time has elapsed since touch start.
+            let elapsedMillis = Date.now() - this.lastTouchTime;
+            if (elapsedMillis > cfg.gameOpts.touchMoveDelay) {
+                let touch = event.changedTouches[0];
+                if (touch) {
+                    this.isMovingCamera = true;
+                    this.updateMousePos(touch);
+                }
+            }
+        }
+    },
+
     updateMousePos(event) {
         this.mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
         this.mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -602,7 +623,7 @@ export default {
     },
 
     tweenCamera() {
-        if (!this.cameraMoveEnabled || !this.auxMouseButtonHeld) {
+        if (!this.cameraMoveEnabled || !this.isMovingCamera) {
             return;
         }
 
@@ -656,9 +677,22 @@ export default {
             if (event.button === 0) {
                 this.handleMoveSelection();
             } else if (event.button === 2) {
-                this.auxMouseButtonHeld = true;
+                this.isMovingCamera = true;
                 this.tweenCamera();
             }
+        }
+    },
+
+    onTouchStart(event) {
+        if (this.hasFocus) {
+            // Prevent mouse handler from firing.
+            event.preventDefault();
+            let touch = event.changedTouches[0];
+            if (touch) {
+                this.updateMousePos(touch);
+            }
+            this.touchStarted = true;
+            this.lastTouchTime = Date.now();
         }
     },
 
@@ -881,8 +915,20 @@ export default {
             event.preventDefault();
             // If right-click.
             if (event.button === 2) {
-                this.auxMouseButtonHeld = false;
+                this.isMovingCamera = false;
             }
+        }
+    },
+
+    onTouchEnd(event) {
+        if (this.hasFocus) {
+            event.preventDefault();
+            // If we weren't moving the camera, then this is a 'click' event.
+            if (!this.isMovingCamera) {
+                this.handleMoveSelection();
+            }
+            this.touchStarted = false;
+            this.isMovingCamera = false;
         }
     },
 

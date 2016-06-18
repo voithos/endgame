@@ -94,6 +94,8 @@ export default {
         cameraAnimationSpeed: 300,
 
         mouseThrottle: 50,
+        touchThrottle: 150,
+        touchMoveDelay: 300,
 
         friendScreenSize: { x: 30, y: 20, z: 5 },
         friendScreenPos: { x: 0, y: 10, z: -30 },
