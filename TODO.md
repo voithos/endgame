@@ -18,5 +18,7 @@
 
 ## Bugs
 ! test on multiple browsers
+- bug where enabling audio/video in mobile device appears to kill the connection, but
+  thereafter works
 - navigator.getUserMedia deprecated
 ? fix strange SSAO rendering issue (actually, looks to be shadow issue - unrelated to SSAO pass)

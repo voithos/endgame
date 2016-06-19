@@ -29,6 +29,7 @@ export default {
 
     showMediaScreen() {
         $('#waitscreen').modal('hide');
+        $('#footer').hide('slow');
 
         $('#mediascreen').modal({
             backdrop: false,

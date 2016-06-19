@@ -6906,3 +6906,17 @@ canvas {
 .game-over-screen .game-end {
   font-size: 100px;
 }
+#footer {
+  position: absolute;
+  bottom: 0;
+  width: 300px;
+  margin-left: -150px;
+  left: 50%;
+  text-align: center;
+  padding: 15px;
+  z-index: 8000;
+}
+#footer span {
+  font-size: 13px;
+  background-color: rgba(158,158,158,0.4);
+}
