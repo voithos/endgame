@@ -6841,6 +6841,12 @@ canvas {
   float: right;
   cursor: pointer;
 }
+.floating-quality-button {
+  position: absolute;
+  right: 5px;
+  bottom: 10px;
+  z-index: 8000;
+}
 .loading-screen {
   position: absolute;
   z-index: 9000;
@@ -6905,6 +6911,7 @@ canvas {
   font-size: 100px;
 }
 #footer {
+  opacity: 0.7;
   position: absolute;
   bottom: 0;
   width: 300px;

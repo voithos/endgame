@@ -48,7 +48,10 @@ let endgame = {
 
         rtc.init(this.onConnClose.bind(this))
             .then(game.create.bind(game))
-            .then(views.showWaitScreen.bind(views))
+            .then(gameId => {
+                return views.showWaitScreen(
+                        gameId, scene.quality, this.toggleQuality.bind(this));
+            })
             .then(rtc.listen.bind(rtc))
             .then(this.setupMedia.bind(this))
             .then(this.performMediaCalls.bind(this))

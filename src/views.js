@@ -3,11 +3,12 @@ import Promise from 'promise';
 import routes from './routes';
 
 export default {
-    showWaitScreen(gameId) {
+    showWaitScreen(gameId, currentQuality, toggleQualityFn) {
         this.waitScreen = new Vue({
             el: '#waitscreen',
             data: {
-                link: routes.genGameUrl(gameId)
+                link: routes.genGameUrl(gameId),
+                quality: currentQuality
             },
             methods: {
                 onClick(e) {
@@ -15,6 +16,10 @@ export default {
                     let range = document.createRange();
                     range.selectNodeContents(e.target);
                     select.addRange(range);
+                },
+                toggleQuality() {
+                    this.quality = this.quality === 'high' ? 'low' : 'high';
+                    toggleQualityFn();
                 }
             }
         });
@@ -52,7 +57,7 @@ export default {
                 quality: currentQuality
             },
             methods: {
-                toggleQuality: function() {
+                toggleQuality() {
                     this.quality = this.quality === 'high' ? 'low' : 'high';
                     toggleQualityFn();
                 }

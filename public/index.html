@@ -55,6 +55,11 @@
                     </div>
                 </div>
             </div>
+
+            <div class="floating-quality-button">
+                <img class="quality-icon img-circle" v-attr="src: 'data/' + quality + '_q.svg'"
+                    v-on="click: toggleQuality()">
+            </div>
         </div>
 
         <div id="mediascreen" class="notice modal fade">
