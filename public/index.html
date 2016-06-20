@@ -87,9 +87,11 @@
                     </span>
                     <span class="status-separator"></span>
                 </span>
+                <img class="quality-icon img-circle" v-attr="src: 'data/' + quality + '_q.svg'"
+                    v-on="click: toggleQuality()">
                 <img class="help-icon img-circle" src="data/help.svg"
                     data-toggle="popover" data-trigger="hover focus" data-placement="top"
-                    data-content="Click piece tiles to move or capture. Right-click and hold anywhere on the screen to move the camera.">
+                    data-content="Click or tap on piece tiles to move or capture. Right-click (or touch) and hold anywhere on the screen to move the camera.">
             </div>
         </div>
 

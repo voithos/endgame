@@ -75,44 +75,37 @@ export default {
         }
     },
 
+    toggleQuality() {
+        this.setQuality(this.quality === 'high' ? 'low' : 'high');
+    },
+
     setQuality(quality) {
         // Currently, quality can either be 'low' or 'high' (default).
         this.quality = quality;
         this.isHighQuality = quality === 'high';
         this.isLowQuality = quality === 'low';
 
+        // Enable/disable shadows.
         this.renderer.shadowMap.enabled = this.isHighQuality;
+        this.renderer.shadowMap.autoUpdate = this.isHighQuality;
+        if (this.isLowQuality) {
+            this.renderer.clearTarget(this.dirLight.shadow.map);
+        }
+
+        // Enable/disable mirror effect.
+        this.mirrorMesh.visible = this.isHighQuality;
 
         if (this.isLowQuality) {
             // Set flat shading for all.
             this.scene.traverse(obj => {
                 if (obj.type === 'Mesh') {
-                    if (!obj.userData.origShading) {
-                        obj.userData.origShading = obj.material.shading;
-                        obj.material.shading = THREE.FlatShading;
-                    }
                     // Hide glowMesh, in case it's visible.
                     let glowMesh = obj.getObjectByName('glowMesh');
                     if (glowMesh) {
-                        glowMesh.userData.origVisible = glowMesh.visible;
+                        // Disable visibility. We don't remember this, because
+                        // there's no good way to "keep it up to date" if the
+                        // user continues playing in LQ mode.
                         glowMesh.visible = false;
-                    }
-                }
-            });
-        }
-
-        if (this.isHighQuality) {
-            // Revert low-quality operations.
-            this.scene.traverse(obj => {
-                if (obj.type === 'Mesh') {
-                    if (obj.userData.origShading) {
-                        obj.material.shading = obj.userData.origShading;
-                        delete obj.userData['origShading'];
-                    }
-                    let glowMesh = obj.getObjectByName('glowMesh');
-                    if (glowMesh && glowMesh.userData.origVisible) {
-                        glowMesh.visible = glowMesh.userData.origVisible;
-                        delete glowMesh.userData['origVisible'];
                     }
                 }
             });

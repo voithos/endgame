@@ -6836,12 +6836,10 @@ canvas {
   float: right;
   cursor: help;
 }
-/** Yes, this is evil. */
-.help-popover {
-  right: -160px !important;
-}
-.help-popover .arrow {
-  left: 94.5% !important;
+.quality-icon {
+  margin-right: 15px;
+  float: right;
+  cursor: pointer;
 }
 .loading-screen {
   position: absolute;

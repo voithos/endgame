@@ -39,7 +39,7 @@ export default {
         return Promise.resolve();
     },
 
-    showStatusScreen(capturedPieces) {
+    showStatusScreen(capturedPieces, currentQuality, toggleQualityFn) {
         $('#mediascreen').modal('hide');
         $('#footer').hide('slow');
 
@@ -48,7 +48,14 @@ export default {
             data: {
                 colors: ['white', 'black'],
                 pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen'],
-                capturedPieces: capturedPieces
+                capturedPieces: capturedPieces,
+                quality: currentQuality
+            },
+            methods: {
+                toggleQuality: function() {
+                    this.quality = this.quality === 'high' ? 'low' : 'high';
+                    toggleQualityFn();
+                }
             }
         });
         $('#statusscreen').show('slow');

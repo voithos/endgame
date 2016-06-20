@@ -221,7 +221,7 @@ let endgame = {
         };
 
         // Pass the object directly so that the view can bind to it.
-        views.showStatusScreen(this.capturedPieces)
+        views.showStatusScreen(this.capturedPieces, scene.quality, this.toggleQuality.bind(this))
             .then(() => new Promise((resolve, unused_reject) => {
                 this.isMyTurn = this.side === 'white';
                 scene.movesEnabled = this.isMyTurn;
@@ -296,6 +296,10 @@ let endgame = {
         this.side = routes.getDebugSide() || 'white';
         scene.setPlayCameraPos(this.side);
         this.beginGame();
+    },
+
+    toggleQuality() {
+        scene.toggleQuality();
     },
 
     checkGameOver() {
