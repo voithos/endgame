@@ -16,7 +16,7 @@ let endgame = {
     config: cfg,
 
     main() {
-        scene.init(routes.isDebugMode(), routes.getQuality());
+        scene.init(routes.isDebugMode(), this.getQuality());
         scene.loadGameAssets()
             .then(scene.setupBoard.bind(scene))
             .done();
@@ -301,8 +301,45 @@ let endgame = {
         this.beginGame();
     },
 
+    getQuality() {
+        let forcedQuality = routes.getQuality();
+        if (forcedQuality) {
+            log(`forced quality: ${forcedQuality}`);
+            this.setStoredQuality(forcedQuality);
+            return forcedQuality;
+        }
+
+        let storedQuality = this.getStoredQuality();
+        if (storedQuality) {
+            return storedQuality;
+        }
+
+        // Default to 'high'.
+        return 'high';
+    },
+
+    getStoredQuality() {
+        if (window.localStorageAvailable()) {
+            let quality = localStorage.getItem(cfg.qualityKey);
+            if (quality) {
+                log(`retrieved stored quality: ${quality}`);
+            }
+            return quality;
+        }
+        return null;
+    },
+
+    setStoredQuality(quality) {
+        if (window.localStorageAvailable()) {
+            log(`storing quality: ${quality}`);
+            localStorage.setItem(cfg.qualityKey, quality);
+        }
+    },
+
     toggleQuality() {
-        scene.toggleQuality();
+        let newQuality = scene.quality === 'high' ? 'low' : 'high';
+        this.setStoredQuality(newQuality);
+        scene.setQuality(newQuality);
     },
 
     checkGameOver() {

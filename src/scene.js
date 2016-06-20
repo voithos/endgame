@@ -75,10 +75,6 @@ export default {
         }
     },
 
-    toggleQuality() {
-        this.setQuality(this.quality === 'high' ? 'low' : 'high');
-    },
-
     setQuality(quality) {
         // Currently, quality can either be 'low' or 'high' (default).
         this.quality = quality;

@@ -37,7 +37,6 @@ export default {
     },
 
     getQuality() {
-        // Defaults to 'high'.
-        return this.parts['quality'] === 'low' ? 'low' : 'high';
+        return this.parts['quality'];
     }
 };

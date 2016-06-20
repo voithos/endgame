@@ -43,6 +43,8 @@ export default {
         { 'url': 'stun:stun4.l.google.com:19302' }
     ],
 
+    qualityKey: 'endgame_quality',
+
     localMediaWidth: 240,
     mediaWidth: 320,
     mediaHeight: 240,
