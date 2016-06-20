@@ -6,7 +6,6 @@
 - upgrade to new Firebase sdk
 
 ## Game
-! add low-quality mode for improved perf on weaker devices
 - animate tiles glow-in/out
 - look into adding background music (akin to Gratia Mundi)
 - improve move sound

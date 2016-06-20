@@ -41,6 +41,7 @@ export default {
 
     showStatusScreen(capturedPieces) {
         $('#mediascreen').modal('hide');
+        $('#footer').hide('slow');
 
         this.statusScreen = new Vue({
             el: '#statusscreen',

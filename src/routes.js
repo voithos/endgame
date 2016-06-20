@@ -34,5 +34,10 @@ export default {
 
     getDebugSide() {
         return this.parts['side'];
+    },
+
+    getQuality() {
+        // Defaults to 'high'.
+        return this.parts['quality'] === 'low' ? 'low' : 'high';
     }
 };

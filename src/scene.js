@@ -7,8 +7,12 @@ import cfg from './config';
 import log from './log';
 
 export default {
-    init(isDebugMode) {
+    init(isDebugMode, quality) {
         this.isDebugMode = isDebugMode;
+        this.quality = quality;
+        this.isHighQuality = quality === 'high';
+        this.isLowQuality = quality === 'low';
+
         this.hasFocus = true;
         this.isLoaded = false;
         this.movesEnabled = false;
@@ -38,7 +42,7 @@ export default {
         this.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.enabled = this.isHighQuality;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.gammaInput = true;
         this.renderer.gammaOutput = true;
@@ -68,6 +72,50 @@ export default {
                     this.controls.enabled = !this.controls.enabled;
                 }
             }, false);
+        }
+    },
+
+    setQuality(quality) {
+        // Currently, quality can either be 'low' or 'high' (default).
+        this.quality = quality;
+        this.isHighQuality = quality === 'high';
+        this.isLowQuality = quality === 'low';
+
+        this.renderer.shadowMap.enabled = this.isHighQuality;
+
+        if (this.isLowQuality) {
+            // Set flat shading for all.
+            this.scene.traverse(obj => {
+                if (obj.type === 'Mesh') {
+                    if (!obj.userData.origShading) {
+                        obj.userData.origShading = obj.material.shading;
+                        obj.material.shading = THREE.FlatShading;
+                    }
+                    // Hide glowMesh, in case it's visible.
+                    let glowMesh = obj.getObjectByName('glowMesh');
+                    if (glowMesh) {
+                        glowMesh.userData.origVisible = glowMesh.visible;
+                        glowMesh.visible = false;
+                    }
+                }
+            });
+        }
+
+        if (this.isHighQuality) {
+            // Revert low-quality operations.
+            this.scene.traverse(obj => {
+                if (obj.type === 'Mesh') {
+                    if (obj.userData.origShading) {
+                        obj.material.shading = obj.userData.origShading;
+                        delete obj.userData['origShading'];
+                    }
+                    let glowMesh = obj.getObjectByName('glowMesh');
+                    if (glowMesh && glowMesh.userData.origVisible) {
+                        glowMesh.visible = glowMesh.userData.origVisible;
+                        delete glowMesh.userData['origVisible'];
+                    }
+                }
+            });
         }
     },
 
@@ -312,6 +360,12 @@ export default {
         this.addSkybox();
         this.addBoard();
         this.addPieces();
+        this.setupComplete();
+    },
+
+    setupComplete() {
+        // Deferred quality setting.
+        this.setQuality(this.quality);
     },
 
     setupPostprocessing() {
@@ -751,14 +805,16 @@ export default {
             this.colorTile(tile, cfg.colors.tiles.legal);
         });
 
-        // If there is a piece under the cursor, highlight it.
-        let piece = this.pieces[tile.chessPos];
-        if (piece && piece.side === this.activeSide) {
-            this.lastSelectedGlowMesh = this.fadeInOutObjectGlow(
-                    piece.object, this.lastSelectedGlowMesh, cfg.colors.glow.selection);
-        } else if (this.lastSelectedGlowMesh) {
-            this.fadeOutGlowMesh(this.lastSelectedGlowMesh);
-            this.lastSelectedGlowMesh = null;
+        if (this.isHighQuality) {
+            // If there is a piece under the cursor, highlight it.
+            let piece = this.pieces[tile.chessPos];
+            if (piece && piece.side === this.activeSide) {
+                this.lastSelectedGlowMesh = this.fadeInOutObjectGlow(
+                        piece.object, this.lastSelectedGlowMesh, cfg.colors.glow.selection);
+            } else if (this.lastSelectedGlowMesh) {
+                this.fadeOutGlowMesh(this.lastSelectedGlowMesh);
+                this.lastSelectedGlowMesh = null;
+            }
         }
     },
 
@@ -960,10 +1016,12 @@ export default {
                 .start();
         }
 
-        if (!opt_noglow) {
-            this.lastSelectedGlowMesh = null;
-            this.lastMovedGlowMesh = this.fadeInOutObjectGlow(
-                    object, this.lastMovedGlowMesh, cfg.colors.glow.afterMove);
+        if (this.isHighQuality) {
+            if (!opt_noglow) {
+                this.lastSelectedGlowMesh = null;
+                this.lastMovedGlowMesh = this.fadeInOutObjectGlow(
+                        object, this.lastMovedGlowMesh, cfg.colors.glow.afterMove);
+            }
         }
     },
 
@@ -1049,20 +1107,26 @@ export default {
             this.friendTexture.needsUpdate = true;
         }
 
-        // Render postprocessing. First, render depth into depthRenderTarget.
-        this.scene.overrideMaterial = this.depthMaterial;
-        this.renderer.render(this.scene, this.camera, this.depthRenderTarget, /* forceClear */ true);
+        // Condition on the set quality.
+        if (this.isHighQuality) {
+            // Render postprocessing. First, render depth into depthRenderTarget.
+            this.scene.overrideMaterial = this.depthMaterial;
+            this.renderer.render(this.scene, this.camera, this.depthRenderTarget, /* forceClear */ true);
 
-        this.renderer.autoClear = false;
-        this.renderer.clear();
+            this.renderer.autoClear = false;
+            this.renderer.clear();
 
-        // Next, run postprocessing composer.
-        this.scene.overrideMaterial = null;
-        this.effectComposer.render();
+            // Next, run postprocessing composer.
+            this.scene.overrideMaterial = null;
+            this.effectComposer.render();
 
-        // The mirror effect is added after-load.
-        if (this.boardMirror) {
-            this.boardMirror.render();
+            // The mirror effect is added after-load.
+            if (this.isHighQuality && this.boardMirror) {
+                this.boardMirror.render();
+            }
+        } else {
+            // If low quality, just render as normal.
+            this.renderer.render(this.scene, this.camera);
         }
     }
 };
