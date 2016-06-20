@@ -623,10 +623,12 @@ export default {
                 _.throttle(this.onMouseMove.bind(this), cfg.gameOpts.mouseThrottle), false);
         document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
         document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-        document.addEventListener('touchmove',
+
+        this.renderer.domElement.addEventListener('touchmove',
                 _.throttle(this.onTouchMove.bind(this), cfg.gameOpts.touchThrottle), false);
-        document.addEventListener('touchstart', this.onTouchStart.bind(this), false);
-        document.addEventListener('touchend', this.onTouchEnd.bind(this), false);
+        this.renderer.domElement.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        this.renderer.domElement.addEventListener('touchend', this.onTouchEnd.bind(this), false);
+
         document.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
     },
 
