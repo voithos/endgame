@@ -92,27 +92,61 @@ let endgame = {
     setupMedia() {
         log('setting up the media');
 
+        // Wait for notice from remote regarding media. We need to set up this
+        // listener first because it needs to be ready before we attempt to set
+        // up the local media streams.
+        let remoteMediaPromise = new Promise((resolve, unused_reject) => {
+            log('attaching remote media info listener');
+            rtc.addDataListener((data, unused_conn) => {
+                if (data.event === 'mediarequestcomplete') {
+                    this.remoteHasVideo = data.hasVideo;
+                    this.remoteHasAudio = data.hasAudio;
+                    this.remoteHasMedia = data.hasMedia;
+                    log(`remote media request complete (hasMedia: ${this.remoteHasMedia}, ` +
+                        `hasVideo: ${this.remoteHasVideo}, hasAudio: ${this.remoteHasAudio})`);
+
+                    resolve();
+                } else if (data.event === 'mediareadyping') {
+                    // Media pings are expected. Return 'true' to avoid
+                    // auto-listener removal.
+                    return true;
+                } else {
+                    log('ERROR: unknown event type', data.event);
+                }
+            }, /* once */ true);
+        });
+
         return views.showMediaScreen()
-            // We need to wait for both the local and remote media to be resolved
+            // First we make sure that the media listeners are attached by
+            // synchronizing the peers via ping.
+            .then(() => new Promise((resolve, unused_reject) => {
+                // Ping every half-second.
+                let pingInterval = setInterval(() => {
+                    rtc.sendData({ event: 'mediareadyping' });
+                }, 500);
+
+                // Listen for ping.
+                log('attaching mediaready ping listener, beginning ping');
+                rtc.addDataListener((data, unused_conn) => {
+                    if (data.event === 'mediareadyping') {
+                        log('mediaready ping received; detaching');
+                        clearInterval(pingInterval);
+                        resolve();
+                    } else {
+                        log('ERROR: unknown event type', data.event);
+                    }
+                }, /* once */ true);
+
+                // Send initial ping, to make sure that there is at least one
+                // in-flight from both peers.
+                rtc.sendData({ event: 'mediareadyping' });
+            }))
+            // Then we wait for both the local and remote media to be resolved.
             .then(() => Promise.all([
-                // Wait for notice from remote regarding media
-                new Promise((resolve, unused_reject) => {
-                    rtc.addDataListener((data, unused_conn) => {
-                        if (data.event === 'mediarequestcomplete') {
-                            this.remoteHasVideo = data.hasVideo;
-                            this.remoteHasAudio = data.hasAudio;
-                            this.remoteHasMedia = data.hasMedia;
-                            log(`remote media request complete (hasMedia: ${this.remoteHasMedia}, ` +
-                                `hasVideo: ${this.remoteHasVideo}, hasAudio: ${this.remoteHasAudio})`);
+                // Block on the remote media info.
+                remoteMediaPromise,
 
-                            resolve();
-                        } else {
-                            log('ERROR: unknown event type', data.event);
-                        }
-                    }, /* once */ true);
-                }),
-
-                // Request local media
+                // Now that we're synced, request local media.
                 media.init()
                     .then(() => {
                         this.localHasVideo = media.hasLocalVideo();

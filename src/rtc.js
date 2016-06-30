@@ -30,6 +30,11 @@ export default {
 
     listen() {
         return new Promise((resolve, unused_reject) => {
+            // Note: This is technically a race condition, and will fail if the
+            // other peer attempts to connect before this listener is set up.
+            // In practice, though, this is not an issue because the listener
+            // is set up as soon as the host page has completed loading, and
+            // the remote peer cannot know the gameId before that.
             this.peer.on('connection', conn => {
                 this.conn = conn;
                 this.remoteId = conn.peer;
@@ -73,7 +78,8 @@ export default {
                     let value = listener.fn.call(this, data, conn);
                     if (value === false) return false;
 
-                    if (listener.once) {
+                    // If the once-listener returns 'true', don't remove.
+                    if (listener.once && value !== true) {
                         let idx = this.listeners.indexOf(listener);
                         if (idx !== -1) {
                             this.listeners.splice(idx, 1);
