@@ -7,7 +7,7 @@ import routes from './routes';
 export default {
     init(onCloseFn = null) {
         if (!onCloseFn) {
-            onCloseFn = () => {};
+            onCloseFn = (unused_explicit) => {};
         }
         this.onCloseFn = onCloseFn;
         this.peer = new Peer({
@@ -61,10 +61,13 @@ export default {
         conn.on('open', () => {
             // `close` doesn't fire on Firefox, so we use drop detection.
             this.startDropDetection();
-            conn.on('close', () => this.onDrop());
+            conn.on('close', () => this.onDrop(/* explicit */ true));
 
             conn.on('data', data => {
                 let listeners = this.listeners.slice();
+                if (!listeners.length) {
+                    log(`WARNING: no listeners registered for data: ${data}`);
+                }
 
                 _.forEach(listeners, listener => {
                     let value = listener.fn.call(this, data, conn);
@@ -99,7 +102,7 @@ export default {
             });
 
             if (!countdown) {
-                this.onDrop();
+                this.onDrop(/* explicit */ false);
             }
             countdown -= 1;
         }, checkInterval);
@@ -114,7 +117,7 @@ export default {
         }, /* once */ false, /* first */ true);
     },
 
-    onDrop() {
+    onDrop(explicit) {
         // Cancel drop detection.
         clearInterval(this.dropDetectionId);
 
@@ -122,7 +125,7 @@ export default {
         if (this.dropped) return;
         this.dropped = true;
 
-        this.onCloseFn();
+        this.onCloseFn(explicit);
     },
 
     addDataListener(fn, once, first) {

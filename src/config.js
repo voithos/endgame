@@ -51,7 +51,7 @@ export default {
     mediaMinFrameRate: 10,
 
     connDropCheckInterval: 1000, // milliseconds
-    connDropTimeout: 4, // intervals
+    connDropTimeout: 30, // intervals
 
     pieces: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     assets: ['board'],

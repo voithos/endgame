@@ -374,8 +374,11 @@ let endgame = {
         }
     },
 
-    onConnClose() {
-        views.showAlert('The opponent has left the game.');
+    onConnClose(explicit) {
+        let msg = explicit ?
+            'The opponent has left the game.' :
+            'The opponent may have left the game, or the network is lagging.';
+        views.showAlert(msg);
         setTimeout(() => {
             views.showAlert('To create a new game room, refresh the page.', '', 'info', 15000);
         }, 8000);

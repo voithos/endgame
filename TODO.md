@@ -6,6 +6,7 @@
 - upgrade to new Firebase sdk
 
 ## Game
+! portrait mode doesn't work (touchscreen)
 - animate tiles glow-in/out
 - look into adding background music (akin to Gratia Mundi)
 - improve move sound
