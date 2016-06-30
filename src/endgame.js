@@ -26,6 +26,7 @@ let endgame = {
         // In case of debug mode, we short-circuit the connection logic and go
         // straight into a local game.
         if (routes.isDebugMode()) {
+            log('init debug mode');
             this.beginDebugGame();
             return;
         }
@@ -33,10 +34,12 @@ let endgame = {
         user.init().then(() => {
             let gameId = routes.parseGameId();
             if (gameId) {
+                log('gameId found - connecting to host');
                 this.isHost = false;
                 routes.resetPath();
                 this.connectToGame(gameId);
             } else {
+                log('no gameId - acting as host');
                 this.isHost = true;
                 this.setupGame();
             }
@@ -181,6 +184,7 @@ let endgame = {
         log('displaying remote media');
         return new Promise((resolve, unused_reject) => {
             if (this.remoteHasMedia) {
+                log('remote media exists; setting up stream handler');
                 call.on('stream', (remoteMediaStream) => {
                     // Configure media, even if it's audio-only.
                     let video = media.configureRemoteStream(remoteMediaStream);
@@ -232,6 +236,7 @@ let endgame = {
                 scene.addTileControls(/* legalCallback */ pos => {
                     return this.chess.moves({ square: pos, verbose: true });
                 }, /* moveCallback */ (from, to, opt_promotion) => {
+                    log(`performing move - from: ${from}, to: ${to}, promo: ${opt_promotion}`);
                     let moveArgs = {
                         from: from,
                         to: to,
