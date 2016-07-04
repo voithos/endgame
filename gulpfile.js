@@ -287,7 +287,7 @@ var distJs = function() {
 var distCss = function() {
     return gulp.src(SRC_CONFIG.css)
         .pipe(concat(VIRT_CSS))
-        .pipe(minifyCss())
+        .pipe(minifyCss({advanced: false}))
         .pipe(gulp.dest(path.join(DIST_DIR, 'css')));
 };
 
