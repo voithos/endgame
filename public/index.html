@@ -10,6 +10,7 @@
         <!-- endinject -->
 
         <!-- inject:js -->
+        <script src="js/vendor/mobile-detect.js"></script>
         <script src="js/vendor/firebase.js"></script>
         <script src="js/vendor/vue.js"></script>
         <script src="js/vendor/jquery.js"></script>
@@ -52,6 +53,14 @@
                         <p>A game room has been created for you! Send this link to a friend to have them join:</p>
                         <p><code v-on="click: onClick($event)">{{link}}</code></p>
                         <p>The game will automatically continue once they join.</p>
+                        <div class="fullscreen-prompt">
+                            <hr>
+                            <h3>Endgame works best in fullscreen mode.</h3>
+                            <br>
+                            <button v-on="click: onFullscreen($event)" class="btn btn-primary btn-block">
+                                Go Fullscreen
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

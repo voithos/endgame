@@ -6925,3 +6925,21 @@ canvas {
   font-size: 13px;
   background-color: rgba(158,158,158,0.4);
 }
+.fullscreen-prompt {
+  text-align: center;
+}
+.endgame-nonmobile .fullscreen-prompt {
+  display: none;
+}
+:fullscreen .fullscreen-prompt {
+  display: none;
+}
+:full-screen .fullscreen-prompt {
+  display: none;
+}
+:-webkit-full-screen .fullscreen-prompt {
+  display: none;
+}
+:-moz-full-screen .fullscreen-prompt {
+  display: none;
+}

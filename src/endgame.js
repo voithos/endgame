@@ -16,6 +16,7 @@ let endgame = {
     config: cfg,
 
     main() {
+        views.init();
         scene.init(routes.isDebugMode(), this.getQuality());
         scene.loadGameAssets()
             .then(scene.setupBoard.bind(scene))

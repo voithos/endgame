@@ -80,7 +80,8 @@ var ESLINT_CONFIG = {
         'TWEEN': true,
         'Vue': true,
         '$': true,
-        'toastr': true
+        'toastr': true,
+        'MobileDetect': true
     }
 };
 
@@ -91,6 +92,7 @@ var SRC_CONFIG = {
         'public/css/endgame.css'
     ],
     js: [
+        'public/js/vendor/mobile-detect.js',
         'public/js/vendor/firebase.js',
         'public/js/vendor/vue.js',
         'public/js/vendor/jquery.js',

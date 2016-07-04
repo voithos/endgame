@@ -3,6 +3,12 @@ import Promise from 'promise';
 import routes from './routes';
 
 export default {
+    init() {
+        this.mobileDetect = new MobileDetect(window.navigator.userAgent);
+        let cls = this.mobileDetect.mobile() ? 'endgame-mobile' : 'endgame-nonmobile';
+        $(document.body).addClass(cls);
+    },
+
     showWaitScreen(gameId, currentQuality, toggleQualityFn) {
         this.waitScreen = new Vue({
             el: '#waitscreen',
@@ -16,6 +22,10 @@ export default {
                     let range = document.createRange();
                     range.selectNodeContents(e.target);
                     select.addRange(range);
+                },
+                onFullscreen(unused_e) {
+                    window.requestFullscreen();
+                    window.lockScreenOrientation('landscape-primary');
                 },
                 toggleQuality() {
                     this.quality = this.quality === 'high' ? 'low' : 'high';

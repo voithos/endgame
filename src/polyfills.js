@@ -1,3 +1,5 @@
+import Promise from 'promise';
+
 /**
  * requestAnimationFrame
  */
@@ -96,5 +98,72 @@
         } catch (e) {
             return false;
         }
+    };
+})();
+
+/**
+ * screen orientation
+ */
+(function() {
+    window.lockScreenOrientation = function(orientation) {
+        return new Promise((resolve, unused_reject) => {
+            try {
+                if (window.screen) {
+                    if (screen.orientation && screen.orientation.lock) {
+                        let lockPromise = screen.orientation.lock(orientation);
+                        lockPromise.then(() => resolve(true), (e) => {
+                            console.log(e); // eslint-disable-line no-console
+                            resolve(false);
+                        });
+                    } else {
+                        screen.lockOrientationUniversal = screen.lockOrientation ||
+                                screen.mozLockOrientation || screen.msLockOrientation;
+                        if (screen.lockOrientationUniversal) {
+                            resolve(screen.lockOrientationUniversal(orientation));
+                        }
+                    }
+                }
+                resolve(false);
+            } catch (e) {
+                console.log(e); // eslint-disable-line no-console
+                resolve(false);
+            }
+        });
+    };
+})();
+
+/**
+ * fullscreen api
+ */
+(function() {
+    window.requestFullscreen = function() {
+        try {
+            // First check if fullscreen API is explicitly disabled.
+            if (document.fullscreenEnabled === false ||
+                    document.webkitFullscreenEnabled === false ||
+                    document.mozFullScreenEnabled === false) {
+                return;
+            }
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) {
+                document.documentElement.mozRequestFullScreen();
+            }
+        } catch (e) {
+            // Punt!
+            console.log(e); // eslint-disable-line no-console
+        }
+    };
+
+    window.getFullscreenElement = function() {
+        return document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement;
+    };
+
+    window.isFullscreen = function() {
+        return !!window.getFullscreenElement();
     };
 })();
