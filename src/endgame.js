@@ -120,31 +120,10 @@ let endgame = {
         return views.showMediaScreen()
             // First we make sure that the media listeners are attached by
             // synchronizing the peers via ping.
-            .then(() => new Promise((resolve, unused_reject) => {
-                // Ping every half-second.
-                let pingInterval = setInterval(() => {
-                    rtc.sendData({ event: 'mediareadyping' });
-                }, 500);
-
-                // Listen for ping.
-                log('attaching mediaready ping listener, beginning ping');
-                rtc.addDataListener((data, unused_conn) => {
-                    if (data.event === 'mediareadyping') {
-                        log('mediaready ping received; detaching');
-                        clearInterval(pingInterval);
-                        resolve();
-                    } else {
-                        log('ERROR: unknown event type', data.event);
-                    }
-                }, /* once */ true);
-
-                // Send initial ping, to make sure that there is at least one
-                // in-flight from both peers.
-                rtc.sendData({ event: 'mediareadyping' });
-            }))
+            .then(() => this.synchronizePing('mediareadyping'))
             // Then we wait for both the local and remote media to be resolved.
             .then(() => Promise.all([
-                // Block on the remote media info.
+                // Block on the attachment of remote media listener.
                 remoteMediaPromise,
 
                 // Now that we're synced, request local media.
@@ -207,12 +186,18 @@ let endgame = {
         let isCaller = videoPeerExists ?
             isPreferredVideoPeer :
             isPreferredMediaPeer;
+        let localMediaStream = this.localHasMedia && media.localMediaStream;
         log(`initial caller determined - isCaller: ${isCaller}`);
 
-        return rtc.performMediaCall(
-            isCaller,
-            this.localHasMedia && media.localMediaStream
-        );
+        if (isCaller) {
+            return this.synchronizePing('mediacallping')
+                .then(() => rtc.performMediaCall(isCaller, localMediaStream));
+        } else {
+            // Setup listener beforehand.
+            let mediaCallPromise = rtc.performMediaCall(isCaller, localMediaStream);
+            return this.synchronizePing('mediacallping')
+                .then(() => mediaCallPromise);
+        }
     },
 
     displayRemoteMedia(call) {
@@ -232,6 +217,31 @@ let endgame = {
                 scene.addFriendScreen(this.side);
                 resolve();
             }
+        });
+    },
+
+    synchronizePing(pingName) {
+        return new Promise((resolve, unused_reject) => {
+            // Ping every half-second.
+            let pingInterval = setInterval(() => {
+                rtc.sendData({ event: pingName });
+            }, 500);
+
+            // Listen for ping.
+            log(`attaching ${pingName} listener; beginning ping`);
+            rtc.addDataListener((data, unused_conn) => {
+                if (data.event === pingName) {
+                    log(`${pingName} ping received; detaching`);
+                    clearInterval(pingInterval);
+                    resolve();
+
+                    // Send one last ping, to make sure that both peers get
+                    // resolved.
+                    rtc.sendData({ event: pingName });
+                } else {
+                    log('ERROR: unknown event type', data.event);
+                }
+            }, /* once */ true);
         });
     },
 

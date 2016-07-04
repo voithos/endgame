@@ -160,11 +160,13 @@ export default {
     performMediaCall(isCaller, localMediaStream) {
         return new Promise((resolve, unused_reject) => {
             if (isCaller) {
+                log('performing call');
                 this.call = this.peer.call(this.remoteId, localMediaStream);
                 this.setupMedia(this.call);
                 resolve(this.call);
             } else {
                 this.peer.on('call', call => {
+                    log('call received!');
                     this.call = call;
                     this.setupMedia(this.call);
 
