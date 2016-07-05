@@ -70,6 +70,13 @@ export default {
                 toggleQuality() {
                     this.quality = this.quality === 'high' ? 'low' : 'high';
                     toggleQualityFn();
+                },
+                fullscreen() {
+                    window.requestFullscreen();
+                    window.lockScreenOrientation('landscape-primary');
+                },
+                fullscreenExit() {
+                    window.exitFullscreen();
                 }
             }
         });

@@ -6831,15 +6831,20 @@ canvas {
   height: 25px;
   width: 25px;
 }
-.help-icon {
+.endgame-icon {
   margin-right: 15px;
   float: right;
+}
+.help-icon {
   cursor: help;
 }
+.fullscreen-icon,
+.fullscreen-exit-icon,
 .quality-icon {
-  margin-right: 15px;
-  float: right;
   cursor: pointer;
+}
+.fullscreen-exit-icon {
+  display: none;
 }
 .floating-quality-button {
   position: absolute;
@@ -6931,6 +6936,8 @@ canvas {
 .endgame-nonmobile .fullscreen-prompt {
   display: none;
 }
+/** These fullscreen selectors only seem to work when they are the only
+ * selector in a given style rule. */
 :fullscreen .fullscreen-prompt {
   display: none;
 }
@@ -6942,4 +6949,28 @@ canvas {
 }
 :-moz-full-screen .fullscreen-prompt {
   display: none;
+}
+:fullscreen .fullscreen-icon {
+  display: none;
+}
+:full-screen .fullscreen-icon {
+  display: none;
+}
+:-webkit-full-screen .fullscreen-icon {
+  display: none;
+}
+:-moz-full-screen .fullscreen-icon {
+  display: none;
+}
+:fullscreen .fullscreen-exit-icon {
+  display: block;
+}
+:full-screen .fullscreen-exit-icon {
+  display: block;
+}
+:-webkit-full-screen .fullscreen-exit-icon {
+  display: block;
+}
+:-moz-full-screen .fullscreen-exit-icon {
+  display: block;
 }

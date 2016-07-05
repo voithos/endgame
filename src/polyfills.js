@@ -166,4 +166,14 @@ import Promise from 'promise';
     window.isFullscreen = function() {
         return !!window.getFullscreenElement();
     };
+
+    window.exitFullscreen = function() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        }
+    };
 })();

@@ -101,9 +101,13 @@
                     </span>
                     <span class="status-separator"></span>
                 </span>
-                <img class="quality-icon img-circle" v-attr="src: 'data/' + quality + '_q.svg'"
-                    v-on="click: toggleQuality()">
-                <img class="help-icon img-circle" src="data/help.svg"
+                <img class="fullscreen-exit-icon endgame-icon img-circle" src="data/fullscreen_exit.svg"
+                    v-on="click: fullscreenExit()" alt="Exit fullscreen">
+                <img class="fullscreen-icon endgame-icon img-circle" src="data/fullscreen.svg"
+                    v-on="click: fullscreen()" alt="Fullscreen mode">
+                <img class="quality-icon endgame-icon img-circle" v-attr="src: 'data/' + quality + '_q.svg'"
+                    v-on="click: toggleQuality()" alt="Toggle quality">
+                <img class="help-icon endgame-icon img-circle" src="data/help.svg"
                     data-toggle="popover" data-trigger="click hover focus" data-placement="top"
                     data-content="Click or tap on piece tiles to move or capture. Right-click (or touch) and hold anywhere on the screen to move the camera.">
             </div>
