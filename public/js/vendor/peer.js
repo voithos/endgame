@@ -579,9 +579,9 @@ Negotiator._setupListeners = function(connection, pc, pc_id) {
 
   // MEDIACONNECTION.
   util.log('Listening for remote stream');
-  pc.onaddstream = function(evt) {
+  pc.ontrack = pc.onaddstream = function(evt) {
     util.log('Received remote stream');
-    var stream = evt.stream;
+    var stream = 'streams' in evt ? evt.streams[0] : evt.stream;
     var connection = provider.getConnection(peerId, connectionId);
     // 10/10/2014: looks like in Chrome 38, onaddstream is triggered after
     // setting the remote description. Our connection object in these cases

@@ -203,15 +203,23 @@ let endgame = {
     displayRemoteMedia(call) {
         log('displaying remote media');
         return new Promise((resolve, unused_reject) => {
+            let addStream = (remoteMediaStream) => {
+                // Configure media, even if it's audio-only.
+                let video = media.configureRemoteStream(remoteMediaStream);
+                scene.addFriendScreen(this.side, this.remoteHasVideo ? video : null);
+                log('media display complete');
+                resolve();
+            };
+
             if (this.remoteHasMedia) {
-                log('remote media exists; setting up stream handler');
-                call.on('stream', (remoteMediaStream) => {
-                    // Configure media, even if it's audio-only.
-                    let video = media.configureRemoteStream(remoteMediaStream);
-                    scene.addFriendScreen(this.side, this.remoteHasVideo ? video : null);
-                    log('media display complete');
-                    resolve();
-                });
+                // If the remote stream is already attached, grab it.
+                if (call.remoteStream) {
+                    log('remote media exists and is available');
+                    addStream(call.remoteStream);
+                } else {
+                    log('remote media exists; setting up stream handler');
+                    call.on('stream', (stream) => addStream(stream));
+                }
             } else {
                 log('no media; add empty friend screen');
                 scene.addFriendScreen(this.side);

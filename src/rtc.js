@@ -16,7 +16,7 @@ export default {
             config: {
                 iceServers: cfg.iceServers
             },
-            debug: 2 // Print warnings and errors
+            debug: 3 // Print warnings and errors
         });
 
         this.peer.on('error', err => {
@@ -170,8 +170,11 @@ export default {
                     this.call = call;
                     this.setupMedia(this.call);
 
+                    // Answer the call.
                     if (localMediaStream) {
                         call.answer(localMediaStream);
+                    } else {
+                        call.answer();
                     }
                     resolve(this.call);
                 });
