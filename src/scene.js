@@ -185,10 +185,6 @@ export default {
         this.dirLight.shadow.mapSize.height = 1024;
         this.scene.add(this.dirLight);
 
-        if (this.isDebugMode) {
-            this.scene.add(new THREE.CameraHelper(this.dirLight.shadow.camera));
-        }
-
         this.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.2);
         this.scene.add(this.hemiLight);
     },
@@ -782,6 +778,7 @@ export default {
     },
 
     highlightLegalMoves(tile) {
+        let isSelectingSamePos = this.selectedPos === tile.chessPos;
         this.isSelectingPieceMovement = true;
         this.selectedPos = tile.chessPos;
 
@@ -800,8 +797,12 @@ export default {
             // If there is a piece under the cursor, highlight it.
             let piece = this.pieces[tile.chessPos];
             if (piece && piece.side === this.activeSide) {
-                this.lastSelectedGlowMesh = this.fadeInOutObjectGlow(
-                        piece.object, this.lastSelectedGlowMesh, cfg.colors.glow.selection);
+                // ...unless we're selecting the same pos. If so, just don't do
+                // anything, maintaining glow.
+                if (!isSelectingSamePos) {
+                    this.lastSelectedGlowMesh = this.fadeInOutObjectGlow(
+                            piece.object, this.lastSelectedGlowMesh, cfg.colors.glow.selection);
+                }
             } else if (this.lastSelectedGlowMesh) {
                 this.fadeOutGlowMesh(this.lastSelectedGlowMesh);
                 this.lastSelectedGlowMesh = null;

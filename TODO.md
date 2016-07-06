@@ -17,7 +17,6 @@
 
 ## Bugs
 ! portrait mode doesn't work (touchscreen)
-! clicking on a piece twice does a weird thing with the glow
 ! test on multiple browsers
 - bug where enabling audio/video in mobile device appears to kill the connection, but
   thereafter works
