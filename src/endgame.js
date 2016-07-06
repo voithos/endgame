@@ -354,8 +354,11 @@ let endgame = {
     },
 
     beginDebugGame() {
-        this.side = routes.getDebugSide() || 'white';
-        scene.setPlayCameraPos(this.side);
+        let viewSide = routes.getDebugSide() || 'white';
+        scene.setPlayCameraPos(viewSide);
+        // Override side, since we want to be able to play both sides even when
+        // we're black.
+        this.side = scene.side = 'white';
         this.beginGame();
     },
 
