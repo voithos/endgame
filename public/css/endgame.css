@@ -6859,7 +6859,6 @@ canvas {
   align-items: center;
   justify-content: center;
   background-color: #ffffff;
-  transition: opacity 400ms ease-in-out 750ms, height 0ms linear 1150ms;
 }
 .loading-screen .outer-bar {
   flex-basis: 50%;
@@ -6873,6 +6872,7 @@ canvas {
   background-color: #000000;
 }
 .delayed-fade-out {
+  transition: opacity 400ms ease-in-out 750ms, height 0ms linear 1150ms;
   opacity: 0;
   height: 0 !important;
 }
@@ -6935,6 +6935,21 @@ canvas {
 }
 .endgame-nonmobile .fullscreen-prompt {
   display: none;
+}
+.loading-dotdotdot:after {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+  content: "\2026"; /* ellipsis char */
+  width: 0px;
+  animation: ellipsis steps(4, end) 2s infinite;
+  -webkit-animation: ellipsis steps(4, end) 2s infinite;
+}
+@keyframes ellipsis {
+  to { width: 15px; }
+}
+@-webkit-keyframes ellipsis {
+  to { width: 15px; }
 }
 /** These fullscreen selectors only seem to work when they are the only
  * selector in a given style rule. */

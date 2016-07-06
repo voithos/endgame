@@ -50,9 +50,13 @@
                         </h4>
                     </div>
                     <div class="modal-body">
-                        <p>A game room has been created for you! Send this link to a friend to have them join:</p>
+                        <p>
+                            A game room has been created for you! Send this link
+                            to a friend to have them join:
+                        </p>
                         <p><code v-on="click: onClick($event)">{{link}}</code></p>
                         <p>The game will automatically continue once they join.</p>
+                        <p><strong><span class="loading-dotdotdot">Waiting for friend to join</span></strong></p>
                         <div class="fullscreen-prompt">
                             <hr>
                             <h3>Endgame works best in fullscreen mode.</h3>
@@ -80,9 +84,24 @@
                         </h4>
                     </div>
                     <div class="modal-body">
-                        <p>Now we need to setup the media call. If you have a webcam and mic, you can click <code>Allow</code> to permit the video feed to be sent to your friend.</p>
-                        <p>Don't worry, if you don't have a webcam or just don't want to use it, you can still play endgame (but if you've blocked it before, you may not receive a notification and may need to manually allow it; look for an icon of a camera with an <code>X</code> over it).</p>
-                        <p>The game will automatically continue when both you and your friend have allowed or denied media access.</p>
+                        <p>
+                            Now we need to setup the media call. If you have a
+                            webcam or mic, click <code>Allow</code> to permit
+                            the video or audio to be sent to your friend.
+                        </p>
+                        <p>
+                            Don't worry, if you don't have a webcam or just
+                            don't want to use it, you can still play endgame
+                            (but you'll need to <strong>explicitly allow or
+                            deny access regardless</strong>, or else the game
+                            cannot continue).
+                        </p>
+                        <p>
+                            The game will automatically continue when both you
+                            and your friend have allowed or denied media
+                            access.
+                        </p>
+                        <p><strong><span class="loading-dotdotdot">Waiting for both players to decide media access</span></strong></p>
                     </div>
                 </div>
             </div>

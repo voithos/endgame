@@ -6,7 +6,6 @@
 - upgrade to new Firebase sdk
 
 ## Game
-! portrait mode doesn't work (touchscreen)
 - animate tiles glow-in/out
 - look into adding background music (akin to Gratia Mundi)
 - improve move sound
@@ -17,6 +16,8 @@
 ? persist state to server to allow re-connecting to games
 
 ## Bugs
+! portrait mode doesn't work (touchscreen)
+! clicking on a piece twice does a weird thing with the glow
 ! test on multiple browsers
 - bug where enabling audio/video in mobile device appears to kill the connection, but
   thereafter works
