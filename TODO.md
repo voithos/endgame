@@ -16,6 +16,7 @@
 ? persist state to server to allow re-connecting to games
 
 ## Bugs
+! for browsers that don't support WebRTC (safari), have better error message
 ! portrait mode doesn't work (touchscreen)
 ! test on multiple browsers
 - bug where enabling audio/video in mobile device appears to kill the connection, but
