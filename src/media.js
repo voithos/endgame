@@ -8,20 +8,23 @@ export default {
                 return reject();
             }
 
-            navigator.getUserMedia({
-                video: {
-                    mandatory: {
-                        maxWidth: cfg.mediaWidth,
-                        maxHeight: cfg.mediaHeight,
-                        minFrameRate: cfg.mediaMinFrameRate
-                    }
+            navigator.getUserMedia(
+                {
+                    video: {
+                        mandatory: {
+                            maxWidth: cfg.mediaWidth,
+                            maxHeight: cfg.mediaHeight,
+                            minFrameRate: cfg.mediaMinFrameRate
+                        }
+                    },
+                    audio: true
                 },
-                audio: true
-            }, (localMediaStream) => {
-                // Acquired
-                this.localMediaStream = localMediaStream;
-                resolve(localMediaStream);
-            }, reject);
+                (localMediaStream) => {
+                    // Acquired
+                    this.localMediaStream = localMediaStream;
+                    resolve(localMediaStream);
+                },
+                reject);
         });
     },
 
@@ -43,7 +46,8 @@ export default {
                 started = true;
 
                 video.width = cfg.localMediaWidth;
-                video.height = video.videoHeight / (video.videoWidth / cfg.localMediaWidth);
+                video.height = video.videoHeight /
+                    (video.videoWidth / cfg.localMediaWidth);
 
                 $('#localvideopanel').show('slow');
             }
@@ -66,7 +70,7 @@ export default {
         if (navigator.mozGetUserMedia) {
             video.mozSrcObject = mediaStream;
         } else {
-            video.src = window.URL.createObjectURL(mediaStream);
+            video.srcObject = mediaStream;
         }
     }
 };
