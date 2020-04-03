@@ -62,6 +62,7 @@ let endgame = {
             .then(this.performMediaCalls.bind(this))
             .then(this.displayRemoteMedia.bind(this))
             .then(this.beginGame.bind(this))
+            // handleError isn't relevant here.
             .done();
     },
 
@@ -79,7 +80,11 @@ let endgame = {
             .done();
     },
 
-    handleError([type, data]) {
+    handleError(error) {
+        if (!Array.isArray(error)) {
+            throw error;
+        }
+        const [type, data] = error;
         if (type === 'join') {
             views.showMessage(
                 'Game Not Found',
