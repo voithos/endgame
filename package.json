@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "promise": "~6.1.0",
-    "lodash": "~2.4.1"
+    "lodash": "~4.17.15"
   },
   "devDependencies": {
     "babel-preset-es2015": "~6.1.18",
