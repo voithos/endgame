@@ -2,25 +2,26 @@ import './polyfills';
 
 import Promise from 'promise';
 
+import cfg from './config';
 import game from './game';
-import user from './user';
+import log from './log';
 import media from './media';
 import routes from './routes';
 import rtc from './rtc';
 import scene from './scene';
-import cfg from './config';
+import user from './user';
 import views from './views';
-import log from './log';
 
 let endgame = {
     config: cfg,
 
     main() {
+        // Initialize Firebase
+        firebase.initializeApp(cfg.firebaseConfig);
+
         views.init();
         scene.init(routes.isDebugMode(), this.getQuality());
-        scene.loadGameAssets()
-            .then(scene.setupBoard.bind(scene))
-            .done();
+        scene.loadGameAssets().then(scene.setupBoard.bind(scene)).done();
 
         scene.beginRender();
 
@@ -54,7 +55,7 @@ let endgame = {
             .then(game.create.bind(game))
             .then(gameId => {
                 return views.showWaitScreen(
-                        gameId, scene.quality, this.toggleQuality.bind(this));
+                    gameId, scene.quality, this.toggleQuality.bind(this));
             })
             .then(rtc.listen.bind(rtc))
             .then(this.setupMedia.bind(this))
@@ -81,10 +82,10 @@ let endgame = {
     handleError([type, data]) {
         if (type === 'join') {
             views.showMessage(
-                    'Game Not Found',
-                    `Alas, game room <code>${data}</code> doesn't seem to exist.
+                'Game Not Found',
+                `Alas, game room <code>${data}</code> doesn't seem to exist.
                     <p>Perhaps check the spelling? Or <a href="/">create a new game room</a>.`,
-                    'danger');
+                'danger');
         } else {
             throw Error(`unknown error type: ${type}`);
         }
@@ -103,8 +104,10 @@ let endgame = {
                     this.remoteHasVideo = data.hasVideo;
                     this.remoteHasAudio = data.hasAudio;
                     this.remoteHasMedia = data.hasMedia;
-                    log(`remote media request complete (hasMedia: ${this.remoteHasMedia}, ` +
-                        `hasVideo: ${this.remoteHasVideo}, hasAudio: ${this.remoteHasAudio})`);
+                    log(`remote media request complete (hasMedia: ${
+                            this.remoteHasMedia}, ` +
+                        `hasVideo: ${this.remoteHasVideo}, hasAudio: ${
+                            this.remoteHasAudio})`);
 
                     resolve();
                 } else if (data.event === 'mediareadyping') {
@@ -117,7 +120,8 @@ let endgame = {
             }, /* once */ true);
         });
 
-        return views.showMediaScreen()
+        return views
+            .showMediaScreen()
             // First we make sure that the media listeners are attached by
             // synchronizing the peers via ping.
             .then(() => this.synchronizePing('mediareadyping'))
@@ -127,12 +131,14 @@ let endgame = {
                 remoteMediaPromise,
 
                 // Now that we're synced, request local media.
-                media.init()
-                    .then(() => {
+                media.init().then(
+                    () => {
                         this.localHasVideo = media.hasLocalVideo();
                         this.localHasAudio = media.hasLocalAudio();
-                        this.localHasMedia = this.localHasVideo || this.localHasAudio;
-                        log(`local media granted (hasVideo: ${this.localHasVideo}, ` +
+                        this.localHasMedia =
+                            this.localHasVideo || this.localHasAudio;
+                        log(`local media granted (hasVideo: ${
+                                this.localHasVideo}, ` +
                             `hasAudio: ${this.localHasAudio})`);
 
                         if (this.localHasVideo) {
@@ -145,7 +151,8 @@ let endgame = {
                             hasVideo: this.localHasVideo,
                             hasAudio: this.localHasAudio
                         });
-                    }, () => {
+                    },
+                    () => {
                         this.localHasMedia = false;
                         this.localHasVideo = false;
                         this.localHasAudio = false;
@@ -171,8 +178,8 @@ let endgame = {
         }
 
         // Because caller must provide mediaStream, we need to figure out if
-        // we're the caller or not. If the host has a (video) mediaStream, it will
-        // always be the caller; otherwise, the friend will be.
+        // we're the caller or not. If the host has a (video) mediaStream, it
+        // will always be the caller; otherwise, the friend will be.
         //
         // In addition, add a preference for the peer that has video, as it
         // seems to only work reliably from the initial call.
@@ -183,9 +190,8 @@ let endgame = {
         let isPreferredMediaPeer = (this.isHost && this.localHasMedia) ||
             (!this.isHost && !this.remoteHasMedia && this.localHasMedia);
 
-        let isCaller = videoPeerExists ?
-            isPreferredVideoPeer :
-            isPreferredMediaPeer;
+        let isCaller =
+            videoPeerExists ? isPreferredVideoPeer : isPreferredMediaPeer;
         let localMediaStream = this.localHasMedia && media.localMediaStream;
         log(`initial caller determined - isCaller: ${isCaller}`);
 
@@ -194,7 +200,8 @@ let endgame = {
                 .then(() => rtc.performMediaCall(isCaller, localMediaStream));
         } else {
             // Setup listener beforehand.
-            let mediaCallPromise = rtc.performMediaCall(isCaller, localMediaStream);
+            let mediaCallPromise =
+                rtc.performMediaCall(isCaller, localMediaStream);
             return this.synchronizePing('mediacallping')
                 .then(() => mediaCallPromise);
         }
@@ -206,7 +213,8 @@ let endgame = {
             let addStream = (remoteMediaStream) => {
                 // Configure media, even if it's audio-only.
                 let video = media.configureRemoteStream(remoteMediaStream);
-                scene.addFriendScreen(this.side, this.remoteHasVideo ? video : null);
+                scene.addFriendScreen(
+                    this.side, this.remoteHasVideo ? video : null);
                 log('media display complete');
                 resolve();
             };
@@ -232,7 +240,7 @@ let endgame = {
         return new Promise((resolve, unused_reject) => {
             // Ping every half-second.
             let pingInterval = setInterval(() => {
-                rtc.sendData({ event: pingName });
+                rtc.sendData({event: pingName});
             }, 500);
 
             // Listen for ping.
@@ -245,7 +253,7 @@ let endgame = {
 
                     // Send one last ping, to make sure that both peers get
                     // resolved.
-                    rtc.sendData({ event: pingName });
+                    rtc.sendData({event: pingName});
                 } else {
                     log('ERROR: unknown event type', data.event);
                 }
@@ -276,81 +284,94 @@ let endgame = {
         // Begin chess game
         this.chess = new Chess();
         this.capturedPieces = {
-            'white': {'pawn': 0, 'knight': 0, 'bishop': 0, 'rook': 0, 'queen': 0},
-            'black': {'pawn': 0, 'knight': 0, 'bishop': 0, 'rook': 0, 'queen': 0}
+            'white':
+                {'pawn': 0, 'knight': 0, 'bishop': 0, 'rook': 0, 'queen': 0},
+            'black':
+                {'pawn': 0, 'knight': 0, 'bishop': 0, 'rook': 0, 'queen': 0}
         };
 
         // Pass the object directly so that the view can bind to it.
-        views.showStatusScreen(this.capturedPieces, scene.quality, this.toggleQuality.bind(this))
-            .then(() => new Promise((resolve, unused_reject) => {
-                this.isMyTurn = this.side === 'white';
-                scene.movesEnabled = this.isMyTurn;
+        views
+            .showStatusScreen(
+                this.capturedPieces, scene.quality,
+                this.toggleQuality.bind(this))
+            .then(
+                () => new Promise((resolve, unused_reject) => {
+                    this.isMyTurn = this.side === 'white';
+                    scene.movesEnabled = this.isMyTurn;
 
-                scene.addTileControls(/* legalCallback */ pos => {
-                    return this.chess.moves({ square: pos, verbose: true });
-                }, /* moveCallback */ (from, to, opt_promotion) => {
-                    log(`performing move - from: ${from}, to: ${to}, promo: ${opt_promotion}`);
-                    let moveArgs = {
-                        from: from,
-                        to: to,
-                        promotion: opt_promotion
-                    };
-                    let move = this.chess.move(moveArgs);
+                    scene.addTileControls(
+                        /* legalCallback */
+                        pos => {
+                            return this.chess.moves(
+                                {square: pos, verbose: true});
+                        },
+                        /* moveCallback */
+                        (from, to, opt_promotion) => {
+                            log(`performing move - from: ${from}, to: ${
+                                to}, promo: ${opt_promotion}`);
+                            let moveArgs = {
+                                from: from,
+                                to: to,
+                                promotion: opt_promotion
+                            };
+                            let move = this.chess.move(moveArgs);
 
-                    if (move) {
-                        if (!routes.isDebugMode()) {
-                            // Send move to remote
-                            rtc.sendData({
-                                event: 'chessmove',
-                                move: move
-                            });
+                            if (move) {
+                                if (!routes.isDebugMode()) {
+                                    // Send move to remote
+                                    rtc.sendData(
+                                        {event: 'chessmove', move: move});
+                                }
+                                afterMove(move);
+                            } else {
+                                log('ERROR: illegal move attempted locally - bug?');
+                                log(moveArgs);
+                            }
+                        },
+                        /* onPromotion */
+                        () => {return views.showPromotionScreen(this.side)});
+
+                    const afterMove = move => {
+                        this.isMyTurn = !this.isMyTurn;
+                        scene.movesEnabled =
+                            this.isMyTurn || routes.isDebugMode();
+                        scene.activeSide =
+                            scene.activeSide === 'white' ? 'black' : 'white';
+
+                        if (routes.isDebugMode()) {
+                            this.side =
+                                this.side === 'white' ? 'black' : 'white';
                         }
-                        afterMove(move);
-                    } else {
-                        log('ERROR: illegal move attempted locally - bug?');
-                        log(moveArgs);
-                    }
-                }, /* onPromotion */ () => {
-                    return views.showPromotionScreen(this.side)
-                });
+                        this.updateCapturedCount(move);
+                        scene.performMove(move, this.chess.in_check());
 
-                const afterMove = move => {
-                    this.isMyTurn = !this.isMyTurn;
-                    scene.movesEnabled = this.isMyTurn || routes.isDebugMode();
-                    scene.activeSide = scene.activeSide === 'white' ? 'black' : 'white';
+                        this.checkGameOver();
+                    };
 
-                    if (routes.isDebugMode()) {
-                        this.side = this.side === 'white' ? 'black' : 'white';
-                    }
-                    this.updateCapturedCount(move);
-                    scene.performMove(move, this.chess.in_check());
+                    if (!routes.isDebugMode()) {
+                        rtc.addDataListener((data, unused_conn) => {
+                            if (data.event === 'chessmove') {
+                                if (!this.isMyTurn) {
+                                    // Apply remote move.
+                                    let move = this.chess.move(data.move);
 
-                    this.checkGameOver();
-                };
-
-                if (!routes.isDebugMode()) {
-                    rtc.addDataListener((data, unused_conn) => {
-                        if (data.event === 'chessmove') {
-                            if (!this.isMyTurn) {
-                                // Apply remote move.
-                                let move = this.chess.move(data.move);
-
-                                if (move) {
-                                    afterMove(move);
+                                    if (move) {
+                                        afterMove(move);
+                                    } else {
+                                        log('ERROR: opponent attempted invalid move',
+                                            data);
+                                    }
                                 } else {
-                                    log('ERROR: opponent attempted invalid move', data);
+                                    log('ERROR: opponent attempted to move on my turn');
                                 }
                             } else {
-                                log('ERROR: opponent attempted to move on my turn');
+                                log('ERROR: unknown event type', data.event);
                             }
-                        } else {
-                            log('ERROR: unknown event type', data.event);
-                        }
-                    });
-                }
-            }))
+                        });
+                    }
+                }))
             .done();
-
     },
 
     beginDebugGame() {
@@ -436,7 +457,9 @@ let endgame = {
             'The opponent may have left the game, or the network is lagging.';
         views.showAlert(msg);
         setTimeout(() => {
-            views.showAlert('To create a new game room, refresh the page.', '', 'info', 15000);
+            views.showAlert(
+                'To create a new game room, refresh the page.', '', 'info',
+                15000);
         }, 8000);
     }
 };

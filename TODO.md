@@ -3,17 +3,17 @@
 ## Code
 - switch to Material lite
 - upgrade code to ES2015
-- upgrade to new Firebase sdk
 
 ## Game
 - animate tiles glow-in/out
 - look into adding background music (akin to Gratia Mundi)
 - improve move sound
 - add ability to disable sound
+- add support for touch gestures instead of tap and hold
+! persist state to server to allow re-connecting to games
 ? change board and pieces models
 ? add computer mode
 ? keep history of moves, perhaps display it somehow
-? persist state to server to allow re-connecting to games
 
 ## Bugs
 ! for browsers that don't support WebRTC (safari), have better error message

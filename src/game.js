@@ -6,42 +6,44 @@ import utils from './utils';
 export default {
     create(hostId) {
         return new Promise((resolve, unused_reject) => {
-            let data = { hostId: hostId };
-            this.ref = new Firebase(cfg.gamesUrl);
+            let data = {hostId: hostId};
+            this.ref = firebase.database().refFromURL(cfg.gamesUrl);
 
             const attemptGenerateId = () => {
                 // Attempt to generate a readable ID.
                 let gameId = utils.randomReadableId();
                 this.gameRef = this.ref.child(gameId);
 
-                this.gameRef.transaction(currentData => {
-                    // If no data exists, overwrite it.
-                    if (currentData === null) {
-                        return data;
-                    }
-                    // Else, abort transaction (return `undefined`).
-                }, (error, committed) => {
-                    // If the transaction was a successful, resolve. Otherwise,
-                    // retry.
-                    if (committed) {
-                        this.gameRef.onDisconnect().remove();
-                        resolve(this.gameRef.key());
-                    } else {
-                        // TODO: Unmanaged recursion (albeit async).
-                        attemptGenerateId();
-                    }
-                });
+                this.gameRef.transaction(
+                    currentData => {
+                        // If no data exists, overwrite it.
+                        if (currentData === null) {
+                            return data;
+                        }
+                        // Else, abort transaction (return `undefined`).
+                    },
+                    (error, committed) => {
+                        // If the transaction was a successful, resolve.
+                        // Otherwise, retry.
+                        if (committed) {
+                            this.gameRef.onDisconnect().remove();
+                            resolve(this.gameRef.key);
+                        } else {
+                            // TODO: Unmanaged recursion (albeit async).
+                            attemptGenerateId();
+                        }
+                    });
             };
             attemptGenerateId();
         });
     },
 
     join(gameId) {
-        this.ref = new Firebase(cfg.gamesUrl);
+        this.ref = firebase.database().refFromURL(cfg.gamesUrl);
         this.gameRef = this.ref.child(gameId);
 
         return new Promise((resolve, reject) => {
-            this.gameRef.once('value', snapshot => {
+            this.gameRef.once('value').then(snapshot => {
                 let val = snapshot.val();
                 if (!val) {
                     log(`ERROR: failed to load game ${gameId}`);

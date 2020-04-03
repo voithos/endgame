@@ -5,7 +5,7 @@
      \___|_| |_|\__,_|\__, |\__,_|_| |_| |_|\___|
                       |___/
 
-A WebRTC-enabled 3D chess game. [endgame-chess.firebaseapp.com](https://endgame-chess.firebaseapp.com/)
+A WebRTC-enabled 3D chess game. [endgame-chess.web.app](https://endgame-chess.web.app/)
 
 ## Intro
 
@@ -21,7 +21,7 @@ learn about
 
 ## Development
 
-Get the code and install the Node packages.
+Get the code and install the Node packages. See package.json for the version of node required.
 
     git clone https://github.com/voithos/endgame.git
     cd endgame
@@ -41,7 +41,7 @@ isolate, concatenate, and minify endgame's source.
 
 endgame was made to be hosted on Firebase. See their docs for directions on how
 to set up Firebase hosting and DB. To use a custom Firebase DB, modify the
-`DB_BASE_URL` constant in `src/config.js`.
+`FIREBASE_CONFIG` constant in `src/config.js`.
 
 After configuring Firebase, simply run `gulp dist` to generate the
 distributable and then `firebase deploy` to deploy to hosting.

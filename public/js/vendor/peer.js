@@ -777,7 +777,7 @@ function Peer(id, options) {
   }
 
   if (this.hasFirebase) {
-    if (typeof Firebase === 'undefined') {
+    if (typeof firebase === 'undefined') {
       this._delayedAbort('no-firebase', 'Firebase cannot be found - did you include it?');
       return;
     }
@@ -829,9 +829,9 @@ util.inherits(Peer, EventEmitter);
 // Initialize the Firebase connection
 Peer.prototype._initializeFirebaseConnection = function() {
   var self = this;
-  this.firebaseRoot = new Firebase(this.options.firebaseURL);
+  this.firebaseRoot = firebase.database().refFromURL(this.options.firebaseURL);
   this.firebase = this.firebaseRoot.push();
-  this.id = this.firebase.key();
+  this.id = this.firebase.key;
   util.log('Firebase created', this.id);
 
   this.firebase.on('child_added', function(childSnapshot) {

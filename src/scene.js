@@ -39,7 +39,7 @@ export default {
         this.camera.add(this.audioListener);
 
         this.renderer = this.createRenderer();
-        this.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1)
+        this.renderer.setClearColor(new THREE.Color(cfg.colors.clear), 1);
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = this.isHighQuality;

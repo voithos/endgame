@@ -53,20 +53,12 @@ var WATCHIFY_CONFIG = {
     plugin: [watchify]
 };
 
-var BABELIFY_CONFIG = {
-    presets: ['es2015']
-};
+var BABELIFY_CONFIG = {presets: ['es2015']};
 
 var ESLINT_CONFIG = {
     extends: 'eslint:recommended',
-    parserOptions: {
-        ecmaVersion: 6,
-        sourceType: 'module'
-    },
-    env: {
-        browser: true,
-        es6: true
-    },
+    parserOptions: {ecmaVersion: 6, sourceType: 'module'},
+    env: {browser: true, es6: true},
     rules: {
         'no-var': 1,
         'no-unused-vars': ['error', {'argsIgnorePattern': '^unused'}]
@@ -87,13 +79,9 @@ var ESLINT_CONFIG = {
 
 var SRC_CONFIG = {
     misc: ['public/index.html', 'public/favicon.ico'],
-    css: [
-        'public/css/vendor/toastr.css',
-        'public/css/endgame.css'
-    ],
+    css: ['public/css/vendor/toastr.css', 'public/css/endgame.css'],
     js: [
         'public/js/vendor/mobile-detect.js',
-        'public/js/vendor/firebase.js',
         'public/js/vendor/vue.js',
         'public/js/vendor/jquery.js',
         'public/js/vendor/bootstrap.js',
@@ -133,10 +121,9 @@ var onError = function(e) {
     if (e && e.codeFrame) {
         // Babel error.
         gutil.log(
-                gutil.colors.red(e.filename) + ':' +
-                gutil.colors.cyan(e.loc.line + ',' + e.loc.column) + '\n' +
-                e.message + '\n' +
-                e.codeFrame);
+            gutil.colors.red(e.filename) + ':' +
+            gutil.colors.cyan(e.loc.line + ',' + e.loc.column) + '\n' +
+            e.message + '\n' + e.codeFrame);
     } else {
         gutil.log(gutil.colors.red(e));
     }
@@ -153,10 +140,11 @@ var bundler;
  */
 var getBundler = function(entries, opt_isWatcher) {
     if (!bundler) {
-        bundler = browserify(opt_isWatcher ?
-                extend({}, WATCHIFY_CONFIG, { entries: entries }) :
-                entries)
-            .transform(babelify, BABELIFY_CONFIG);
+        bundler = browserify(
+                      opt_isWatcher ?
+                          extend({}, WATCHIFY_CONFIG, {entries: entries}) :
+                          entries)
+                      .transform(babelify, BABELIFY_CONFIG);
     }
     return bundler;
 };
@@ -178,7 +166,7 @@ var build = function() {
         .pipe(sourcemaps.init())
         .pipe(gulp.dest(BUILD_PATH))
         .pipe(rename(VIRT_MIN_FILE))
-        .pipe(sourcemaps.init({ loadMaps: true }))
+        .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(uglify())
         // Passing a relative path here forces the source maps to be
         // written externally.
@@ -192,11 +180,7 @@ var build = function() {
  * configured bundler.
  */
 var watch = function() {
-    browserSync.init({
-        server: {
-            baseDir: BASE_DIR
-        }
-    });
+    browserSync.init({server: {baseDir: BASE_DIR}});
 
     var bundler = getBundler([ENTRY_FILE], /* isWatcher */ true);
     bundler.on('update', function() {
@@ -223,8 +207,7 @@ var buildTests = function() {
  * Run built tests with jasmine.
  */
 var test = function() {
-    return gulp.src(path.join(TEST_DIR, VIRT_TEST_FILE))
-        .pipe(jasmine());
+    return gulp.src(path.join(TEST_DIR, VIRT_TEST_FILE)).pipe(jasmine());
 };
 
 
@@ -265,8 +248,7 @@ var distData = function() {
  * Minify and relocate misc files.
  */
 var distMisc = function() {
-    return gulp.src(SRC_CONFIG.misc)
-        .pipe(gulp.dest(DIST_DIR));
+    return gulp.src(SRC_CONFIG.misc).pipe(gulp.dest(DIST_DIR));
 };
 
 
@@ -296,7 +278,8 @@ var distCss = function() {
  * Add revision IDs.
  */
 var distRev = function() {
-    var sources = [path.join(DIST_DIR, '**/*.css'), path.join(DIST_DIR, '**/*.js')];
+    var sources =
+        [path.join(DIST_DIR, '**/*.css'), path.join(DIST_DIR, '**/*.js')];
     return gulp.src(sources, {base: DIST_DIR})
         .pipe(rev())
         .pipe(revdel())
@@ -308,11 +291,10 @@ var distRev = function() {
  * Rename the revision IDs in the html.
  */
 var distRename = function() {
-    var sources = [path.join(DIST_DIR, '**/*.css'), path.join(DIST_DIR, '**/*.js')];
+    var sources =
+        [path.join(DIST_DIR, '**/*.css'), path.join(DIST_DIR, '**/*.js')];
     return gulp.src(path.join(DIST_DIR, VIRT_HTML))
-        .pipe(inject(
-            gulp.src(sources, {read: false}),
-            {relative: true}))
+        .pipe(inject(gulp.src(sources, {read: false}), {relative: true}))
         .pipe(gulp.dest(DIST_DIR));
 };
 
@@ -321,8 +303,7 @@ var distRename = function() {
  * Clean dist directory.
  */
 var distClean = function() {
-    return gulp.src(DIST_DIR, {read: false})
-        .pipe(clean());
+    return gulp.src(DIST_DIR, {read: false}).pipe(clean());
 };
 
 
@@ -330,11 +311,7 @@ var distClean = function() {
  * Starts a local server for the minified sources.
  */
 var distServe = function() {
-    browserSync.init({
-        server: {
-            baseDir: DIST_DIR
-        }
-    });
+    browserSync.init({server: {baseDir: DIST_DIR}});
 };
 
 

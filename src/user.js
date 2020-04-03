@@ -4,18 +4,11 @@ import log from './log';
 
 export default {
     init() {
-        this.ref = new Firebase(cfg.dbBaseUrl);
-        return new Promise((resolve, reject) => {
-            this.ref.authAnonymously((error, unused_authData) => {
-                if (error) {
-                    log(`Firebase auth failed: ${error}`);
-                    reject();
-                } else {
-                    resolve();
-                }
-            }, {
-                remember: 'sessionOnly'
+        return firebase.auth()
+            .setPersistence(firebase.auth.Auth.Persistence.SESSION)
+            .then(() => firebase.auth().signInAnonymously())
+            .catch((error) => {
+                log(`Firebase auth failed: ${error}`);
             });
-        });
     }
 };
