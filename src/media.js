@@ -3,29 +3,24 @@ import cfg from './config';
 
 export default {
     init() {
-        return new Promise((resolve, reject) => {
-            if (!navigator.getUserMedia) {
-                return reject();
-            }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return Promise.reject();
+        }
 
-            navigator.getUserMedia(
-                {
-                    video: {
-                        mandatory: {
-                            maxWidth: cfg.mediaWidth,
-                            maxHeight: cfg.mediaHeight,
-                            minFrameRate: cfg.mediaMinFrameRate
-                        }
-                    },
-                    audio: true
+        return navigator.mediaDevices
+            .getUserMedia({
+                video: {
+                    frameRate: {min: cfg.mediaMinFrameRate},
+                    width: {max: cfg.mediaWidth},
+                    height: {max: cfg.mediaHeight},
                 },
-                (localMediaStream) => {
-                    // Acquired
-                    this.localMediaStream = localMediaStream;
-                    resolve(localMediaStream);
-                },
-                reject);
-        });
+                audio: true
+            })
+            .then((localMediaStream) => {
+                // Acquired
+                this.localMediaStream = localMediaStream;
+                return localMediaStream;
+            });
     },
 
     hasLocalVideo() {

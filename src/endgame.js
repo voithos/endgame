@@ -161,7 +161,7 @@ let endgame = {
                         this.localHasMedia = false;
                         this.localHasVideo = false;
                         this.localHasAudio = false;
-                        log('local media denied or unavilable');
+                        log('local media denied or unavailable');
 
                         rtc.sendData({
                             event: 'mediarequestcomplete',
