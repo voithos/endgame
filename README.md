@@ -43,8 +43,15 @@ endgame was made to be hosted on Firebase. See their docs for directions on how
 to set up Firebase hosting and DB. To use a custom Firebase DB, modify the
 `FIREBASE_CONFIG` constant in `src/config.js`.
 
-After configuring Firebase, simply run `npm run build` to generate the
-distributable and then `firebase deploy` to deploy to hosting.
+Install the Firebase CLI and log in if you haven't already:
+
+    npm install -g firebase-tools
+    firebase login
+
+Then just build and deploy:
+
+    npm run build
+    firebase deploy --only hosting --project endgame-chess
 
 ## Attribution
 
