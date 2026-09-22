@@ -60,12 +60,6 @@ export default {
 
     playStream(mediaStream, video) {
         video.autoplay = true;
-
-        // Handle older Firefox oddities
-        if (navigator.mozGetUserMedia) {
-            video.mozSrcObject = mediaStream;
-        } else {
-            video.srcObject = mediaStream;
-        }
+        video.srcObject = mediaStream;
     }
 };

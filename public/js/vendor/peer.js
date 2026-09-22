@@ -5,6 +5,7 @@
  * - Added Firebase signaling using per-peer message queues.
  * - Updated Firebase SDK usage and bundled EventEmitter.
  * - Fixed a Firefox race and added ontrack support.
+ * - Fixed Firefox data-channel detection and Reliable imports.
  * - Improved ICE failure reporting.
  */
 /*! peerjs build:0.3.14, development. Copyright(c) 2013 Michelle Bu <michelle@michellebu.com> */(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
@@ -19,7 +20,7 @@ module.exports.RTCIceCandidate = window.RTCIceCandidate ||
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Negotiator = require('./negotiator');
-var Reliable = require('reliable');
+var Reliable = require('reliable').Reliable;
 
 /**
  * Wraps a DataChannel between two Peers.
@@ -87,7 +88,7 @@ DataConnection.prototype._configureDataChannel = function() {
     self.emit('open');
   }
 
-  // Use the Reliable shim for non Firefox browsers
+  // Use the Reliable shim for legacy non-SCTP channels.
   if (!util.supports.sctp && this.reliable) {
     this._reliable = new Reliable(this._dc, util.debug);
   }
@@ -398,6 +399,7 @@ var util = require('./util');
 var RTCPeerConnection = require('./adapter').RTCPeerConnection;
 var RTCSessionDescription = require('./adapter').RTCSessionDescription;
 var RTCIceCandidate = require('./adapter').RTCIceCandidate;
+var Reliable = require('reliable').Reliable;
 
 /**
  * Manages all negotiations between Peers.
@@ -712,7 +714,7 @@ Negotiator.handleCandidate = function(connection, ice) {
 
 module.exports = Negotiator;
 
-},{"./adapter":1,"./util":8}],6:[function(require,module,exports){
+},{"./adapter":1,"./util":8,"reliable":12}],6:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Socket = require('./socket');
@@ -1625,13 +1627,11 @@ var util = {
       } catch (e) {
       }
 
-      // Reliable test.
-      // Unfortunately Chrome is a bit unreliable about whether or not they
-      // support reliable.
+      // Modern SCTP channels expose ordered; reliable is obsolete in Firefox.
       var reliablePC = new RTCPeerConnection(defaultConfig, {});
       try {
         var reliableDC = reliablePC.createDataChannel('_PEERJSRELIABLETEST', {});
-        sctp = reliableDC.reliable;
+        sctp = typeof reliableDC.ordered === 'boolean' || reliableDC.reliable === true;
       } catch (e) {
       }
       reliablePC.close();
