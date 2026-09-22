@@ -3,3 +3,4 @@
 /dist
 *.map
 public/js/endgame.*
+.vscode/

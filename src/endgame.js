@@ -301,7 +301,7 @@ let endgame = {
                 this.capturedPieces, scene.quality,
                 this.toggleQuality.bind(this))
             .then(
-                () => new Promise((resolve, unused_reject) => {
+                () => new Promise((unused_resolve, unused_reject) => {
                     this.isMyTurn = this.side === 'white';
                     scene.movesEnabled = this.isMyTurn;
 

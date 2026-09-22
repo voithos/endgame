@@ -21,29 +21,29 @@ learn about
 
 ## Development
 
-Get the code and install the Node packages. See package.json for the version of node required.
+Get the code and install the Node packages. You'll need Node.js 22 or newer.
 
     git clone https://github.com/voithos/endgame.git
     cd endgame
-    npm install
+    npm ci
 
-Then just run `gulp` to build and serve the app locally!
+Then just run `npm run dev` to build and serve the app locally!
+
+Run `npm run validate` to lint the code and check the production build.
 
 ### Deployment
 
-For deployment, there are a set of `dist` gulp tasks that can be used to
-isolate, concatenate, and minify endgame's source.
+For deployment, there are a couple of build commands:
 
-- `gulp dist` will build and minify a distributable set of files for endgame,
-  under the `dist` directory
-- `gulp dist-serve` will launch a local web serve for the minified source
-- `gulp dist-clean` will clean and remove the `dist` files
+- `npm run build` builds and minifies endgame into `dist`, with versioned
+  JavaScript and CSS filenames
+- `npm run preview` builds and serves the distributable locally
 
 endgame was made to be hosted on Firebase. See their docs for directions on how
 to set up Firebase hosting and DB. To use a custom Firebase DB, modify the
 `FIREBASE_CONFIG` constant in `src/config.js`.
 
-After configuring Firebase, simply run `gulp dist` to generate the
+After configuring Firebase, simply run `npm run build` to generate the
 distributable and then `firebase deploy` to deploy to hosting.
 
 ## Attribution

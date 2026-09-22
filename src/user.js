@@ -1,5 +1,3 @@
-import Promise from 'promise';
-import cfg from './config';
 import log from './log';
 
 export default {
