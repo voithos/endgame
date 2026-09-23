@@ -2,6 +2,8 @@ import './polyfills';
 
 import Promise from 'promise';
 
+import {version} from '../package.json';
+
 import cfg from './config';
 import game from './game';
 import log from './log';
@@ -13,6 +15,7 @@ import user from './user';
 import views from './views';
 
 let endgame = {
+    version,
     config: cfg,
 
     main() {
